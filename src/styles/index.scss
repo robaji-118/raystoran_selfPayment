@@ -1,0 +1,40 @@
+// To avoid any potential issue with character encoding
+@charset 'utf-8';
+
+// Variables, functions, mixins, and other configurations
+@import 'abstract/index';
+@import 'base/index';
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 fluidSize(80);
+  @media screen and (max-width: $responsive-2xl) {
+    padding: 0 fluidSize(64);
+  }
+  @media screen and (max-width: $responsive-xl-2) {
+    padding: 0 fluidSize(56);
+  }
+  @media screen and (max-width: $responsive-xl) {
+    padding: 0 fluidSize(48);
+  }
+  @media screen and (max-width: $responsive-lg-2) {
+    padding: 0 fluidSize(40);
+  }
+  @media screen and (max-width: $responsive-lg) {
+    padding: 0 fluidSize(32);
+  }
+  @media screen and (max-width: $responsive-md) {
+    padding: 0 fluidSize(24);
+  }
+  @media screen and (max-width: $responsive-sm) {
+    padding: 0 fluidSize(20);
+  }
+  @media screen and (max-width: $responsive-xs-3) {
+    padding: 0 fluidSize(16);
+  }
+}
+
+body {
+  font-family: 'Manrope', sans-serif;
+}

@@ -1,0 +1,26 @@
+.color-feature-base {
+  color: $color-purple-500;
+}
+.color-feature-lighter {
+  color: $color-purple-200;
+}
+
+.bg-feature-base {
+  background-color: $color-purple-500;
+}
+.bg-feature-lighter {
+  background-color: $color-purple-200;
+}
+
+.shadow-sm {
+  box-shadow: $shadow-sm;
+}
+.shadow-md {
+  box-shadow: $shadow-md;
+}
+.shadow-lg {
+  box-shadow: $shadow-lg;
+}
+.shadow-switch {
+  box-shadow: $shadow-switch;
+}

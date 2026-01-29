@@ -1,0 +1,83 @@
+@font-face {
+  font-family: 'Manrope';
+  src: url('../../assets/fonts/Manrope/static/Manrope-ExtraBold.ttf');
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Manrope';
+  src: url('../../assets/fonts/Manrope/static/Manrope-Bold.ttf');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Manrope';
+  src: url('../../assets/fonts/Manrope/static/Manrope-SemiBold.ttf');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Manrope';
+  src: url('../../assets/fonts/Manrope/static/Manrope-Medium.ttf');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Manrope';
+  src: url('../../assets/fonts/Manrope/static/Manrope-Regular.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Rethink Sans';
+  src: url('../../assets/fonts/Rethink_Sans/static/RethinkSans-ExtraBold.ttf');
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Rethink Sans';
+  src: url('../../assets/fonts/Rethink_Sans/static/RethinkSans-Bold.ttf');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Rethink Sans';
+  src: url('../../assets/fonts/Rethink_Sans/static/RethinkSans-SemiBold.ttf');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Rethink Sans';
+  src: url('../../assets/fonts/Rethink_Sans/static/RethinkSans-Medium.ttf');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Rethink Sans';
+  src: url('../../assets/fonts/Rethink_Sans/static/RethinkSans-Regular.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Sentient';
+  src: url('../../assets/fonts/Sentient/Sentient-Bold.woff2') format('woff2'),
+    url('../../assets/fonts/Sentient/Sentient-Bold.woff') format('woff'),
+    url('../../assets/fonts/Sentient/Sentient-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+$font-manrope: 'Manrope', sans-serif;
+$font-rethink-sans: 'Rethink Sans', sans-serif;
+$font-sentient: 'Sentient', sans-serif;
