@@ -295,14 +295,11 @@ export default function DashboardMain() {
       const currentOrderId = data.orderId;
       let paymentCompleted = false;
 
-      // 3. Buka Modal Midtrans
       // @ts-expect-error - Midtrans Snap global object
       window.snap.pay(data.snapToken, {
         onSuccess: function (result: any) {
           console.log("Payment success:", result);
           paymentCompleted = true;
-
-          // PERUBAHAN DI SINI:
           // Hapus .toUpperCase() dan gunakan "qris" (huruf kecil)
           const method = result.payment_type ? result.payment_type : "qris";
 

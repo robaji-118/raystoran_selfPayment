@@ -224,7 +224,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={() => toggleMenu(menu.label)}
             className={cn(
-              "w-full flex items-center gap-fluid-3 px-fluid-3 py-fluid-2.5 transition-all",
+              "w-full flex items-center gap-fluid-3 px-fluid-3 py-fluid-2.5 transition-all cursor-pointer",
               isSubmenuActive(menu.submenu) 
                 ? "bg-gray-100 text-gray-900" 
                 : "text-gray-600 hover:bg-gray-50"
@@ -242,8 +242,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               )}
             />
           </button>
-          
-          {/* ✅ PERBAIKAN: Gunakan fluid utilities untuk submenu */}
           {expandedMenus.includes(menu.label) && (
             <div className="ml-fluid-8 mt-fluid-1 space-y-fluid-0.5">
               {menu.submenu.map((sub, j) => (
@@ -251,7 +249,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   key={j}
                   onClick={() => handleNavigation(sub.path)}
                   className={cn(
-                    "w-full  text-left px-fluid-3 py-fluid-2 text-fluid-sm  transition-all",
+                    "w-full  text-left px-fluid-3 py-fluid-2 text-fluid-sm  transition-all cursor-pointer",
                     isActive(sub.path) 
                       ? "bg-gray-100 text-gray-900 font-medium" 
                       : "text-gray-600 hover:bg-gray-50"
@@ -271,7 +269,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           key={index}
           onClick={() => menu.path && handleNavigation(menu.path)}
           className={cn(
-            "w-full flex items-center gap-fluid-3 px-fluid-3 py-fluid-2.5 transition-all mb-fluid-0.5",
+            "w-full flex items-center gap-fluid-3 px-fluid-3 py-fluid-2.5 transition-all mb-fluid-0.5 cursor-pointer",
             menu.path && isActive(menu.path) 
               ? "bg-gray-100 text-gray-900" 
               : "text-gray-600 hover:bg-gray-50"
@@ -307,7 +305,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="mt-auto px-fluid-6 pb-fluid-6 pt-fluid-4">
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-fluid-3 p-fluid-4  text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+          className="w-full flex items-center gap-fluid-3 p-fluid-4  text-gray-600 hover:bg-gray-100 rounded-lg transition-all !cursor-pointer"
         >
           <LogOut className="w-fluid-5 h-fluid-5" />
           <span className="text-fluid-sm font-medium">Logout</span> 

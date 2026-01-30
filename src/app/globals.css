@@ -1,7 +1,5 @@
 @config "../../tailwind.config.js";
-
 @plugin "tailwindcss-animate";
-
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -117,7 +115,9 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* FIX: Autofill styling untuk dark background */
+/* ===============================================
+   AUTOFILL FIX (UPDATED)
+   =============================================== */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -130,31 +130,16 @@ select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus,
 select:-webkit-autofill:active {
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: #f3f4f6 !important;
-  background-color: transparent !important;
-  color: #f3f4f6 !important;
+  /* Memaksa warna teks mengikuti variabel foreground */
+  -webkit-text-fill-color: var(--foreground) !important;
+  /* Transisi lama agar warna default browser tidak muncul */
   transition: background-color 5000s ease-in-out 0s !important;
-  box-shadow: inset 0 0 20px 20px rgba(0, 0, 0, 0.8) !important;
+  /* Menimpa background default dengan warna background tema kita */
+  box-shadow: 0 0 0px 1000px var(--background) inset !important;
+  background-clip: content-box !important;
 }
 
-/* Untuk input dengan border bottom (login page) */
-input[type="email"]:-webkit-autofill,
-input[type="email"]:-webkit-autofill:hover,
-input[type="email"]:-webkit-autofill:focus,
-input[type="password"]:-webkit-autofill,
-input[type="password"]:-webkit-autofill:hover,
-input[type="password"]:-webkit-autofill:focus {
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: #f3f4f6 !important;
-  background-color: transparent !important;
-  border-bottom-color: rgba(255, 255, 255, 0.4) !important;
-  box-shadow: 
-    0 0 0 1000px rgba(0, 0, 0, 0.4) inset,
-    inset 0 -1px 0 0 rgba(255, 255, 255, 0.4) !important;
-}
-
-/* Focus states */
+/* Focus states reset */
 input:focus,
 textarea:focus,
 select:focus {
@@ -162,9 +147,6 @@ select:focus {
   box-shadow: none !important;
   outline: none !important;
 }
-
-
-
 
 @layer base {
   * {
@@ -212,31 +194,6 @@ select:focus {
   background: #f1f5f9;
 }
 
-/* ===============================================
-   SCROLLBAR VARIANTS
-   =============================================== */
-
-/* Thin Scrollbar - Untuk area yang lebih compact */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  border-width: 1px;
-}
-
-/* Hidden Scrollbar - Muncul saat hover */
-.scrollbar-hide::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
-}
-
-.scrollbar-hide:hover::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
 /* Dark Theme Scrollbar */
 .dark ::-webkit-scrollbar-track {
   background: #1e293b;
@@ -260,10 +217,7 @@ select:focus {
   background: #1e293b;
 }
 
-/* ===============================================
-   FIREFOX SCROLLBAR SUPPORT
-   =============================================== */
-
+/* Firefox Support */
 * {
   scrollbar-width: thin;
   scrollbar-color: #6a6a6a 6a6a6a;
@@ -273,23 +227,11 @@ select:focus {
   scrollbar-color: #475569 #1e293b;
 }
 
-.scrollbar-thin {
-  scrollbar-width: thin;
-}
-
-.scrollbar-hide {
-  scrollbar-width: none;
-}
-
-/* ===============================================
-   SMOOTH SCROLLING
-   =============================================== */
-
+/* Smooth Scrolling */
 html {
   scroll-behavior: smooth;
 }
 
-/* Disable smooth scroll untuk reduced motion */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

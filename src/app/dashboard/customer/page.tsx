@@ -13,7 +13,7 @@ const CustomerPage = () => {
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500 font-medium">Loading Customer Dashboard...</p>
+          <p className="text-gray-500 font-medium">Loading Customer</p>
         </div>
       </div>
     }>

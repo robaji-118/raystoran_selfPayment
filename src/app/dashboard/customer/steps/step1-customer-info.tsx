@@ -1,14 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/dashboard/customer/steps/step1-customer-info.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, Phone, MessageSquare, Table2, Users, ShoppingBag, UtensilsCrossed } from "lucide-react";
+import { 
+  User, 
+  Phone, 
+  MessageSquare, 
+  Table2, 
+  Users, 
+  ShoppingBag, 
+  UtensilsCrossed, 
+  CheckCircle2 
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { fluidSize } from "@/lib/utils";
+import { 
+  Select, 
+  SelectTrigger, 
+  SelectContent, 
+  SelectItem, 
+  SelectValue 
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface CustomerInfo {
   name: string;
@@ -44,6 +58,7 @@ export default function Step1CustomerInfo({
   const [tables, setTables] = useState<TableSelection[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Effect untuk memanggil data meja saat mode Dine-In dipilih
   useEffect(() => {
     if (orderType === "dine-in") {
       fetchAvailableTables();
@@ -52,6 +67,7 @@ export default function Step1CustomerInfo({
     }
   }, [orderType]);
 
+  // --- LOGIKA FETCH ASLI ---
   const fetchAvailableTables = async () => {
     setLoading(true);
     try {
@@ -60,11 +76,13 @@ export default function Step1CustomerInfo({
         const data = await res.json();
         setTables(
           data.map((table: any) => ({
-            tableId: table._id,
+            tableId: table._id, 
             tableNumber: table.tableNumber,
             capacity: table.capacity,
           }))
         );
+      } else {
+        console.error("Failed to fetch tables");
       }
     } catch (err) {
       console.error("Error fetching tables", err);
@@ -85,286 +103,211 @@ export default function Step1CustomerInfo({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Side - Customer Info Form */}
+    <div className="w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        
+        {/* --- LEFT COLUMN: CUSTOMER INFO --- */}
         <div className="space-y-6">
-          {/* Customer Info Form */}
-          <div className="bg-white rounded-lg px-6 space-y-5">
+          <div className="space-y-5">
+            
             {/* Full Name */}
             <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-gray-700 !text-sm font-medium">
-                Full Name 
+              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Full Name
               </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <div className="relative group">
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-800 dark:group-focus-within:text-slate-200 transition-colors" />
                 <Input
                   name="name"
                   value={customerInfo.name}
                   onChange={handleInputChange}
-                  placeholder="e.g. John Doe"
-                  className="pl-10 py-5 bg-white border-gray-50 rounded-md text-black placeholder-gray-500 focus:border-gray-200 focus:ring-gray-200
-                           [&:-webkit-autofill]:!bg-white
-                           [&:-webkit-autofill]:![box-shadow:0_0_0_1000px_white_inset]
-                           [&:-webkit-autofill]:![-webkit-text-fill-color:#000000]
-                           [&:-webkit-autofill]:!border-gray-50"
+                  placeholder="e.g. Rojabby"
+                  // CHANGE: bg-white -> bg-background agar autofill css bekerja
+                  className="pl-10 h-11 bg-background border-slate-200 focus:border-slate-800 focus:ring-slate-800 rounded-lg transition-all dark:border-slate-700 dark:focus:border-slate-400"
                 />
               </div>
               {!customerInfo.name && (
-                <p className="!text-xs text-red-500">Full name is required</p>
+                <p className="text-[11px] text-red-500 font-medium ml-1">
+                  * Name is required
+                </p>
               )}
             </div>
 
             {/* Phone Number */}
             <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-gray-700 !text-sm font-medium">
-                Phone Number <span className="text-gray-500 text-xs">( Optional )</span>
-              </Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <div className="flex justify-between items-center">
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone Number</Label>
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Optional</span>
+              </div>
+              <div className="relative group">
+                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-800 dark:group-focus-within:text-slate-200 transition-colors" />
                 <Input
                   name="phone"
                   value={customerInfo.phone || ""}
                   onChange={handleInputChange}
-                  placeholder="+62 812-3456-7890"
-                  className="pl-10 py-5 bg-white border-gray-50 rounded-md text-black placeholder-gray-500 focus:border-gray-200 focus:ring-gray-200
-                           [&:-webkit-autofill]:!bg-white
-                           [&:-webkit-autofill]:![box-shadow:0_0_0_1000px_white_inset]
-                           [&:-webkit-autofill]:![-webkit-text-fill-color:#000000]
-                           [&:-webkit-autofill]:!border-gray-50"
+                  placeholder="e.g. 0812..."
+                  // CHANGE: bg-white -> bg-background
+                  className="pl-10 h-11 bg-background border-slate-200 focus:border-slate-800 focus:ring-slate-800 rounded-lg transition-all dark:border-slate-700 dark:focus:border-slate-400"
                 />
               </div>
             </div>
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-gray-700 !text-sm font-medium">
-                Special Notes <span className="text-gray-500 text-xs">( Optional )</span>
-              </Label>
-              <div className="relative">
-                <MessageSquare className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+              <div className="flex justify-between items-center">
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Special Notes</Label>
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Optional</span>
+              </div>
+              <div className="relative group">
+                <MessageSquare className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-slate-800 dark:group-focus-within:text-slate-200 transition-colors" />
                 <Textarea
                   name="notes"
-                  rows={4}
                   value={customerInfo.notes || ""}
                   onChange={handleInputChange}
-                  placeholder="Any dietary requirements, allergies, or special requests..."
-                  className="pl-10 bg-white border-gray-50 rounded-md text-black placeholder-gray-500 focus:border-gray-200 focus:ring-gray-200
-                           [&:-webkit-autofill]:!bg-white
-                           [&:-webkit-autofill]:![box-shadow:0_0_0_1000px_white_inset]
-                           [&:-webkit-autofill]:![-webkit-text-fill-color:#000000]
-                           [&:-webkit-autofill]:!border-gray-50"
+                  placeholder="Allergies, extra spicy, etc..."
+                  // CHANGE: bg-white -> bg-background
+                  className="pl-10 min-h-[100px] bg-background border-slate-200 focus:border-slate-800 focus:ring-slate-800 rounded-lg resize-none transition-all dark:border-slate-700 dark:focus:border-slate-400"
                 />
               </div>
             </div>
+
           </div>
         </div>
 
-        {/* Right Side - Order Type Selector + Table Selection */}
-        <div className="space-y-6">
+        {/* --- RIGHT COLUMN: ORDER TYPE & TABLE --- */}
+        <div className="space-y-8">
+          
           {/* Order Type Selector */}
-          <div className="bg-white rounded-lg px-6">
-            <Label className="text-gray-700 !text-sm font-medium mb-4 block">
-              Order Type
-            </Label>
-            <div className="grid grid-cols-2 gap-3">
-              {/* Dine In Option */}
+          <div className="space-y-4">
+            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 ">Order Type</Label>
+            <div className="grid grid-cols-2 gap-4">
+              
+              {/* Dine In Button */}
               <button
                 type="button"
                 onClick={() => onOrderTypeChange("dine-in")}
-                className={`relative rounded-lg transition-all duration-200 cursor-pointer ${
+                className={cn(
+                  "relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 ease-in-out text-left group cursor-pointer",
                   orderType === "dine-in"
-                    ? "bg-gray-900 text-white border border-gray-900"
-                    : "bg-white text-gray-700 border border-gray-300 hover:border-gray-400 hover:shadow-sm"
-                }`}
+                    ? "bg-slate-950 border-slate-950 text-white shadow-md ring-2 ring-slate-200 ring-offset-2 dark:bg-slate-100 dark:text-slate-950 dark:border-slate-100 dark:ring-slate-700"
+                    : "bg-background border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                )}
               >
-                <div className="flex items-center px-4">
-                  <div 
-                    className={`flex items-center justify-center rounded-md `}
-                    style={{
-                      width: fluidSize(40),
-                      height: fluidSize(40)
-                    }}
-                  >
-                    <UtensilsCrossed 
-                      className={`${orderType === "dine-in" ? "text-white" : "text-gray-600"}`}
-                      style={{
-                        width: fluidSize(20),
-                        height: fluidSize(20)
-                      }}
-                    />
-                  </div>
-                  
-                  <div className="text-center">
-                    <p className={`font-bold !text-sm ${
-                      orderType === "dine-in" ? "text-white" : "text-gray-900"
-                    }`}>
-                      Dine In
-                    </p>
-                  </div>
+                <div className={cn(
+                  "p-2 rounded-lg transition-colors",
+                  orderType === "dine-in" ? " text-white dark:text-slate-950" : " text-slate-500"
+                )}>
+                  <UtensilsCrossed className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm">Dine In</span>
                 </div>
                 
+                {/* Active Checkmark Badge */}
                 {orderType === "dine-in" && (
-                  <div 
-                    className="absolute -top-2 -right-2 bg-white border-2 border-gray-900 text-gray-900 rounded-full flex items-center justify-center"
-                    style={{
-                      width: fluidSize(20),
-                      height: fluidSize(20)
-                    }}
-                  >
-                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
+                  <div className="absolute -top-2 -right-2 bg-white text-slate-950 rounded-full p-0.5 ">
+                    <CheckCircle2 className="w-5 h-5 fill-slate-950 text-white dark:fill-white dark:text-slate-950" />
                   </div>
                 )}
               </button>
 
-              {/* Take Away Option */}
+              {/* Take Away Button */}
               <button
                 type="button"
                 onClick={() => onOrderTypeChange("take-away")}
-                className={`relative rounded-lg transition-all duration-200 cursor-pointer ${
+                className={cn(
+                  "relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 ease-in-out text-left group cursor-pointer",
                   orderType === "take-away"
-                    ? "bg-gray-900 text-white border-2 border-gray-900"
-                    : "bg-white text-gray-700 border border-gray-300 hover:border-gray-400 hover:shadow-sm"
-                }`}
+                    ? "bg-slate-950 border-slate-950 text-white shadow-md ring-2 ring-slate-200 ring-offset-2 dark:bg-slate-100 dark:text-slate-950 dark:border-slate-100 dark:ring-slate-700"
+                    : "bg-background border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                )}
               >
-                <div className="flex items-center px-4">
-                  <div 
-                    className={`flex items-center justify-center rounded-md`}
-                    style={{
-                      width: fluidSize(40),
-                      height: fluidSize(40)
-                    }}
-                  >
-                    <ShoppingBag 
-                      className={`${orderType === "take-away" ? "text-white" : "text-gray-600"}`}
-                      style={{
-                        width: fluidSize(20),
-                        height: fluidSize(20)
-                      }}
-                    />
-                  </div>
-                  
-                  <div className="text-center">
-                    <p className={`font-bold !text-sm ${
-                      orderType === "take-away" ? "text-white" : "text-gray-900"
-                    }`}>
-                      Take Away
-                    </p>
-                  </div>
+                <div className={cn(
+                  "p-2 rounded-lg transition-colors",
+                  orderType === "take-away" ? " text-white dark:text-slate-950" : " text-slate-500"
+                )}>
+                  <ShoppingBag className="w-5 h-5" />
                 </div>
-                
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm">Take Away</span>
+                </div>
+
+                {/* Active Checkmark Badge */}
                 {orderType === "take-away" && (
-                  <div 
-                    className="absolute -top-2 -right-2 bg-white border-2 border-gray-900 text-gray-900 rounded-full flex items-center justify-center"
-                    style={{
-                      width: fluidSize(20),
-                      height: fluidSize(20)
-                    }}
-                  >
-                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
+                  <div className="absolute -top-2 -right-2 bg-white text-slate-950 rounded-full p-0.5 ">
+                    <CheckCircle2 className="w-5 h-5 fill-slate-950 text-white dark:fill-white dark:text-slate-950" />
                   </div>
                 )}
               </button>
             </div>
           </div>
 
-          {/* Table Selection (Only for Dine-In) */}
-          <div className="bg-white px-6 space-y-5">
+          {/* Conditional Rendering based on Order Type */}
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             {orderType === "take-away" ? (
-              // Take Away Info
-              <div className="flex flex-col items-center justify-center py-7 space-y-4">
-                <div 
-                  className="bg-gray-100 rounded-full flex items-center justify-center w-10 h-10"
-                >
-                  <ShoppingBag className="text-gray-700 w-5 h-5"/>
+              // TAKE AWAY VIEW
+              <div className="rounded-xl p-6 flex flex-col items-center text-center space-y-3 ">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 dark:bg-slate-800 dark:border-slate-700">
+                   <ShoppingBag className="w-6 h-6 text-slate-900 dark:text-slate-200" />
                 </div>
-                <div className="text-center">
-                  <p className="text-gray-900 font-bold !text-sm mb-2">Take Away Order</p>
-                  <p className="text-gray-600 !text-sm max-w-xs">
-                    Your order will be prepared for pickup. No table reservation required.
+                <div>
+                  <h4 className="font-medium text-slate-900 dark:text-slate-200">Take Away</h4>
+                  <p className="text-sm text-slate-500 max-w-[250px] mx-auto mt-1 dark:text-slate-400">
+                    Order will be prepared for pickup. No table reservation needed.
                   </p>
                 </div>
-                <div className="bg-gray-50 border border-gray-200 p-3 rounded-md w-full">
-                  <p className="text-gray-700 !text-xs text-center">
-                    ✓ Ready for pickup after payment
-                  </p>
-                </div>
-              </div>
-            ) : loading ? (
-              <div className="flex flex-col items-center justify-center py-12 space-y-3">
-                <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
-                <p className="!text-sm text-gray-500">Loading available tables...</p>
-              </div>
-            ) : tables.length === 0 ? (
-              <div className="bg-gray-50 border border-gray-300 p-6 text-center rounded-md">
-                <div className="w-12 h-12 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center">
-                  <Table2 className="w-6 h-6 text-gray-600" />
-                </div>
-                <p className="text-gray-900 font-semibold mb-2">No Tables Available</p>
-                <p className="!text-sm text-gray-600">
-                  All tables are currently occupied. Please wait or choose take away option.
-                </p>
               </div>
             ) : (
+              // DINE IN VIEW (Table Selection with Real Data)
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-gray-700 !text-sm font-medium mb-6">
-                    Select a Table
-                  </Label>
-                  <Select
-                    onValueChange={handleSelectChange}
-                    value={selectedTable?.tableId || undefined}
-                  >
-                    <SelectTrigger 
-                      className="w-full bg-white border-gray-300 text-gray-900 focus:border-gray-900 focus:ring-gray-900"
+                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Select Table</Label>
+                
+                {loading ? (
+                   <div className="h-12 w-full bg-slate-50 animate-pulse rounded-lg border border-slate-100 dark:bg-slate-800 dark:border-slate-700" />
+                ) : tables.length === 0 ? (
+                  <div className="p-4 bg-orange-50 text-orange-700 text-sm rounded-lg border border-orange-100 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900">
+                    Full House! No tables available right now.
+                  </div>
+                ) : (
+                  <>
+                    <Select
+                      onValueChange={handleSelectChange}
+                      value={selectedTable?.tableId || undefined}
                     >
-                      <SelectValue placeholder="Choose an available table" />
-                    </SelectTrigger>
+                      <SelectTrigger className="h-12 bg-background border-slate-200 focus:ring-slate-800 rounded-lg dark:border-slate-700 dark:focus:ring-slate-400 cursor-pointer">
+                        <SelectValue placeholder="Choose a table..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {tables.map((t) => (
+                          <SelectItem key={t.tableId} value={t.tableId}>
+                            <div className="flex items-center gap-2 cursor-pointer">
+                              <span>Table {t.tableNumber}</span>
+                              <span className="text-slate-400 text-xs">({t.capacity} Seats)</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-                    <SelectContent 
-                      className="bg-white border-gray-200"
-                    >
-                      {tables.map((t) => (
-                        <SelectItem 
-                          key={t.tableId} 
-                          value={t.tableId}
-                          className="text-gray-900 hover:bg-gray-50"
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-medium">Table {t.tableNumber}</span>
-                            <span className="text-gray-500 text-sm ml-4 flex items-center gap-1">
-                              <Users className="w-3 h-3" />
-                              {t.capacity} seats
+                    {/* Selected Table Summary Card */}
+                    {selectedTable && (
+                      <div className="mt-4 flex items-center gap-4 p-4 bg-white  rounded-xl  ">
+                        <div className="w-10 h-10  text-black rounded-lg flex items-center justify-center shrink-0">
+                          <Table2 className="w-7 h-7" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">
+                            Table {selectedTable.tableNumber} Selected
+                          </p>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-xs text-slate-500 flex items-center gap-1 dark:text-slate-400">
+                              <Users className="w-3 h-3" /> {selectedTable.capacity} People
                             </span>
                           </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Selected Table Info */}
-                {selectedTable && (
-                  <div className=" p-4 rounded-md">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className=" flex items-center justify-center rounded-md w-7 h-7"
-                      >
-                        <Table2 className="w-6 h-6 text-gray-700" />
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-gray-900 font-bold !text-sm">Table {selectedTable.tableNumber} Selected</p>
-                        <p className="text-gray-600 !text-sm flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          Capacity: {selectedTable.capacity} people
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                    )}
+                  </>
                 )}
               </div>
             )}

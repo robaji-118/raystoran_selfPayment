@@ -36,7 +36,7 @@ export default function CustomerDashboard() {
             </div>
             <button
               onClick={() => router.push('/login')}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
             >
               <Home className="w-4 h-4" />
                Login
