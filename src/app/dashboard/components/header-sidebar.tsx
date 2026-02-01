@@ -63,9 +63,9 @@ const HeaderSidebar: React.FC<HeaderProps> = ({
 
             {/* Page Title */}
             <div className="min-w-0">
-              <h5 className="font-bold text-neutral-950 truncate">
+              <h1 className="font-bold text-fluid-2xl text-neutral-950">
                 {pageTitle}
-              </h5>
+              </h1>
               <p className="text-sm text-neutral-500 mt-fluid-0.5">
                 {new Date().toLocaleDateString('id-ID', { 
                   weekday: 'long', 

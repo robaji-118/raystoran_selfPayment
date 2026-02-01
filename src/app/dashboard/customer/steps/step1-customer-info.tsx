@@ -10,7 +10,9 @@ import {
   Users, 
   ShoppingBag, 
   UtensilsCrossed, 
-  CheckCircle2 
+  CheckCircle2,
+  MapPin,
+  ChevronDown
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,7 +60,6 @@ export default function Step1CustomerInfo({
   const [tables, setTables] = useState<TableSelection[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Effect untuk memanggil data meja saat mode Dine-In dipilih
   useEffect(() => {
     if (orderType === "dine-in") {
       fetchAvailableTables();
@@ -67,7 +68,6 @@ export default function Step1CustomerInfo({
     }
   }, [orderType]);
 
-  // --- LOGIKA FETCH ASLI ---
   const fetchAvailableTables = async () => {
     setLoading(true);
     try {
@@ -103,214 +103,200 @@ export default function Step1CustomerInfo({
   };
 
   return (
-    <div className="w-full">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+    <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         
         {/* --- LEFT COLUMN: CUSTOMER INFO --- */}
-        <div className="space-y-6">
-          <div className="space-y-5">
-            
+        <div className="bg-white p-6 lg:p-8 rounded-3xl border border-gray-200 shadow-sm h-fit">
+          <div className="flex items-center gap-3 mb-8 border-b border-black pb-4">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center">
+              <User className="w-5 h-6 text-black" />
+            </div>
+            <div>
+              <h4 className="font-bold text-black text-base">Contact Details</h4>
+              <p className="text-xs text-gray-500">Who is this order for?</p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
             {/* Full Name */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Full Name
+              <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
+                Full Name <span className="text-red-500">*</span>
               </Label>
               <div className="relative group">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-800 dark:group-focus-within:text-slate-200 transition-colors" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-black transition-colors" />
                 <Input
                   name="name"
                   value={customerInfo.name}
                   onChange={handleInputChange}
                   placeholder="e.g. Rojabby"
-                  // CHANGE: bg-white -> bg-background agar autofill css bekerja
-                  className="pl-10 h-11 bg-background border-slate-200 focus:border-slate-800 focus:ring-slate-800 rounded-lg transition-all dark:border-slate-700 dark:focus:border-slate-400"
+                  // Clean White Background with simple border
+                  className="pl-11 h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
                 />
               </div>
-              {!customerInfo.name && (
-                <p className="text-[11px] text-red-500 font-medium ml-1">
-                  * Name is required
-                </p>
-              )}
             </div>
 
             {/* Phone Number */}
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone Number</Label>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Optional</span>
-              </div>
+              <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
+                Phone
+              </Label>
               <div className="relative group">
-                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-800 dark:group-focus-within:text-slate-200 transition-colors" />
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-black transition-colors" />
                 <Input
                   name="phone"
                   value={customerInfo.phone || ""}
                   onChange={handleInputChange}
                   placeholder="e.g. 0812..."
-                  // CHANGE: bg-white -> bg-background
-                  className="pl-10 h-11 bg-background border-slate-200 focus:border-slate-800 focus:ring-slate-800 rounded-lg transition-all dark:border-slate-700 dark:focus:border-slate-400"
+                  className="pl-11 h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
                 />
               </div>
             </div>
 
             {/* Notes */}
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Special Notes</Label>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Optional</span>
-              </div>
+              <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
+                Notes
+              </Label>
               <div className="relative group">
-                <MessageSquare className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-slate-800 dark:group-focus-within:text-slate-200 transition-colors" />
+                <MessageSquare className="absolute left-4 top-4 w-4 h-4 text-gray-400 group-focus-within:text-black transition-colors" />
                 <Textarea
                   name="notes"
                   value={customerInfo.notes || ""}
                   onChange={handleInputChange}
-                  placeholder="Allergies, extra spicy, etc..."
-                  // CHANGE: bg-white -> bg-background
-                  className="pl-10 min-h-[100px] bg-background border-slate-200 focus:border-slate-800 focus:ring-slate-800 rounded-lg resize-none transition-all dark:border-slate-700 dark:focus:border-slate-400"
+                  placeholder="Any allergies or special requests..."
+                  className="pl-11 min-h-[120px] bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl resize-none transition-all font-medium text-black placeholder:text-gray-300 py-4"
                 />
               </div>
             </div>
-
           </div>
         </div>
 
         {/* --- RIGHT COLUMN: ORDER TYPE & TABLE --- */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           
-          {/* Order Type Selector */}
-          <div className="space-y-4">
-            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300 ">Order Type</Label>
-            <div className="grid grid-cols-2 gap-4">
-              
-              {/* Dine In Button */}
+          <div className="bg-white p-6 lg:p-8 rounded-3xl border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-3 mb-8 border-b border-black pb-4">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center">
+                <MapPin className="w-6 h-6 text-black" />
+              </div>
+              <div>
+                <h3 className="text-bold text-black text-base">Dining Preference</h3>
+                <p className="text-xs text-gray-500">Where will you eat?</p>
+              </div>
+            </div>
+
+            {/* Order Type Selector - High Contrast Buttons */}
+            <div className="grid grid-cols-2 gap-4 mb-8">
               <button
                 type="button"
                 onClick={() => onOrderTypeChange("dine-in")}
                 className={cn(
-                  "relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 ease-in-out text-left group cursor-pointer",
+                  "relative flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden group",
                   orderType === "dine-in"
-                    ? "bg-slate-950 border-slate-950 text-white shadow-md ring-2 ring-slate-200 ring-offset-2 dark:bg-slate-100 dark:text-slate-950 dark:border-slate-100 dark:ring-slate-700"
-                    : "bg-background border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    ? "bg-black border-black text-white shadow-lg scale-[1.02]"
+                    : "bg-white border-gray-200 text-black hover:border-black hover:bg-gray-50" // gray-50 here is only for hover state interaction, barely visible
                 )}
               >
-                <div className={cn(
-                  "p-2 rounded-lg transition-colors",
-                  orderType === "dine-in" ? " text-white dark:text-slate-950" : " text-slate-500"
-                )}>
-                  <UtensilsCrossed className="w-5 h-5" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-sm">Dine In</span>
-                </div>
-                
-                {/* Active Checkmark Badge */}
-                {orderType === "dine-in" && (
-                  <div className="absolute -top-2 -right-2 bg-white text-slate-950 rounded-full p-0.5 ">
-                    <CheckCircle2 className="w-5 h-5 fill-slate-950 text-white dark:fill-white dark:text-slate-950" />
+                 {orderType === "dine-in" && (
+                  <div className="absolute top-3 right-3">
+                    <CheckCircle2 className="w-5 h-5 fill-white text-black" />
                   </div>
                 )}
+                <UtensilsCrossed className={cn("w-6 h-6 transition-transform", orderType === "dine-in" ? "text-white" : "text-black group-hover:scale-110")} />
+                <span className="font-bold text-sm">Dine In</span>
               </button>
 
-              {/* Take Away Button */}
               <button
                 type="button"
                 onClick={() => onOrderTypeChange("take-away")}
                 className={cn(
-                  "relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 ease-in-out text-left group cursor-pointer",
+                  "relative flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden group",
                   orderType === "take-away"
-                    ? "bg-slate-950 border-slate-950 text-white shadow-md ring-2 ring-slate-200 ring-offset-2 dark:bg-slate-100 dark:text-slate-950 dark:border-slate-100 dark:ring-slate-700"
-                    : "bg-background border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    ? "bg-black border-black text-white shadow-lg scale-[1.02]"
+                    : "bg-white border-gray-200 text-black hover:border-black hover:bg-gray-50"
                 )}
               >
-                <div className={cn(
-                  "p-2 rounded-lg transition-colors",
-                  orderType === "take-away" ? " text-white dark:text-slate-950" : " text-slate-500"
-                )}>
-                  <ShoppingBag className="w-5 h-5" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-sm">Take Away</span>
-                </div>
-
-                {/* Active Checkmark Badge */}
                 {orderType === "take-away" && (
-                  <div className="absolute -top-2 -right-2 bg-white text-slate-950 rounded-full p-0.5 ">
-                    <CheckCircle2 className="w-5 h-5 fill-slate-950 text-white dark:fill-white dark:text-slate-950" />
+                  <div className="absolute top-3 right-3">
+                    <CheckCircle2 className="w-5 h-5 fill-white text-black" />
                   </div>
                 )}
+                <ShoppingBag className={cn("w-6 h-6 transition-transform", orderType === "take-away" ? "text-white" : "text-black group-hover:scale-110")} />
+                <span className="font-bold text-sm">Take Away</span>
               </button>
             </div>
-          </div>
 
-          {/* Conditional Rendering based on Order Type */}
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            {orderType === "take-away" ? (
-              // TAKE AWAY VIEW
-              <div className="rounded-xl p-6 flex flex-col items-center text-center space-y-3 ">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 dark:bg-slate-800 dark:border-slate-700">
-                   <ShoppingBag className="w-6 h-6 text-slate-900 dark:text-slate-200" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-slate-900 dark:text-slate-200">Take Away</h4>
-                  <p className="text-sm text-slate-500 max-w-[250px] mx-auto mt-1 dark:text-slate-400">
-                    Order will be prepared for pickup. No table reservation needed.
+            {/* Conditional Content */}
+            <div className="transition-all duration-500 ease-in-out">
+              {orderType === "take-away" ? (
+                <div className="bg-white rounded-2xl p-8 text-center border-2 border-dashed border-gray-300">
+                  <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center mx-auto mb-3">
+                    <ShoppingBag className="w-6 h-6 text-white" />
+                  </div>
+                  <p className="text-sm font-bold text-black">
+                    Ready for Pickup
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    No table reservation needed.
                   </p>
                 </div>
-              </div>
-            ) : (
-              // DINE IN VIEW (Table Selection with Real Data)
-              <div className="space-y-4">
-                <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Select Table</Label>
-                
-                {loading ? (
-                   <div className="h-12 w-full bg-slate-50 animate-pulse rounded-lg border border-slate-100 dark:bg-slate-800 dark:border-slate-700" />
-                ) : tables.length === 0 ? (
-                  <div className="p-4 bg-orange-50 text-orange-700 text-sm rounded-lg border border-orange-100 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900">
-                    Full House! No tables available right now.
-                  </div>
-                ) : (
-                  <>
-                    <Select
-                      onValueChange={handleSelectChange}
-                      value={selectedTable?.tableId || undefined}
-                    >
-                      <SelectTrigger className="h-12 bg-background border-slate-200 focus:ring-slate-800 rounded-lg dark:border-slate-700 dark:focus:ring-slate-400 cursor-pointer">
-                        <SelectValue placeholder="Choose a table..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {tables.map((t) => (
-                          <SelectItem key={t.tableId} value={t.tableId}>
-                            <div className="flex items-center gap-2 cursor-pointer">
-                              <span>Table {t.tableNumber}</span>
-                              <span className="text-slate-400 text-xs">({t.capacity} Seats)</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+              ) : (
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
+                    Select a Table
+                  </Label>
+                  
+                  {loading ? (
+                     <div className="h-14 w-full bg-gray-100 animate-pulse rounded-xl" />
+                  ) : tables.length === 0 ? (
+                    <div className="p-4 bg-white text-black text-sm font-medium rounded-xl border border-black flex items-center gap-2">
+                       <span>⚠️</span> Full House! No tables available.
+                    </div>
+                  ) : (
+                    <>
+                      <Select
+                        onValueChange={handleSelectChange}
+                        value={selectedTable?.tableId || undefined}
+                      >
+                        <SelectTrigger className="h-14 bg-white border border-gray-300 rounded-xl font-medium text-black px-4 cursor-pointer transition-all">
+                          <SelectValue placeholder="Choose your spot..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white rounded-xl shadow-xl">
+                          {tables.map((t) => (
+                            <SelectItem key={t.tableId} value={t.tableId} className="cursor-pointer py-3">
+                              <span className="font-semibold">Table {t.tableNumber}</span>
+                              <span className="text-xs ml-2 opacity-70">({t.capacity} Seats)</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
-                    {/* Selected Table Summary Card */}
-                    {selectedTable && (
-                      <div className="mt-4 flex items-center gap-4 p-4 bg-white  rounded-xl  ">
-                        <div className="w-10 h-10  text-black rounded-lg flex items-center justify-center shrink-0">
-                          <Table2 className="w-7 h-7" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">
-                            Table {selectedTable.tableNumber} Selected
-                          </p>
-                          <div className="flex items-center gap-3 mt-0.5">
-                            <span className="text-xs text-slate-500 flex items-center gap-1 dark:text-slate-400">
-                              <Users className="w-3 h-3" /> {selectedTable.capacity} People
-                            </span>
+                      {selectedTable && (
+                        <div className="mt-4 flex items-center gap-4 p-4  transition-all ">
+                          <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shrink-0">
+                            <Table2 className="w-6 h-6 text-black" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-black">
+                              Table {selectedTable.tableNumber}
+                            </p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <Users className="w-3.5 h-3.5 text-gray-400" /> 
+                              <span className="text-xs font-medium text-gray-500">{selectedTable.capacity} Seats Available</span>
+                            </div>
+                          </div>
+                          <div className="ml-auto">
+                            <CheckCircle2 className="w-6 h-6 text-black" />
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

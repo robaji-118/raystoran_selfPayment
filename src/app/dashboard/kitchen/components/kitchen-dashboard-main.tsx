@@ -709,7 +709,7 @@ export default function KitchenDashboardMain() {
           {loading ? (
             <div className="flex items-center justify-center p-12">
               <div className="text-center">
-                <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+                <div className="w-8 h-8 border-2 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
                 <p className="text-gray-500">Loading orders...</p>
               </div>
             </div>
@@ -760,7 +760,7 @@ export default function KitchenDashboardMain() {
                   return (
                     <tr
                       key={order._id}
-                      className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${
+                      className={`border-b border-gray-50 transition-colors ${
                         isUrgent ? "bg-red-50/50 hover:bg-red-50" : ""
                       }`}
                     >

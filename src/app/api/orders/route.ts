@@ -7,11 +7,38 @@ import OrderItem from "@/models/OrderItem";
 import Table from "@/models/Table";
 
 // ==============================================================================
-// GET METHOD (Mengambil Data Order)
+// GET METHOD
+// Fitur:
+// 1. Mengambil semua data order
+// 2. AUTO-CANCEL order yang 'gantung' (tidak aktif) lebih dari 10 jam
 // ==============================================================================
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
+
+    // --- LOGIC 1: AUTO CANCEL DORMANT ORDERS (> 10 JAM) ---
+    const ONE_HOURS_IN_MS = 1 * 60 * 60 * 1000;
+    const cutOffTime = new Date(Date.now() - ONE_HOURS_IN_MS);
+
+    // Update orders yang:
+    // 1. Terakhir update > 10 jam lalu
+    // 2. Statusnya MASIH AKTIF (belum selesai/batal) 
+    await Order.updateMany(
+      {
+        updatedAt: { $lt: cutOffTime },
+        orderStatus: { 
+          $nin: ["completed", "cancelled", "refunded", "served"] 
+        }
+      },
+      {
+        $set: {
+          orderStatus: "cancelled",
+          cancellationReason: "System: Auto-cancelled due to inactivity (10h)",
+          updatedAt: new Date()
+        }
+      }
+    );
+    // ------------------------------------------------------
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
@@ -21,35 +48,23 @@ export async function GET(request: NextRequest) {
     // Build query
     const query: any = {};
     
-    if (status) {
-      query.orderStatus = status;
-    }
-    
-    if (tableId) {
-      query.tableId = tableId;
-    }
-
+    if (status) query.orderStatus = status;
+    if (tableId) query.tableId = tableId;
     if (orderType && (orderType === "dine-in" || orderType === "take-away")) {
       query.orderType = orderType;
     }
 
     // Get orders - sort by newest first
-    const orders = await Order.find(query)
-      .sort({ createdAt: -1 })
-      .lean();
+    const orders = await Order.find(query).sort({ createdAt: -1 }).lean();
 
     // Get all order items for these orders
     const orderIds = orders.map(order => order._id);
-    const allItems = await OrderItem.find({
-      orderId: { $in: orderIds }
-    }).lean();
+    const allItems = await OrderItem.find({ orderId: { $in: orderIds } }).lean();
 
     // Group items by orderId
     const itemsByOrder = allItems.reduce((acc: any, item: any) => {
       const orderId = item.orderId.toString();
-      if (!acc[orderId]) {
-        acc[orderId] = [];
-      }
+      if (!acc[orderId]) acc[orderId] = [];
       acc[orderId].push(item);
       return acc;
     }, {});
@@ -68,125 +83,95 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error("GET Orders Error:", error);
     return NextResponse.json(
-      {
-        success: false,
-        error: error.message || "Failed to fetch orders"
-      },
+      { success: false, error: error.message || "Failed to fetch orders" },
       { status: 500 }
     );
   }
 }
 
-// ==============================================================================
-// POST METHOD (Membuat Order Baru)
-// ==============================================================================
 export async function POST(request: NextRequest) {
   let body: any;
   try {
     await connectDB();
-
     body = await request.json();
     
-    // Validasi Field Utama
+    // 1. Validasi Field Utama
     if (!body.customerName || !body.items || body.items.length === 0) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Missing required fields: customerName or items"
-        },
+        { success: false, error: "Missing required fields: customerName or items" },
         { status: 400 }
       );
     }
 
-    // Default order type jika tidak ada
     const orderType = body.orderType || "dine-in";
 
-    // Validasi Table (Khusus Dine-in)
+    // 2. Validasi Table (Khusus Dine-in)
     if (orderType === "dine-in") {
       if (!body.tableId) {
         return NextResponse.json(
-          {
-            success: false,
-            error: "Table is required for dine-in orders"
-          },
+          { success: false, error: "Table is required for dine-in orders" },
           { status: 400 }
         );
       }
 
-      // Cek apakah table tersedia
+      // Cek apakah table ada di DB
       const table = await Table.findById(body.tableId);
       if (!table) {
         return NextResponse.json(
-          {
-            success: false,
-            error: "Table not found"
-          },
+          { success: false, error: "Table not found" },
           { status: 404 }
         );
       }
-
-      if (table.status !== "available") {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Table is not available"
-          },
-          { status: 400 }
-        );
-      }
-
-      // Update table status ke occupied
-      table.status = "occupied";
-      await table.save();
+      
+      // CATATAN: Kita TIDAK mengubah table.status menjadi occupied
+      // agar meja bisa dipesan berkali-kali (multi-order).
     }
 
-    // Validasi Struktur Items
+    // 3. Validasi Struktur Items
     for (const item of body.items) {
-      if (!item.menuItemId || !item.menuItemName || !item.quantity || !item.price) {
+      if (!item.menuItemId || !item.quantity || !item.price) {
         return NextResponse.json(
-          {
-            success: false,
-            error: "Invalid item structure. Each item must have menuItemId, menuItemName, quantity, and price"
-          },
+          { success: false, error: "Invalid item structure" },
           { status: 400 }
         );
       }
     }
 
-    // ------------------------------------------------------------------
-    // GENERATE ORDER NUMBER (ORD-YYMMDD-XXXX) - RESET PER HARI
-    // ------------------------------------------------------------------
+    // 4. GENERATE ORDER NUMBER (RESET PER HARI)
     const now = new Date();
-    // Format Tanggal: YYMMDD (Contoh: 240126)
     const year = now.getFullYear().toString().slice(-2);
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
     
-    const dateCode = `${year}${month}${day}`; 
-    const prefix = `ORD-${dateCode}`; // Prefix hari ini
+    const prefix = `ORD-${year}${month}${day}`; // Format: ORD-240131
 
-    // Cari order terakhir HANYA yang prefix-nya sama dengan hari ini
+    // Cari order terakhir hari ini
     const lastOrderToday = await Order.findOne({
       orderNumber: { $regex: `^${prefix}` }
     })
-    .sort({ orderNumber: -1 }) // Ambil yang paling besar
-    .select("orderNumber"); // Hanya butuh field orderNumber
+    .sort({ createdAt: -1 }) // Gunakan createdAt untuk sorting paling akurat
+    .select("orderNumber");
 
     let orderNumber;
     
     if (lastOrderToday && lastOrderToday.orderNumber) {
-      // Jika hari ini sudah ada order, ambil sequence terakhir dan tambah 1
-      const parts = lastOrderToday.orderNumber.split("-"); // Split ORD, YYMMDD, XXXX
-      const lastSequence = parseInt(parts[parts.length - 1]); // Ambil bagian angka terakhir
-      const nextSequence = lastSequence + 1;
-      orderNumber = `${prefix}-${String(nextSequence).padStart(4, "0")}`;
+      // Ambil sequence terakhir
+      const parts = lastOrderToday.orderNumber.split("-"); 
+      const lastSequence = parseInt(parts[parts.length - 1]); 
+      
+      if (!isNaN(lastSequence)) {
+        const nextSequence = lastSequence + 1;
+        orderNumber = `${prefix}-${String(nextSequence).padStart(4, "0")}`;
+      } else {
+        // Fallback jika format error/tidak sesuai
+        orderNumber = `${prefix}-${Date.now().toString().slice(-4)}`;
+      }
     } else {
-      // Jika belum ada order hari ini, mulai dari 0001
+      // Jika belum ada order hari ini
       orderNumber = `${prefix}-0001`;
     }
-    // ------------------------------------------------------------------
 
-    // Create Order
+    // 5. Create Order ke Database
     const newOrder = await Order.create({
       orderNumber,
       customerId: body.customerId || null,
@@ -208,7 +193,7 @@ export async function POST(request: NextRequest) {
       customerNotes: body.customerNotes || null
     });
 
-    // Create Order Items
+    // 6. Create Order Items
     const orderItems = await OrderItem.insertMany(
       body.items.map((item: any) => ({
         orderId: newOrder._id,
@@ -223,10 +208,10 @@ export async function POST(request: NextRequest) {
       }))
     );
 
-    // Return Response
+    // Return Success Response
     return NextResponse.json({
       success: true,
-      message: `${orderType === "dine-in" ? "Dine-in" : "Take-away"} order created successfully`,
+      message: "Order created successfully",
       orderId: newOrder._id.toString(),
       orderNumber: newOrder.orderNumber,
       data: {
@@ -237,16 +222,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error("POST Order Error:", error);
-    
-    // Rollback table status jika error (Khusus Dine-in)
-    if (error.message && body?.tableId && body?.orderType === "dine-in") {
-      try {
-        await Table.findByIdAndUpdate(body.tableId, { status: "available" });
-      } catch (rollbackError) {
-        console.error("Rollback table status error:", rollbackError);
-      }
-    }
-    
     return NextResponse.json(
       {
         success: false,

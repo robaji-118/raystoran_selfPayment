@@ -442,7 +442,7 @@ export default function DashboardMain() {
     return (
       <div className="flex items-center justify-center h-fluid-96">
         <div className="text-center">
-          <div className="w-fluid-16 h-fluid-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-fluid-4"></div>
+          <div className="w-fluid-16 h-fluid-16 border-4 border-purple-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4"></div>
           <p className="text-neutral-500 text-fluid-base">Loading dashboard...</p>
         </div>
       </div>

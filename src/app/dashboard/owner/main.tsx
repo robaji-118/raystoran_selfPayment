@@ -103,21 +103,10 @@ export default function OwnerDashboard() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-300">Loading Owner Dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (!user) return null;
 
   return (
-    <div className="flex h-screen bg-neutral-50">
+    <div className="flex h-screen">
       {/* Sidebar untuk desktop */}
       <div className={`hidden lg:block ${!isSidebarOpen ? 'lg:hidden' : ''}`}>
         <Sidebar 
@@ -162,7 +151,7 @@ export default function OwnerDashboard() {
           notificationCount={0}
         />
         
-        <main className="flex-1 overflow-auto bg-neutral-50">
+        <main className="flex-1 overflow-auto">
           {renderContent()}
         </main>
       </div>

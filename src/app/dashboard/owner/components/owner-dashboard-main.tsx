@@ -1,273 +1,596 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/dashboard/owner/components/owner-dashboard-main.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { 
-  TrendingUp, 
-  DollarSign, 
-  ShoppingBag, 
-  Users,
-  ArrowUp,
-  ArrowDown,
-  Calendar
+import React, { useState, useEffect } from "react";
+import {
+  TrendingUp,
+  FileDown,
+  Award, 
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from "chart.js";
+import { Line, Bar } from "react-chartjs-2";
+import { cn, fluidSize } from "@/lib/utils";
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
+
+// --- Tipe Data ---
+
+interface Order {
+  _id: string;
+  orderNumber: string;
+  customerName: string;
+  tableNumber: string;
+  totalAmount: number;
+  orderStatus: string;
+  paymentMethod: string;
+  createdAt: string;
+  updatedAt: string;
+  items?: any[];
+}
+
+interface TopMenuItem {
+  name: string;
+  count: number;
+  revenue: number;
+}
 
 interface DashboardStats {
-  todayRevenue: number;
-  todayOrders: number;
-  monthlyRevenue: number;
-  totalCustomers: number;
-  revenueChange: number;
-  ordersChange: number;
+  totalRevenue: number;
+  totalOrders: number;
+  completedOrders: number;
+  averageMonthlyRevenue: number;
+  averageMonthlySales: number;
+  weeklyRevenue: number[];
+  dailyOrders: number[];
+}
+
+interface ApiResponse<T> {
+  success?: boolean;
+  data?: T[];
 }
 
 export default function OwnerDashboardMain() {
+  // --- State ---
   const [stats, setStats] = useState<DashboardStats>({
-    todayRevenue: 0,
-    todayOrders: 0,
-    monthlyRevenue: 0,
-    totalCustomers: 0,
-    revenueChange: 0,
-    ordersChange: 0
+    totalRevenue: 0,
+    totalOrders: 0,
+    completedOrders: 0,
+    averageMonthlyRevenue: 0,
+    averageMonthlySales: 0,
+    weeklyRevenue: [0, 0, 0, 0, 0, 0, 0],
+    dailyOrders: [0, 0, 0, 0, 0, 0, 0],
   });
+
+  // Ganti recentOrders dengan weeklyOrders untuk menampung data seminggu
+  const [weeklyOrders, setWeeklyOrders] = useState<Order[]>([]);
+  const [topSellingItems, setTopSellingItems] = useState<TopMenuItem[]>([]);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const [loading, setLoading] = useState(true);
-  const [topMenus, setTopMenus] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [chartLabels, setChartLabels] = useState<string[]>([
+    "Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min",
+  ]);
 
-  const fetchDashboardData = async () => {
-    try {
-      // Fetch orders
-      const ordersRes = await fetch('/api/orders');
-      const ordersData = await ordersRes.json();
-
-      if (ordersData.success) {
-        const orders = ordersData.data;
-        
-        // Calculate today's stats
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        const todayOrders = orders.filter((order: any) => {
-          const orderDate = new Date(order.createdAt);
-          orderDate.setHours(0, 0, 0, 0);
-          return orderDate.getTime() === today.getTime();
-        });
-
-        const todayRevenue = todayOrders.reduce((sum: number, order: any) => 
-          sum + (order.totalAmount || 0), 0
-        );
-
-        // Calculate monthly stats
-        const thisMonth = new Date().getMonth();
-        const thisYear = new Date().getFullYear();
-        
-        const monthlyOrders = orders.filter((order: any) => {
-          const orderDate = new Date(order.createdAt);
-          return orderDate.getMonth() === thisMonth && 
-                 orderDate.getFullYear() === thisYear;
-        });
-
-        const monthlyRevenue = monthlyOrders.reduce((sum: number, order: any) => 
-          sum + (order.totalAmount || 0), 0
-        );
-
-        // Get unique customers
-        const uniqueCustomers = new Set(orders.map((o: any) => o.customerId || o.customerName));
-
-        // Calculate top selling items
-        const menuCount: { [key: string]: { name: string; count: number; revenue: number } } = {};
-        
-        orders.forEach((order: any) => {
-          if (order.items) {
-            order.items.forEach((item: any) => {
-              const key = item.menuItemId || item.menuItemName;
-              if (!menuCount[key]) {
-                menuCount[key] = {
-                  name: item.menuItemName,
-                  count: 0,
-                  revenue: 0
-                };
-              }
-              menuCount[key].count += item.quantity;
-              menuCount[key].revenue += item.subtotal || (item.price * item.quantity);
-            });
-          }
-        });
-
-        const topItems = Object.values(menuCount)
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 5);
-
-        setTopMenus(topItems);
-
-        setStats({
-          todayRevenue,
-          todayOrders: todayOrders.length,
-          monthlyRevenue,
-          totalCustomers: uniqueCustomers.size,
-          revenueChange: 12.5,
-          ordersChange: 8.3
-        });
-      }
-
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      setLoading(false);
-    }
-  };
-
+  // --- Fetch Data ---
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const ordersRes = await fetch("/api/orders");
+
+      if (!ordersRes.ok) {
+        throw new Error("Failed to fetch data");
+      }
+
+      const ordersResult = (await ordersRes.json()) as ApiResponse<Order>;
+      let orders: Order[] = [];
+
+      if (ordersResult && Array.isArray(ordersResult.data)) {
+        orders = ordersResult.data;
+      } else if (Array.isArray(ordersResult)) {
+        orders = ordersResult;
+      }
+
+      // 1. Hitung Statistik Dasar
+      const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+      const completedCount = orders.filter((o) => o.orderStatus === "completed").length;
+
+      // 2. Tentukan Rentang Waktu Minggu Ini (Senin 00:00 - Sekarang)
+      const weeklyRevenue = [0, 0, 0, 0, 0, 0, 0];
+      const dailyOrders = [0, 0, 0, 0, 0, 0, 0];
+      
+      const today = new Date();
+      const dayOfWeek = today.getDay(); 
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(today);
+      monday.setDate(today.getDate() + mondayOffset);
+      monday.setHours(0, 0, 0, 0); // Reset jam ke awal hari Senin
+
+      // Setup tanggal untuk chart
+      const weekDates = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+        date.setHours(0, 0, 0, 0);
+        return date;
+      });
+
+      const newChartLabels = weekDates.map((date) => {
+         const d = date.getDay(); 
+         const standardDays = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+         return standardDays[d];
+      });
+      setChartLabels(newChartLabels);
+
+      // 3. Proses Data Mingguan (Chart & Tabel)
+      orders.forEach((order) => {
+        try {
+          const orderDate = new Date(order.createdAt);
+          orderDate.setHours(0, 0, 0, 0);
+          const dayIndex = weekDates.findIndex((day) => day.getTime() === orderDate.getTime());
+
+          if (dayIndex !== -1) {
+            weeklyRevenue[dayIndex] += order.totalAmount || 0;
+            dailyOrders[dayIndex]++;
+          }
+        } catch (err) { console.error(err); }
+      });
+
+      // Filter Order KHUSUS Minggu Ini untuk Tabel
+      // Logic: Ambil order yang tanggalnya >= Senin minggu ini
+      const filteredWeeklyOrders = orders.filter(order => {
+        const orderDate = new Date(order.createdAt);
+        return orderDate >= monday;
+      }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Sort terbaru
+
+      setWeeklyOrders(filteredWeeklyOrders);
+
+      // 4. Hitung Top Selling Items
+      const menuCount: { [key: string]: TopMenuItem } = {};
+      
+      orders.forEach((order) => {
+        if (order.items && Array.isArray(order.items)) {
+          order.items.forEach((item: any) => {
+             const name = item.menuItemName || item.name || "Unknown Item";
+             const price = item.price || 0;
+             const qty = item.quantity || 1;
+             const subtotal = item.subtotal || (price * qty);
+
+             if (!menuCount[name]) {
+               menuCount[name] = { name, count: 0, revenue: 0 };
+             }
+             menuCount[name].count += qty;
+             menuCount[name].revenue += subtotal;
+          });
+        }
+      });
+
+      const sortedTopItems = Object.values(menuCount)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      setTopSellingItems(sortedTopItems);
+
+      // 5. Update Stats
+      setStats({
+        totalRevenue,
+        totalOrders: orders.length,
+        completedOrders: completedCount,
+        averageMonthlyRevenue: weeklyRevenue.reduce((a, b) => a + b, 0),
+        averageMonthlySales: dailyOrders.reduce((a, b) => a + b, 0),
+        weeklyRevenue,
+        dailyOrders,
+      });
+
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      setError("Failed to load dashboard data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- Pagination Logic ---
+  const totalPages = Math.ceil(weeklyOrders.length / itemsPerPage);
+  const paginatedOrders = weeklyOrders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  // --- Fungsi Export Report (Mingguan) ---
+  const handleExport = () => {
+    if (weeklyOrders.length === 0) {
+      alert("No data to export for this week");
+      return;
+    }
+
+    const headers = [
+      "Order Number",
+      "Customer Name",
+      "Table",
+      "Date",
+      "Total Amount",
+      "Status",
+      "Payment Method"
+    ];
+
+    const rows = weeklyOrders.map(order => [
+      order.orderNumber,
+      `"${order.customerName || 'Guest'}"`,
+      order.tableNumber,
+      new Date(order.createdAt).toLocaleDateString("id-ID") + " " + new Date(order.createdAt).toLocaleTimeString("id-ID"),
+      order.totalAmount,
+      order.orderStatus,
+      order.paymentMethod
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `weekly_sales_report_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // --- Helpers ---
+  const formatCurrency = (amount: number | string) => {
+    const val = typeof amount === "string" ? parseFloat(amount) : amount;
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(isNaN(val) ? 0 : val);
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch { return "-"; }
+  };
+
+  const getStatusColor = (status: string) => {
+    const s = status.toLowerCase();
+    const colors: Record<string, string> = {
+      confirmed: "bg-blue-100 text-blue-800",
+      preparing: "bg-orange-100 text-orange-800",
+      ready: "bg-green-100 text-green-800",
+      delivering: "bg-indigo-100 text-indigo-800",
+      completed: "bg-gray-100 text-gray-800",
+      cancelled: "bg-red-100 text-red-800",
+    };
+    return colors[s] || "bg-gray-100 text-gray-800";
+  };
+
+  const revenueChartData = {
+    labels: chartLabels,
+    datasets: [{
+      label: "Revenue",
+      data: stats.weeklyRevenue,
+      borderColor: "#000000",
+      backgroundColor: "rgba(0, 0, 0, 0.1)",
+      fill: true,
+      tension: 0.4,
+    }],
+  };
+
+  const salesChartData = {
+    labels: chartLabels,
+    datasets: [{
+      label: "Orders",
+      data: stats.dailyOrders,
+      backgroundColor: "#000000",
+      borderColor: "#000000",
+    }],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { display: false, beginAtZero: true },
+      x: { 
+        display: true, 
+        grid: { display: false, drawBorder: false },
+        ticks: { font: { size: 11 } }
+      },
+    },
+    elements: { line: { tension: 0.4 } },
+  };
+
+  // --- Render ---
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center h-fluid-96">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-purple-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4"></div>
+          <p className="text-gray-500 text-fluid-base">Loading owner dashboard...</p>
+        </div>
       </div>
     );
   }
 
-  const statCards = [
-    {
-      title: "Today's Revenue",
-      value: `Rp ${stats.todayRevenue.toLocaleString('id-ID')}`,
-      change: stats.revenueChange,
-      icon: DollarSign,
-      bgColor: "bg-green-500",
-      textColor: "text-green-600",
-      bgLight: "bg-green-50"
-    },
-    {
-      title: "Today's Orders",
-      value: stats.todayOrders.toString(),
-      change: stats.ordersChange,
-      icon: ShoppingBag,
-      bgColor: "bg-blue-500",
-      textColor: "text-blue-600",
-      bgLight: "bg-blue-50"
-    },
-    {
-      title: "Monthly Revenue",
-      value: `Rp ${stats.monthlyRevenue.toLocaleString('id-ID')}`,
-      change: 15.2,
-      icon: TrendingUp,
-      bgColor: "bg-purple-500",
-      textColor: "text-purple-600",
-      bgLight: "bg-purple-50"
-    },
-    {
-      title: "Total Customers",
-      value: stats.totalCustomers.toString(),
-      change: 5.4,
-      icon: Users,
-      bgColor: "bg-orange-500",
-      textColor: "text-orange-600",
-      bgLight: "bg-orange-50"
-    }
-  ];
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-fluid-96">
+        <p className="text-red-600 font-medium">{error}</p>
+        <button onClick={fetchDashboardData} className="ml-4 underline">Retry</button>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold mb-2">Welcome Back, Owner!</h1>
-            <p className="text-purple-100">Here&lsquo;s what&lsquo;s happening with your restaurant today</p>
-          </div>
-          <div className="hidden md:flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-            <Calendar className="w-5 h-5" />
-            <span className="font-medium">
-              {new Date().toLocaleDateString('id-ID', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {statCards.map((card, index) => (
-          <div key={index} className="bg-white rounded-xl border border-neutral-200 p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div className={`w-12 h-12 ${card.bgLight} rounded-lg flex items-center justify-center`}>
-                <card.icon className={`w-6 h-6 ${card.textColor}`} />
-              </div>
-              <div className={`flex items-center gap-1 text-sm font-medium ${
-                card.change >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {card.change >= 0 ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
-                {Math.abs(card.change)}%
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-neutral-500 mb-1">{card.title}</p>
-              <p className="text-2xl font-bold text-neutral-900">{card.value}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Top Selling Items */}
-      <div className="bg-white rounded-xl border border-neutral-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-neutral-900">Top Selling Items</h2>
-          <button className="text-sm text-purple-600 hover:text-purple-700 font-medium">
-            View All →
-          </button>
-        </div>
+    <div className="min-h-screen">
+      
+      {/* --- ROW 1: Summary Cards & Charts --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-fluid-4 mb-fluid-4">
         
-        {topMenus.length > 0 ? (
-          <div className="space-y-4">
-            {topMenus.map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <span className="text-lg font-bold text-purple-600">#{index + 1}</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-neutral-900">{item.name}</p>
-                    <p className="text-sm text-neutral-500">{item.count} orders</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-neutral-900">
-                    Rp {item.revenue.toLocaleString('id-ID')}
-                  </p>
-                  <p className="text-sm text-neutral-500">Total Revenue</p>
-                </div>
-              </div>
-            ))}
+        {/* Card 1: Total Income */}
+        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+          <div className="flex items-start justify-between mb-fluid-4">
+            <div>
+              <p className="text-gray-500 mb-fluid-1 text-fluid-base">Total Income (All Time)</p>
+              <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                {formatCurrency(stats.totalRevenue)}
+              </h4>
+            </div>
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-neutral-500">No sales data available yet</p>
+          <div className="flex items-center gap-fluid-2">
+            <div className="flex items-center text-green-600 text-fluid-sm">
+              <TrendingUp className="w-fluid-4 h-fluid-4 mr-fluid-1" />
+              <span className="font-medium">
+                {stats.completedOrders} orders
+              </span>
+            </div>
+            <span className="text-gray-400 text-fluid-sm">completed</span>
+          </div>
+        </div>
+
+        {/* Card 2: Weekly Revenue Chart */}
+        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+          <div className="flex flex-col items-start gap-fluid-6 justify-between h-full">
+            <div className="flex-1 w-full">
+              <p className="text-gray-500 mb-fluid-1 text-fluid-base">Weekly Revenue</p>
+              <h4 className="font-bold text-gray-900 mb-fluid-2 text-fluid-2xl">
+                {formatCurrency(stats.averageMonthlyRevenue)}
+              </h4>
+              <span className="text-gray-400 text-fluid-sm">Last 7 days</span>
+            </div>
+            <div className="w-full h-fluid-32">
+              <Line data={revenueChartData} options={chartOptions} />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Weekly Orders Chart */}
+        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+           <div className="flex flex-col items-start gap-fluid-6 justify-between h-full">
+            <div className="flex-1 w-full">
+              <p className="text-gray-500 mb-fluid-1 text-fluid-base">Weekly Orders</p>
+              <h4 className="font-bold text-gray-900 mb-fluid-2 text-fluid-2xl">
+                {stats.averageMonthlySales}
+              </h4>
+              <span className="text-gray-400 text-fluid-sm">Last 7 days</span>
+            </div>
+            <div className="w-full h-fluid-28">
+              <Bar data={salesChartData} options={chartOptions} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* --- ROW 2: Top Selling Items --- */}
+      <div className="mb-fluid-4">
+        <div className="bg-white shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+          <div className="p-fluid-6 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-fluid-3">
+              <div>
+                <h4 className="text-gray-900 font-bold text-fluid-lg">Top 5 Selling Items</h4>
+                <p className="text-gray-500 text-fluid-sm">Most popular menu items based on order quantity</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-fluid-6">
+            {topSellingItems.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-fluid-4">
+                {topSellingItems.map((item, index) => (
+                  <div 
+                    key={index} 
+                    className="group relative bg-gray-50 p-fluid-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all duration-300"
+                  >
+                    <div className="absolute -top-3 -right-3 w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold text-sm shadow-sm z-10">
+                      #{index + 1}
+                    </div>
+                    
+                    <div className="mb-fluid-3">
+                       <h5 className="font-bold text-gray-900 text-fluid-base line-clamp-1 group-hover:text-purple-700 transition-colors">
+                         {item.name}
+                       </h5>
+                    </div>
+                    
+                    <div className="space-y-fluid-2">
+                       <div className="flex items-center justify-between text-fluid-sm">
+                          <span className="text-gray-500">Sold</span>
+                          <span className="font-bold text-gray-900">{item.count}</span>
+                       </div>
+                       <div className="flex items-center justify-between text-fluid-sm">
+                          <span className="text-gray-500">Revenue</span>
+                          <span className="font-bold text-green-600">{formatCurrency(item.revenue)}</span>
+                       </div>
+                    </div>
+
+                    <div className="mt-fluid-3 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                       <div 
+                         className={cn(
+                           "h-full rounded-full", 
+                           index === 0 ? "bg-gray-600 w-full" : 
+                           index === 1 ? "bg-gray-500 w-[85%]" :
+                           index === 2 ? "bg-gray-400 w-[70%]" :
+                           "bg-gray-300 w-[50%]"
+                         )} 
+                       />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-fluid-8">
+                <p className="text-gray-500">No sales data available to determine top items.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* --- ROW 3: Transactions (Weekly Reset + Pagination) --- */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+        <div className="p-fluid-6 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-gray-900 text-fluid-lg font-bold">Transactions (This Week)</h4>
+              <p className="text-gray-500 text-fluid-xs mt-1">Resets every Monday</p>
+            </div>
+            
+            <button 
+              onClick={handleExport}
+              className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              <FileDown className="w-fluid-4 h-fluid-4" />
+              <span className="text-fluid-sm">Export Weekly</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50/50">
+                <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">Order ID</th>
+                <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">Customer</th>
+                <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">Date</th>
+                <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">Amount</th>
+                <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-fluid-12 text-center text-gray-500">
+                    No transactions found for this week.
+                  </td>
+                </tr>
+              ) : (
+                paginatedOrders.map((order) => (
+                  <tr key={order._id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <td className="p-fluid-4">
+                      <div className="font-medium text-gray-900 text-fluid-sm">#{order.orderNumber}</div>
+                      <div className="text-gray-500 text-fluid-xs">Table {order.tableNumber}</div>
+                    </td>
+                    <td className="p-fluid-4 text-gray-900 text-fluid-sm font-medium">
+                      {order.customerName || "Guest"}
+                    </td>
+                    <td className="p-fluid-4 text-gray-600 text-fluid-sm">
+                      {formatDate(order.createdAt)}
+                    </td>
+                    <td className="p-fluid-4 text-gray-900 font-bold text-fluid-sm">
+                      {formatCurrency(order.totalAmount)}
+                    </td>
+                    <td className="p-fluid-4">
+                      <span className={cn("px-fluid-3 py-fluid-1 rounded-full font-medium !text-fluid-sm", getStatusColor(order.orderStatus))}>
+                        {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination Controls */}
+        {weeklyOrders.length > itemsPerPage && (
+          <div className="flex items-center justify-between p-fluid-4 border-t border-gray-100">
+            <span className="text-gray-500 text-fluid-sm">
+              Showing {(currentPage - 1) * itemsPerPage + 1}-
+              {Math.min(currentPage * itemsPerPage, weeklyOrders.length)} of {weeklyOrders.length}
+            </span>
+            <div className="flex items-center gap-fluid-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-fluid-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-fluid-4 h-fluid-4" />
+              </button>
+              <span className="text-fluid-sm font-medium px-fluid-2">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-fluid-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="w-fluid-4 h-fluid-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white cursor-pointer hover:shadow-lg transition-shadow">
-          <h3 className="text-lg font-bold mb-2">View Reports</h3>
-          <p className="text-purple-100 text-sm">Access detailed business reports</p>
-        </div>
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white cursor-pointer hover:shadow-lg transition-shadow">
-          <h3 className="text-lg font-bold mb-2">All Orders</h3>
-          <p className="text-blue-100 text-sm">Monitor all restaurant orders</p>
-        </div>
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white cursor-pointer hover:shadow-lg transition-shadow">
-          <h3 className="text-lg font-bold mb-2">Menu Analytics</h3>
-          <p className="text-green-100 text-sm">Analyze menu performance</p>
-        </div>
-      </div>
     </div>
   );
 }

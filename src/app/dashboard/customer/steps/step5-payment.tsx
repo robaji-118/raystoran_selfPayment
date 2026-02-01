@@ -89,7 +89,7 @@ export default function Step5Payment({
                     {orderType === "dine-in" ? <UtensilsCrossed className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
                     Type
                   </span>
-                  <span className="text-xs font-semibold text-gray-900 bg-white px-2 py-0.5 rounded shadow-sm">
+                  <span className="text-xs ">
                     {orderType === "dine-in" ? "Dine In" : "Take Away"}
                   </span>
                 </div>

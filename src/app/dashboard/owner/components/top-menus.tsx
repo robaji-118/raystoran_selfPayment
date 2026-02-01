@@ -4,345 +4,251 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TrendingUp, Star } from "lucide-react";
+import { 
+  TrendingUp, 
+  Star, 
+  ChevronDown, 
+  Utensils, 
+  Info,
+  Image as ImageIcon 
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
-interface MenuItem {
+interface MergedMenuItem {
+  id: string;
   name: string;
   count: number;
   revenue: number;
   avgPrice: number;
+  description: string;
+  image: string;
+  categoryName?: string;
+}
+
+interface MenuData {
+  _id: string;
+  name: string;
+  description: string;
+  image: string;
+  categoryId: {
+    name: string;
+  };
 }
 
 export default function TopMenus() {
-  const [topMenus, setTopMenus] = useState<MenuItem[]>([]);
+  const [topMenus, setTopMenus] = useState<MergedMenuItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchTopMenus();
+    fetchData();
   }, []);
 
-  const fetchTopMenus = async () => {
+  const fetchData = async () => {
     try {
-      const res = await fetch('/api/orders');
-      const data = await res.json();
+      setLoading(true);
 
-      if (data.success) {
-        const menuCount: { [key: string]: MenuItem } = {};
+      const [ordersRes, menusRes] = await Promise.all([
+        fetch('/api/orders'),
+        fetch('/api/menus')
+      ]);
+
+      const ordersData = await ordersRes.json();
+      const menusData = await menusRes.json();
+
+      if (ordersData.success && menusData.success) {
+        const menuDetailsMap = new Map<string, MenuData>();
         
-        data.data.forEach((order: any) => {
-          if (order.items) {
+        const menus: MenuData[] = Array.isArray(menusData.data) ? menusData.data : [];
+        menus.forEach(menu => {
+          menuDetailsMap.set(menu._id, menu);
+          menuDetailsMap.set(menu.name.toLowerCase(), menu); 
+        });
+
+        const menuStats: { [key: string]: MergedMenuItem } = {};
+
+        ordersData.data.forEach((order: any) => {
+          if (order.items && Array.isArray(order.items)) {
             order.items.forEach((item: any) => {
-              const key = item.menuItemId || item.menuItemName;
-              if (!menuCount[key]) {
-                menuCount[key] = {
+              const identifier = item.menuItemId || item.menuItemName;
+
+              if (!menuStats[identifier]) {
+                const detail = menuDetailsMap.get(item.menuItemId) || menuDetailsMap.get(item.menuItemName?.toLowerCase());
+
+                menuStats[identifier] = {
+                  id: item.menuItemId,
                   name: item.menuItemName,
                   count: 0,
                   revenue: 0,
-                  avgPrice: item.price
+                  avgPrice: item.price,
+                  description: detail?.description || "No description available.",
+                  image: detail?.image || "",
+                  categoryName: (detail?.categoryId as any)?.name || "General"
                 };
               }
-              menuCount[key].count += item.quantity;
-              menuCount[key].revenue += item.subtotal || (item.price * item.quantity);
+
+              menuStats[identifier].count += item.quantity;
+              menuStats[identifier].revenue += (item.subtotal || (item.price * item.quantity));
             });
           }
         });
 
-        const sorted = Object.values(menuCount)
+        const sorted = Object.values(menuStats)
           .sort((a, b) => b.count - a.count)
           .slice(0, 10);
 
         setTopMenus(sorted);
       }
-      setLoading(false);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching top menus:', error);
+    } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="flex flex-col items-center gap-3">
+           <div className="w-10 h-10 border-4 border-purple-200 border-t-black rounded-full animate-spin"></div>
+           <p className="text-sm text-gray-500">Calculating top products...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-6 text-white">
-          <div className="flex items-center gap-3 mb-2">
-            <TrendingUp className="w-8 h-8" />
-            <h1 className="text-2xl font-bold">Menu Terlaris</h1>
+    <div className="p-6 bg-white">
+      
+      {/* Header Section */}
+      <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white border border-gray-100 rounded-xl flex items-center justify-center shadow-sm">
+               <Star className="w-5 h-5 text-black fill-black" />
+            </div>
+            <div>
+              <h4 className="text-gray-900 font-bold text-xl">Top 10 Menu Items</h4>
+              <p className="text-gray-500 text-sm">Best performing products by volume</p>
+            </div>
           </div>
-          <p className="text-purple-100">Top performing menu items based on orders</p>
-        </div>
+      </div>
 
-        <div className="p-6">
-          {topMenus.length > 0 ? (
-            <div className="space-y-4">
-              {topMenus.map((item, index) => (
-                <div 
-                  key={index} 
-                  className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${
-                    index === 0 
-                      ? 'border-yellow-400 bg-yellow-50' 
-                      : index === 1
-                      ? 'border-gray-300 bg-gray-50'
-                      : index === 2
-                      ? 'border-orange-300 bg-orange-50'
-                      : 'border-neutral-200 bg-white hover:border-purple-200'
-                  }`}
-                >
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl font-bold ${
-                    index === 0 
-                      ? 'bg-yellow-400 text-yellow-900' 
-                      : index === 1
-                      ? 'bg-gray-400 text-gray-900'
-                      : index === 2
-                      ? 'bg-orange-400 text-orange-900'
-                      : 'bg-purple-100 text-purple-600'
-                  }`}>
-                    {index === 0 && <Star className="w-7 h-7 fill-current" />}
-                    {index !== 0 && `#${index + 1}`}
+      {/* SHADCN ACCORDION IMPLEMENTATION 
+        - class 'flex flex-col gap-4' memberikan jarak antar item.
+        - type="single" collapsible memastikan hanya satu yang terbuka.
+      */}
+      <Accordion type="single" collapsible className="flex flex-col gap-4 w-full">
+        {topMenus.length > 0 ? (
+          topMenus.map((item, index) => (
+            <AccordionItem 
+              key={index} 
+              value={`item-${index}`}
+              // Styling container Card: border, radius, shadow saat open
+              className="group bg-white rounded-2xl border border-gray-100 transition-all duration-300 border-b-0"
+            >
+              <AccordionTrigger className="w-full flex items-center justify-between p-5 hover:no-underline [&>svg]:hidden">
+                <div className="flex items-center gap-4 text-left">
+                  {/* Rank Badge */}
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center text-base font-bold flex-shrink-0 transition-transform group-hover:scale-110",
+                    index === 0 ? "bg-yellow-100 text-yellow-700 ring-1 ring-yellow-200" :
+                    index === 1 ? "bg-gray-200 text-gray-700 ring-1 ring-gray-300" :
+                    index === 2 ? "bg-orange-100 text-orange-700 ring-1 ring-orange-200" :
+                    "bg-gray-50 text-gray-500 border border-gray-100"
+                  )}>
+                    #{index + 1}
                   </div>
 
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-neutral-900">{item.name}</h3>
-                    <div className="flex items-center gap-4 mt-1">
-                      <span className="text-sm text-neutral-600">
-                        {item.count} orders
-                      </span>
-                      <span className="text-sm text-neutral-400">•</span>
-                      <span className="text-sm text-neutral-600">
-                        Avg: Rp {item.avgPrice.toLocaleString('id-ID')}
-                      </span>
+                  {/* Name & Basic Stats */}
+                  <div>
+                    <h5 className="font-bold text-gray-900 text-lg">{item.name}</h5>
+                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                        <span className="flex items-center gap-1.5 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
+                          <TrendingUp className="w-3.5 h-3.5 text-black" /> 
+                          <span className="font-medium text-gray-700">{item.count}</span> Sold
+                        </span>
+                        <span className="font-bold text-green-600">
+                          Rp {item.revenue.toLocaleString('id-ID')}
+                        </span>
+                    </div>  
+                  </div>
+                </div>
+
+                {/* Custom Toggle Icon (Matches previous design) */}
+                <div className="w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 border bg-white text-gray-400 border-gray-100 group-hover:border-gray-300 group-hover:text-gray-600 group-data-[state=open]:bg-black group-data-[state=open]:text-white group-data-[state=open]:border-black group-data-[state=open]:rotate-180">
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+              </AccordionTrigger>
+
+              <AccordionContent className="p-0 border-t border-gray-100 bg-gray-50/50">
+                <div className="p-5 flex flex-col md:flex-row gap-6">
+                  
+                  {/* Image Section */}
+                  <div className="w-full md:w-40 h-40 flex-shrink-0 bg-white rounded-xl border border-gray-200 overflow-hidden flex items-center justify-center shadow-sm">
+                    {item.image ? (
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-gray-300 flex flex-col items-center gap-2">
+                        <ImageIcon className="w-8 h-8" />
+                        <span className="text-xs font-medium">No Image</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Details Section */}
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <Info className="w-3 h-3" /> Description
+                      </p>
+                      <p className="text-sm text-gray-600 leading-relaxed bg-white p-3 rounded-lg border border-gray-100">
+                        {item.description || "No specific description available for this menu item."}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-4 mt-4">
+                        {/* Category */}
+                        <div className="flex-1 bg-white px-4 py-3 rounded-xl border border-gray-100 ">
+                          <p className="text-xs text-gray-400 mb-1 font-medium uppercase">Category</p>
+                          <p className="font-bold text-gray-900 flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                              {item.categoryName}
+                          </p>
+                        </div>
+                        
+                        {/* Avg Price */}
+                        <div className="flex-1 bg-white px-4 py-3 rounded-xl border border-gray-100 ">
+                          <p className="text-xs text-gray-400 mb-1 font-medium uppercase">Avg. Price</p>
+                          <p className="font-bold text-gray-900">
+                              Rp {item.avgPrice.toLocaleString('id-ID')}
+                          </p>
+                        </div>
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-neutral-900">
-                      Rp {item.revenue.toLocaleString('id-ID')}
-                    </p>
-                    <p className="text-sm text-neutral-500">Total Revenue</p>
-                  </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-neutral-500">No menu data available</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// app/dashboard/owner/components/daily-report.tsx
-export function DailyReport() {
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchDailyOrders();
-  }, []);
-
-  const fetchDailyOrders = async () => {
-    try {
-      const res = await fetch('/api/orders');
-      const data = await res.json();
-
-      if (data.success) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        const todayOrders = data.data.filter((order: any) => {
-          const orderDate = new Date(order.createdAt);
-          orderDate.setHours(0, 0, 0, 0);
-          return orderDate.getTime() === today.getTime();
-        });
-
-        setOrders(todayOrders);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.error('Error:', error);
-      setLoading(false);
-    }
-  };
-
-  const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-6">
-      <div className="bg-white rounded-xl border border-neutral-200 p-6">
-        <h1 className="text-2xl font-bold text-neutral-900 mb-6">Daily Report</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <p className="text-sm text-green-600 mb-1">Total Orders</p>
-            <p className="text-3xl font-bold text-green-900">{orders.length}</p>
-          </div>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-600 mb-1">Total Revenue</p>
-            <p className="text-3xl font-bold text-blue-900">
-              Rp {totalRevenue.toLocaleString('id-ID')}
-            </p>
-          </div>
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <p className="text-sm text-purple-600 mb-1">Average Order</p>
-            <p className="text-3xl font-bold text-purple-900">
-              Rp {orders.length > 0 ? (totalRevenue / orders.length).toFixed(0) : 0}
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {orders.map((order, index) => (
-            <div key={index} className="border border-neutral-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-neutral-900">{order.orderNumber}</p>
-                  <p className="text-sm text-neutral-500">
-                    {new Date(order.createdAt).toLocaleTimeString('id-ID')}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-neutral-900">
-                    Rp {order.totalAmount.toLocaleString('id-ID')}
-                  </p>
-                  <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                    order.orderStatus === 'completed' 
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {order.orderStatus}
-                  </span>
-                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))
+        ) : (
+          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 border-dashed">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Utensils className="w-8 h-8 text-gray-300" />
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// app/dashboard/owner/components/weekly-report.tsx
-export function WeeklyReport() {
-  return (
-    <div className="p-6">
-      <div className="bg-white rounded-xl border border-neutral-200 p-6">
-        <h1 className="text-2xl font-bold text-neutral-900 mb-4">Weekly Report</h1>
-        <p className="text-neutral-500">Weekly analytics and trends coming soon...</p>
-      </div>
-    </div>
-  );
-}
-
-// app/dashboard/owner/components/monthly-report.tsx
-export function MonthlyReport() {
-  return (
-    <div className="p-6">
-      <div className="bg-white rounded-xl border border-neutral-200 p-6">
-        <h1 className="text-2xl font-bold text-neutral-900 mb-4">Monthly Report</h1>
-        <p className="text-neutral-500">Monthly analytics and trends coming soon...</p>
-      </div>
-    </div>
-  );
-}
-
-// app/dashboard/owner/components/all-orders.tsx
-export function AllOrders() {
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
-    try {
-      const res = await fetch('/api/orders');
-      const data = await res.json();
-
-      if (data.success) {
-        setOrders(data.data);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.error('Error:', error);
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-6">
-      <div className="bg-white rounded-xl border border-neutral-200 p-6">
-        <h1 className="text-2xl font-bold text-neutral-900 mb-6">All Orders</h1>
-        
-        <div className="space-y-4">
-          {orders.map((order, index) => (
-            <div key={index} className="border border-neutral-200 rounded-lg p-4 hover:border-purple-300 transition-colors">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="font-bold text-lg text-neutral-900">{order.orderNumber}</p>
-                  <p className="text-sm text-neutral-500">
-                    {new Date(order.createdAt).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xl font-bold text-neutral-900">
-                    Rp {order.totalAmount.toLocaleString('id-ID')}
-                  </p>
-                  <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
-                    order.orderStatus === 'completed' 
-                      ? 'bg-green-100 text-green-700'
-                      : order.orderStatus === 'confirmed'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {order.orderStatus}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4 text-sm text-neutral-600">
-                <span>Table: {order.tableNumber}</span>
-                <span>•</span>
-                <span>{order.customerName}</span>
-                <span>•</span>
-                <span>{order.items?.length || 0} items</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+              <p className="text-gray-500 font-medium">No sales data recorded yet.</p>
+              <p className="text-gray-400 text-sm mt-1">Orders will appear here once transactions occur.</p>
+          </div>
+        )}
+      </Accordion>
     </div>
   );
 }

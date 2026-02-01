@@ -1,28 +1,90 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from 'react';
-import { Calendar, DollarSign, ShoppingCart, TrendingUp, Package, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  Calendar,
+  TrendingUp,
+  Package,
+  ShoppingCart,
+  DollarSign,
+  ChevronLeft,
+  ChevronRight,
+  FileDown,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { fluidSize } from "@/lib/utils";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+
+// Register ChartJS
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+interface Order {
+  _id: string;
+  totalAmount: number;
+  items: any[];
+  orderStatus: string;
+  customerName: string;
+  createdAt: string;
+}
+
+interface MonthlyTotals {
+  totalOrders: number;
+  totalRevenue: number;
+  totalItems: number;
+  avgOrderValue: number;
+  completedOrders: number;
+  uniqueCustomers: number;
+}
+
+interface WeeklyStat {
+  week: string; // "Week 1", "Week 2", etc.
+  startDate: string;
+  endDate: string;
+  orders: number;
+  revenue: number;
+}
 
 export default function MonthlyReport() {
-  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState({
     month: new Date().getMonth(),
-    year: new Date().getFullYear()
+    year: new Date().getFullYear(),
   });
-  const [weeklyStats, setWeeklyStats] = useState<{ week: string; orders: number; revenue: any }[]>([]);
-  const [monthlyTotals, setMonthlyTotals] = useState({
+  const [weeklyStats, setWeeklyStats] = useState<WeeklyStat[]>([]);
+  const [monthlyTotals, setMonthlyTotals] = useState<MonthlyTotals>({
     totalOrders: 0,
     totalRevenue: 0,
     totalItems: 0,
     avgOrderValue: 0,
     completedOrders: 0,
-    uniqueCustomers: 0
+    uniqueCustomers: 0,
   });
-  const [topDays, setTopDays] = useState<{ date: string; revenue: number; orders: number }[]>([]);
+  const [dailyData, setDailyData] = useState<{ day: string; revenue: number }[]>([]);
 
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
   ];
 
   useEffect(() => {
@@ -32,266 +94,348 @@ export default function MonthlyReport() {
   const fetchMonthlyOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/orders');
+      const response = await fetch("/api/orders");
       const data = await response.json();
-      
+
       if (data.success) {
-        const filtered = data.data.filter((order: { createdAt: string | number | Date; }) => {
+        const filtered = data.data.filter((order: Order) => {
           const orderDate = new Date(order.createdAt);
-          return orderDate.getMonth() === selectedMonth.month && 
-                 orderDate.getFullYear() === selectedMonth.year;
+          return (
+            orderDate.getMonth() === selectedMonth.month &&
+            orderDate.getFullYear() === selectedMonth.year
+          );
         });
-        
-        setOrders(filtered);
+
         calculateStats(filtered);
         calculateWeeklyStats(filtered);
-        findTopDays(filtered);
+        calculateDailyData(filtered);
       }
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.error("Error fetching orders:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateStats = (orderList: { length: any; reduce: (arg0: { (sum: any, order: any): any; (sum: any, order: any): any; }, arg1: number) => any; filter: (arg0: (o: any) => boolean) => { (): any; new(): any; length: any; }; map: (arg0: (o: any) => any) => Iterable<unknown> | null | undefined; }) => {
+  const calculateStats = (orderList: Order[]) => {
     const totalOrders = orderList.length;
     const totalRevenue = orderList.reduce((sum, order) => sum + order.totalAmount, 0);
-    const totalItems = orderList.reduce((sum, order) => 
-      sum + order.items.reduce((itemSum: any, item: { quantity: any; }) => itemSum + item.quantity, 0), 0
+    const totalItems = orderList.reduce(
+      (sum, order) =>
+        sum + order.items.reduce((itemSum: number, item: any) => itemSum + item.quantity, 0),
+      0
     );
-    const completedOrders = orderList.filter(o => o.orderStatus === 'completed').length;
-    const uniqueCustomers = new Set(orderList.map(o => o.customerName)).size;
-    
+    const completedOrders = orderList.filter((o) => o.orderStatus === "completed").length;
+    const uniqueCustomers = new Set(orderList.map((o) => o.customerName)).size;
+
     setMonthlyTotals({
       totalOrders,
       totalRevenue,
       totalItems,
       avgOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
       completedOrders,
-      uniqueCustomers
+      uniqueCustomers,
     });
   };
 
-  const calculateWeeklyStats = (orderList: any[]) => {
-    const weeks = [];
-    const startDate = new Date(selectedMonth.year, selectedMonth.month, 1);
-    const endDate = new Date(selectedMonth.year, selectedMonth.month + 1, 0);
-    
-    const currentWeekStart = new Date(startDate);
-    let weekNumber = 1;
-    
-    while (currentWeekStart <= endDate) {
-      const weekEnd = new Date(currentWeekStart);
-      weekEnd.setDate(weekEnd.getDate() + 6);
+  const calculateWeeklyStats = (orderList: Order[]) => {
+    const stats: WeeklyStat[] = [];
+    const firstDay = new Date(selectedMonth.year, selectedMonth.month, 1);
+    const lastDay = new Date(selectedMonth.year, selectedMonth.month + 1, 0);
+
+    let currentStart = new Date(firstDay);
+    let weekCount = 1;
+
+    // Loop per minggu dalam bulan tersebut
+    while (currentStart <= lastDay) {
+      // Tentukan akhir minggu (Minggu atau akhir bulan)
+      const currentEnd = new Date(currentStart);
+      const dayOfWeek = currentStart.getDay(); // 0 = Sunday
+      const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek; 
       
+      currentEnd.setDate(currentStart.getDate() + daysUntilSunday);
+      
+      // Jika akhir minggu melebihi akhir bulan, gunakan akhir bulan
+      const effectiveEnd = currentEnd > lastDay ? lastDay : currentEnd;
+
+      // Filter order dalam range minggu ini
       const weekOrders = orderList.filter(order => {
-        const orderDate = new Date(order.createdAt);
-        return orderDate >= currentWeekStart && orderDate <= (weekEnd > endDate ? endDate : weekEnd);
+        const d = new Date(order.createdAt);
+        // Reset jam agar perbandingan tanggal akurat
+        const dTime = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        const startTime = new Date(currentStart.getFullYear(), currentStart.getMonth(), currentStart.getDate()).getTime();
+        const endTime = new Date(effectiveEnd.getFullYear(), effectiveEnd.getMonth(), effectiveEnd.getDate()).getTime();
+        return dTime >= startTime && dTime <= endTime;
       });
-      
+
       const revenue = weekOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-      
-      weeks.push({
-        week: `Week ${weekNumber}`,
+
+      stats.push({
+        week: `Week ${weekCount}`,
+        startDate: currentStart.toISOString(),
+        endDate: effectiveEnd.toISOString(),
         orders: weekOrders.length,
         revenue: revenue
       });
-      
-      currentWeekStart.setDate(currentWeekStart.getDate() + 7);
-      weekNumber++;
+
+      // Lanjut ke minggu berikutnya (Senin depan)
+      currentStart = new Date(effectiveEnd);
+      currentStart.setDate(currentStart.getDate() + 1);
+      weekCount++;
     }
-    
-    setWeeklyStats(weeks);
+
+    setWeeklyStats(stats);
   };
 
-  const findTopDays = (orderList: any[]) => {
-    const dailyRevenue: Record<string, { date: string; revenue: number; orders: number }> = {};
-    
-    orderList.forEach((order: { createdAt: string | number | Date; totalAmount: any; }) => {
-      const date = new Date(order.createdAt).toISOString().split('T')[0];
-      if (!dailyRevenue[date]) {
-        dailyRevenue[date] = { date, revenue: 0, orders: 0 };
-      }
-      dailyRevenue[date].revenue += order.totalAmount;
-      dailyRevenue[date].orders += 1;
-    });
-    
-    const sorted = Object.values(dailyRevenue)
-      .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5);
-    
-    setTopDays(sorted);
-  };
+  const calculateDailyData = (orderList: Order[]) => {
+    const daysInMonth = new Date(selectedMonth.year, selectedMonth.month + 1, 0).getDate();
+    const data = [];
 
-  const formatCurrency = (amount: string | number | bigint) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(Number(amount));
+    for (let i = 1; i <= daysInMonth; i++) {
+        const dateStr = `${i}`; // Label tanggal 1, 2, 3...
+        const ordersToday = orderList.filter(o => new Date(o.createdAt).getDate() === i);
+        const revenue = ordersToday.reduce((sum, o) => sum + o.totalAmount, 0);
+        data.push({ day: dateStr, revenue });
+    }
+    setDailyData(data);
   };
 
   const handlePreviousMonth = () => {
-    setSelectedMonth(prev => {
-      if (prev.month === 0) {
-        return { month: 11, year: prev.year - 1 };
-      }
+    setSelectedMonth((prev) => {
+      if (prev.month === 0) return { month: 11, year: prev.year - 1 };
       return { month: prev.month - 1, year: prev.year };
     });
   };
 
   const handleNextMonth = () => {
     const now = new Date();
-    const isCurrentMonth = selectedMonth.month === now.getMonth() && 
-                          selectedMonth.year === now.getFullYear();
-    
-    if (!isCurrentMonth) {
-      setSelectedMonth(prev => {
-        if (prev.month === 11) {
-          return { month: 0, year: prev.year + 1 };
-        }
+    const isCurrent = selectedMonth.month === now.getMonth() && selectedMonth.year === now.getFullYear();
+    if (!isCurrent) {
+      setSelectedMonth((prev) => {
+        if (prev.month === 11) return { month: 0, year: prev.year + 1 };
         return { month: prev.month + 1, year: prev.year };
       });
     }
   };
 
-  const maxRevenue = Math.max(...weeklyStats.map(w => w.revenue), 1);
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  // Chart Config
+  const chartData = {
+    labels: dailyData.map(d => d.day),
+    datasets: [
+      {
+        label: "Revenue",
+        data: dailyData.map(d => d.revenue),
+        borderColor: "#10B981", // Green
+        backgroundColor: "rgba(16, 185, 129, 0.1)",
+        fill: true,
+        tension: 0.4,
+        pointRadius: 2,
+        pointHoverRadius: 5,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx: any) => formatCurrency(ctx.raw),
+        }
+      }
+    },
+    scales: {
+      y: { display: false, beginAtZero: true },
+      x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
+    },
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex flex-col items-center justify-center py-fluid-12">
+        <div className="w-fluid-16 h-fluid-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-fluid-4"></div>
+        <p className="text-gray-500 text-fluid-base">Loading monthly report...</p>
       </div>
     );
   }
 
+  // Sort weeks by revenue descending for "Top Performing Weeks"
+  const topWeeks = [...weeklyStats].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+
   return (
-    <div className="p-6 space-y-6">
-      {/* Header with Month Navigation */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="min-h-screen p-6">
+      
+      {/* Header */}
+      <div className="mb-fluid-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Monthly Report</h2>
-          <p className="text-gray-600 mt-1">{months[selectedMonth.month]} {selectedMonth.year}</p>
+          <h2 className="text-gray-900 font-bold text-fluid-2xl">Monthly Report</h2>
+          <p className="text-gray-500 text-fluid-sm mt-1">{months[selectedMonth.month]} {selectedMonth.year}</p>
         </div>
-        
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handlePreviousMonth}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium flex items-center gap-2"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Previous
-          </button>
-          <button
-            onClick={handleNextMonth}
-            disabled={selectedMonth.month === new Date().getMonth() && 
-                     selectedMonth.year === new Date().getFullYear()}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-            <ChevronRight className="w-4 h-4" />
+
+        <div className="flex items-center gap-fluid-3">
+          <div className="flex items-center bg-white border border-gray-200 rounded-lg shadow-sm">
+            <button
+              onClick={handlePreviousMonth}
+              className="p-fluid-2 text-gray-600 hover:bg-gray-50 rounded-l-lg border-r border-gray-100"
+            >
+              <ChevronLeft className="w-fluid-5 h-fluid-5" />
+            </button>
+            <div className="px-fluid-4 py-fluid-2 text-center min-w-[140px]">
+              <span className="font-medium text-gray-900 text-fluid-sm">
+                {months[selectedMonth.month]} {selectedMonth.year}
+              </span>
+            </div>
+            <button
+              onClick={handleNextMonth}
+              disabled={selectedMonth.month === new Date().getMonth() && selectedMonth.year === new Date().getFullYear()}
+              className="p-fluid-2 text-gray-600 hover:bg-gray-50 rounded-r-lg border-l border-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="w-fluid-5 h-fluid-5" />
+            </button>
+          </div>
+          <button className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg shadow-sm transition-colors">
+            <FileDown className="w-fluid-4 h-fluid-4" />
+            <span className="text-fluid-sm font-medium">Export</span>
           </button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Total Orders</p>
-              <h3 className="text-3xl font-bold text-gray-900 mt-2">{monthlyTotals.totalOrders}</h3>
-              <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
-                <TrendingUp className="w-4 h-4" />
-                {monthlyTotals.completedOrders} completed
-              </p>
-            </div>
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <ShoppingCart className="w-8 h-8 text-blue-600" />
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-fluid-4 mb-fluid-6">
+        <div className="bg-white p-fluid-6 rounded-2xl shadow-sm border border-gray-100">
+          <p className="text-gray-500 text-fluid-sm font-medium mb-2">Total Revenue</p>
+          <h3 className="text-gray-900 font-bold text-fluid-2xl">{formatCurrency(monthlyTotals.totalRevenue)}</h3>
+          <div className="flex items-center gap-2 mt-2">
+             <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-medium">Avg: {formatCurrency(monthlyTotals.avgOrderValue)}</span>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
-              <h3 className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(monthlyTotals.totalRevenue)}</h3>
-              <p className="text-gray-500 text-sm mt-2">Avg: {formatCurrency(monthlyTotals.avgOrderValue)}</p>
-            </div>
-            <div className="bg-green-100 p-3 rounded-lg">
-              <DollarSign className="w-8 h-8 text-green-600" />
-            </div>
+        <div className="bg-white p-fluid-6 rounded-2xl shadow-sm border border-gray-100">
+          <p className="text-gray-500 text-fluid-sm font-medium mb-2">Total Orders</p>
+          <h3 className="text-gray-900 font-bold text-fluid-2xl">{monthlyTotals.totalOrders}</h3>
+          <div className="flex items-center gap-2 mt-2 text-gray-500 text-fluid-xs">
+             <ShoppingCart className="w-3 h-3 text-blue-500" />
+             <span>{monthlyTotals.completedOrders} Completed</span>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Total Items</p>
-              <h3 className="text-3xl font-bold text-gray-900 mt-2">{monthlyTotals.totalItems}</h3>
-              <p className="text-gray-500 text-sm mt-2">{monthlyTotals.uniqueCustomers} unique customers</p>
-            </div>
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <Package className="w-8 h-8 text-purple-600" />
-            </div>
+        <div className="bg-white p-fluid-6 rounded-2xl shadow-sm border border-gray-100">
+          <p className="text-gray-500 text-fluid-sm font-medium mb-2">Items Sold</p>
+          <h3 className="text-gray-900 font-bold text-fluid-2xl">{monthlyTotals.totalItems}</h3>
+          <div className="flex items-center gap-2 mt-2 text-gray-500 text-fluid-xs">
+             <Package className="w-3 h-3 text-purple-500" />
+             <span>Across all weeks</span>
+          </div>
+        </div>
+
+        <div className="bg-white p-fluid-6 rounded-2xl shadow-sm border border-gray-100">
+          <p className="text-gray-500 text-fluid-sm font-medium mb-2">Customers</p>
+          <h3 className="text-gray-900 font-bold text-fluid-2xl">{monthlyTotals.uniqueCustomers}</h3>
+          <div className="flex items-center gap-2 mt-2 text-gray-500 text-fluid-xs">
+             <Calendar className="w-3 h-3 text-orange-500" />
+             <span>Unique visitors</span>
           </div>
         </div>
       </div>
 
-      {/* Weekly Breakdown */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Weekly Breakdown</h3>
+      {/* Charts & Top Performing Weeks */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-fluid-6 mb-fluid-6">
         
-        <div className="space-y-4">
-          {weeklyStats.map((stat, index) => (
-            <div key={index} className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">{stat.week}</span>
-                <div className="text-right">
-                  <span className="text-sm font-semibold text-gray-900">{formatCurrency(stat.revenue)}</span>
-                  <span className="text-xs text-gray-500 ml-2">({stat.orders} orders)</span>
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500"
-                  style={{ width: `${(stat.revenue / maxRevenue) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          ))}
+        {/* Daily Trend Chart */}
+        <div className="lg:col-span-2 bg-white p-fluid-6 rounded-2xl shadow-sm border border-gray-100">
+          <h4 className="text-gray-900 font-bold text-fluid-lg mb-4">Revenue Trend (Daily)</h4>
+          <div className="h-fluid-64 w-full">
+            <Line data={chartData} options={chartOptions} />
+          </div>
         </div>
-      </div>
 
-      {/* Top Performing Days */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Top 5 Performing Days</h3>
-        
-        {topDays.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No data available</p>
-        ) : (
-          <div className="space-y-3">
-            {topDays.map((day, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-8 h-8 bg-purple-100 text-purple-600 rounded-full font-bold text-sm">
-                    {index + 1}
+        {/* Top Performing Weeks */}
+        <div className="bg-white p-fluid-6 rounded-2xl shadow-sm border border-gray-100">
+          <h4 className="text-gray-900 font-bold text-fluid-lg mb-4">Top Performing Weeks</h4>
+          {topWeeks.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No data available</p>
+          ) : (
+            <div className="space-y-4">
+              {topWeeks.map((week, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold",
+                      index === 0 ? "bg-yellow-100 text-yellow-700" : 
+                      index === 1 ? "bg-gray-200 text-gray-700" : "bg-white border border-gray-200 text-gray-500"
+                    )}>
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="text-gray-900 font-semibold text-sm">{week.week}</p>
+                      <p className="text-gray-500 text-xs">
+                        {new Date(week.startDate).getDate()} - {new Date(week.endDate).getDate()} {months[selectedMonth.month]}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {new Date(day.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' })}
-                    </p>
-                    <p className="text-xs text-gray-500">{day.orders} orders</p>
+                  <div className="text-right">
+                    <p className="text-gray-900 font-bold text-sm">{formatCurrency(week.revenue)}</p>
+                    <p className="text-gray-500 text-xs">{week.orders} orders</p>
                   </div>
                 </div>
-                <span className="text-lg font-bold text-gray-900">{formatCurrency(day.revenue)}</span>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Weekly Breakdown Table */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-fluid-6 border-b border-gray-100">
+          <h4 className="text-gray-900 font-bold text-fluid-lg">Weekly Breakdown</h4>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50/50">
+                <th className="text-left p-fluid-4 text-gray-500 font-medium text-fluid-xs uppercase">Period</th>
+                <th className="text-left p-fluid-4 text-gray-500 font-medium text-fluid-xs uppercase">Orders</th>
+                <th className="text-left p-fluid-4 text-gray-500 font-medium text-fluid-xs uppercase">Revenue</th>
+                <th className="text-left p-fluid-4 text-gray-500 font-medium text-fluid-xs uppercase">Avg/Order</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {weeklyStats.map((stat, index) => (
+                <tr key={index} className="hover:bg-gray-50 transition-colors">
+                  <td className="p-fluid-4">
+                    <span className="font-bold text-gray-900 text-fluid-sm">{stat.week}</span>
+                    <span className="block text-gray-500 text-fluid-xs mt-0.5">
+                      {new Date(stat.startDate).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' })} - {new Date(stat.endDate).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' })}
+                    </span>
+                  </td>
+                  <td className="p-fluid-4">
+                    <span className="text-gray-900 text-fluid-sm">{stat.orders}</span>
+                  </td>
+                  <td className="p-fluid-4">
+                    <span className="font-bold text-green-600 text-fluid-sm">{formatCurrency(stat.revenue)}</span>
+                  </td>
+                  <td className="p-fluid-4">
+                    <span className="text-gray-600 text-fluid-sm">
+                      {stat.orders > 0 ? formatCurrency(stat.revenue / stat.orders) : "Rp 0"}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   );
 }

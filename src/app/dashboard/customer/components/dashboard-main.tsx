@@ -196,32 +196,21 @@ export default function DashboardMain() {
   const finalizeOrder = useCallback(
     async (orderIdToFinalize: string, method: string = "qris") => {
       try {
-        // PERBAIKAN: Gunakan endpoint /api/orders yang benar
         const response = await fetch("/api/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          // PERBAIKAN: Sesuaikan body dengan apa yang diminta app/api/orders/route.ts
           body: JSON.stringify({
-            // Backend butuh field flat, bukan object 'customerInfo'
             customerName: customerInfo.name,
             customerPhone: customerInfo.phone,
-
-            // Field standar
             orderType,
             tableId: selectedTable?.tableId,
-            tableNumber: selectedTable?.tableNumber, // Penting untuk dine-in
-
-            // Items (Struktur CartItem kita sudah cocok dengan Backend)
+            tableNumber: selectedTable?.tableNumber,
             items: cart,
-
-            // Data Keuangan
             subtotal,
             tax,
             serviceCharge,
             discount: 0,
             totalAmount,
-
-            // Data Pembayaran & Status
             paymentMethod: method, 
             paymentStatus: "paid",
             customerNotes: customerInfo.notes,
@@ -234,9 +223,8 @@ export default function DashboardMain() {
           throw new Error(data.error || "Failed to finalize order");
         }
 
-        // Set state untuk tampilan success
         setOrderId(orderIdToFinalize);
-        setOrderNumber(data.orderNumber); // Ambil nomor order cantik dari backend
+        setOrderNumber(data.orderNumber);
         setPaymentMethod(method);
       } catch (error) {
         console.error("Error finalizing order:", error);
@@ -259,7 +247,6 @@ export default function DashboardMain() {
 
   // --- PAYMENT via MIDTRANS ---
   const handlePlaceOrder = useCallback(async () => {
-    // 1. Validasi
     if (orderType === "dine-in" && !selectedTable) {
       alert("Please select a table for dine-in order!");
       return;
@@ -273,7 +260,6 @@ export default function DashboardMain() {
     setIsLoading(true);
 
     try {
-      // 2. Buat Snap Token
       const response = await fetch("/api/payments/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -300,7 +286,6 @@ export default function DashboardMain() {
         onSuccess: function (result: any) {
           console.log("Payment success:", result);
           paymentCompleted = true;
-          // Hapus .toUpperCase() dan gunakan "qris" (huruf kecil)
           const method = result.payment_type ? result.payment_type : "qris";
 
           finalizeOrder(currentOrderId, method);
@@ -310,8 +295,6 @@ export default function DashboardMain() {
         onPending: function (result: any) {
           console.log("Payment pending:", result);
           paymentCompleted = true;
-
-          // PERUBAHAN DI SINI:
           const method = result.payment_type ? result.payment_type : "qris";
 
           finalizeOrder(currentOrderId, method);
@@ -324,15 +307,11 @@ export default function DashboardMain() {
           setIsLoading(false);
         },
 
-        // --- LOGIC: CLOSE MODAL = SUCCESS (BYPASS) ---
         onClose: function () {
           console.log("Payment popup closed");
 
           if (!paymentCompleted) {
             console.log("Auto-completing payment as qris (sandbox mode)");
-
-            // PERUBAHAN DI SINI:
-            // Pastikan kirim string "qris" (huruf kecil) agar lolos validasi DB
             finalizeOrder(currentOrderId, "qris");
           }
 
@@ -421,12 +400,14 @@ export default function DashboardMain() {
       <div className="mt-6">
         <div
           className={
-            currentStep === 5
-              ? "max-w-3xl mx-auto"
+            // PERUBAHAN 1: Step 1 (Info) dan Step 5 (Payment) menggunakan layout centered (Max Width)
+            currentStep === 1 || currentStep === 5
+              ? "max-w-4xl mx-auto" // Gunakan max-w-4xl agar layout 2 kolom di Step 1 lebih lega
               : "grid grid-cols-1 lg:grid-cols-12 gap-6"
           }
         >
-          <div className={currentStep === 5 ? "w-full" : "lg:col-span-8"}>
+          {/* PERUBAHAN 2: Lebar kolom full pada Step 1 & 5 */}
+          <div className={currentStep === 1 || currentStep === 5 ? "w-full" : "lg:col-span-8"}>
             <div className={`min-h-screen`}>
               {currentStep === 1 && (
                 <Step1CustomerInfo
@@ -488,14 +469,10 @@ export default function DashboardMain() {
             </div>
           </div>
 
-          {currentStep !== 5 && (
+          {currentStep !== 1 && currentStep !== 5 && (
             <div className={`lg:col-span-4`}>
               <div
-                className={`sticky top-6 transition-opacity duration-200 ${
-                  currentStep === 1
-                    ? "opacity-0 pointer-events-none"
-                    : "opacity-100"
-                }`}
+                className={`sticky top-6 transition-opacity duration-200 opacity-100`}
               >
                 <OrderSummary
                   cart={cart}

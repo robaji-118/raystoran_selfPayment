@@ -415,7 +415,7 @@ export default function CompletedDeliveriesView({
 
           {/* PAGINATION CONTROLS */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-4 mt-8">
+            <div className="flex justify-between items-center gap-4 mt-8">
               <button
                 onClick={prevPage}
                 disabled={currentPage === 1}
