@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Home } from "lucide-react";
 import DashboardMain from "./components/dashboard-main";
-import MyOrders from "./components/my-orders";
 
 export default function CustomerDashboard() {
   const router = useRouter();
@@ -18,8 +17,6 @@ export default function CustomerDashboard() {
     switch (currentView) {
       case 'dashboard':
         return <DashboardMain />;
-      case 'orders':
-        return <MyOrders />;
       default:
         return <DashboardMain />;
     }

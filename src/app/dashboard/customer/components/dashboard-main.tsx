@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/dashboard/customer/components/dashboard-main.tsx
 "use client";
 
@@ -390,7 +391,9 @@ export default function DashboardMain() {
   };
 
   return (
-    <div className="space-y-4">
+    // TAMBAHKAN padding (px-4) dan max-w pada container utama
+    <div className="space-y-4 px-4 pb-20 md:px-6 lg:px-8 xl:max-w-7xl xl:mx-auto min-h-screen">
+      
       <StepIndicator
         steps={STEPS}
         currentStep={currentStep}
@@ -400,15 +403,13 @@ export default function DashboardMain() {
       <div className="mt-6">
         <div
           className={
-            // PERUBAHAN 1: Step 1 (Info) dan Step 5 (Payment) menggunakan layout centered (Max Width)
             currentStep === 1 || currentStep === 5
-              ? "max-w-4xl mx-auto" // Gunakan max-w-4xl agar layout 2 kolom di Step 1 lebih lega
+              ? "max-w-4xl mx-auto"
               : "grid grid-cols-1 lg:grid-cols-12 gap-6"
           }
         >
-          {/* PERUBAHAN 2: Lebar kolom full pada Step 1 & 5 */}
           <div className={currentStep === 1 || currentStep === 5 ? "w-full" : "lg:col-span-8"}>
-            <div className={`min-h-screen`}>
+            <div className={`min-h-[60vh]`}> {/* Ubah min-h agar tidak terlalu panjang kosongnya di mobile */}
               {currentStep === 1 && (
                 <Step1CustomerInfo
                   customerInfo={customerInfo}

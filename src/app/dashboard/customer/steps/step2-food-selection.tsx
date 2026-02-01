@@ -3,8 +3,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Minus, ChefHat, Clock, ImageIcon, ShoppingBag } from "lucide-react";
+import { Plus, Minus, ChefHat, Clock, ImageIcon } from "lucide-react";
 import { CartItem } from "../components/dashboard-main";
+import { cn } from "@/lib/utils";
 
 interface MenuItem {
   _id: string;
@@ -34,7 +35,6 @@ export default function Step2FoodSelection({
 }: Step2FoodSelectionProps) {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [animatingOut, setAnimatingOut] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchMenuItems();
@@ -82,25 +82,11 @@ export default function Step2FoodSelection({
     return `/uploads/${imagePath}`;
   };
 
-  const handleDecreaseQuantity = (menuItemId: string, currentQuantity: number) => {
-    if (currentQuantity === 1) {
-      // Trigger animasi keluar sebelum menghapus
-      setAnimatingOut(prev => ({ ...prev, [menuItemId]: true }));
-      
-      // Tunggu animasi selesai baru update quantity
-      setTimeout(() => {
-        onUpdateQuantity(menuItemId, 0);
-        setAnimatingOut(prev => ({ ...prev, [menuItemId]: false }));
-      }, 200); // Durasi sama dengan animasi
-    } else {
-      onUpdateQuantity(menuItemId, currentQuantity - 1);
-    }
-  };
-
   return (
     <div className="space-y-6">
       {menuItems.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5 lg:gap-6">
+        // MOBILE: Flex Column (List), DESKTOP: Grid
+        <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {menuItems.map((item) => {
             const cartQuantity = getCartQuantity(item._id);
             const imageUrl = getImageUrl(item.image);
@@ -109,10 +95,22 @@ export default function Step2FoodSelection({
             return (
               <div
                 key={item._id}
-                className="group relative bg-white rounded-3xl overflow-hidden transition-all duration-300 border border-gray-100"
+                className={cn(
+                  "group relative bg-white rounded-2xl overflow-hidden transition-all duration-300 border border-gray-100 shadow-sm",
+                  // MOBILE STYLE: Horizontal Layout
+                  "flex flex-row sm:flex-col h-28 sm:h-auto"
+                )}
               >
-                {/* Image Container with aspect ratio */}
-                <div className="relative bg-gray-100 overflow-hidden" style={{ paddingBottom: '90%' }}>
+                {/* --- IMAGE SECTION --- */}
+                <div 
+                  className={cn(
+                    "relative bg-gray-100 overflow-hidden flex-shrink-0",
+                    // Mobile: Fixed width 110px
+                    "w-[110px] h-full",
+                    // Desktop: Full width, aspect ratio
+                    "sm:w-full sm:h-auto sm:aspect-[4/3]"
+                  )}
+                >
                   {imageUrl ? (
                     <img 
                       src={imageUrl}
@@ -123,94 +121,82 @@ export default function Step2FoodSelection({
                       }}
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-50">
-                      <ImageIcon className="w-20 h-20 text-gray-300" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+                      <ImageIcon className="w-8 h-8 text-gray-300" />
                     </div>
                   )}
                   
                   {/* Sold Out Overlay */}
                   {isSoldOut && (
                     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
-                      <div className="bg-white/95 px-6 py-3 rounded-full shadow-xl">
-                        <span className="text-base font-bold text-black">
-                          SOLD OUT
-                        </span>
-                      </div>
+                      <span className="text-xs sm:text-sm font-bold text-white px-2 py-1 bg-black/50 rounded">
+                        SOLD
+                      </span>
                     </div>
                   )}
 
-                  {/* Time Badge */}
-                  <div className="absolute bottom-4 right-2">
-                    <div className="bg-white/95 backdrop-blur-sm p-2 rounded-full flex items-center gap-2 shadow-lg border border-gray-200">
-                      <Clock className="w-4 h-4 text-gray-700" />
-                      <span className="!text-sm text-black">{item.preparationTime}m</span>
+                  {/* Time Badge (Desktop Only or Tiny on Mobile) */}
+                  <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3">
+                    <div className="bg-white/90 backdrop-blur-sm px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full flex items-center gap-1 shadow-sm text-[10px] sm:text-xs">
+                      <Clock className="w-3 h-3 text-gray-500" />
+                      <span className="font-medium text-gray-900">{item.preparationTime}m</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Content Section */}
-                <div className="p-5">
-                  {/* Price */}
-                  <div className="mb-4">
-                    <p className="!text-sm lg:text-3xl font-bold text-gray-500">
+                {/* --- CONTENT SECTION --- */}
+                <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between">
+                  <div>
+                    {/* Name */}
+                    <h4 className="text-sm sm:text-base font-bold text-gray-900 line-clamp-2 leading-tight mb-1 sm:mb-2">
+                      {item.name}
+                    </h4>
+                    {/* Price */}
+                    <p className="text-sm font-semibold text-gray-500">
                       Rp {item.price.toLocaleString()}
                     </p>
                   </div>
 
-                  {/* Name */}
-                  <h4 className="lg:text-lg text-gray-700 font-semibold line-clamp-2 leading-tight mb-4 min-h-[3rem]">
-                    {item.name}
-                  </h4>
-
-                  {/* Action Button / Quantity Controls - Container dengan posisi relative */}
-                  <div className="relative h-10 flex items-center justify-end">
-                    {/* Plus Button (Always visible as base) */}
-                    <button
-                      onClick={() => {
-                        if (cartQuantity === 0) {
-                          onAddToCart({
-                            menuItemId: item._id,
-                            menuItemName: item.name,
-                            price: item.price,
-                            quantity: 1,
-                            category: 'food'
-                          });
-                        } else {
-                          onUpdateQuantity(item._id, cartQuantity + 1);
-                        }
-                      }}
-                      disabled={isSoldOut}
-                      className={`w-10 h-10 flex items-center justify-center rounded-full font-bold transition-all active:scale-95 ${
-                        isSoldOut
-                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                          : "bg-gray-900 hover:bg-gray-800 text-white shadow-lg"
-                      }`}
-                    >
-                      <Plus className="w-5 h-5 text-white" />
-                    </button>
-
-                    {/* Quantity Controls Overlay - Muncul di atas Plus button */}
-                    {cartQuantity > 0 && (
-                      <div className="absolute right-0 bg-white px-2 py-2 flex items-center gap-2 rounded-full animate-in slide-in-from-right duration-200">
-                        {/* Minus Button */}
+                  {/* --- QUANTITY CONTROLS --- */}
+                  <div className="flex items-center justify-end mt-2">
+                    {cartQuantity === 0 ? (
+                      <button
+                        onClick={() => onAddToCart({
+                          menuItemId: item._id,
+                          menuItemName: item.name,
+                          price: item.price,
+                          quantity: 1,
+                          category: 'food'
+                        })}
+                        disabled={isSoldOut}
+                        className={cn(
+                          "flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95",
+                          isSoldOut
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-black text-white hover:bg-gray-800 shadow-sm"
+                        )}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add
+                      </button>
+                    ) : (
+                      <div className="flex items-center bg-gray-50 rounded-full border border-gray-200 p-0.5 shadow-sm animate-in zoom-in duration-200">
                         <button
                           onClick={() => onUpdateQuantity(item._id, cartQuantity - 1)}
-                          className="w-10 h-10 flex items-center justify-center bg-white hover:bg-gray-50 text-gray-900 rounded-full transition-all active:scale-90 shadow-sm border border-gray-200"
+                          className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-white hover:bg-gray-100 text-gray-900 rounded-full transition-colors border border-gray-100 shadow-sm"
                         >
-                          <Minus className="w-4 h-4" />
+                          <Minus className="w-3.5 h-3.5" />
                         </button>
                         
-                        {/* Quantity Display */}
-                        <span className="text-base font-bold text-gray-900 min-w-[24px] text-center">
+                        <span className="w-6 sm:w-8 text-center text-sm font-bold text-gray-900">
                           {cartQuantity}
                         </span>
                         
-                        {/* Plus Button (dalam quantity controls) */}
                         <button
                           onClick={() => onUpdateQuantity(item._id, cartQuantity + 1)}
-                          className="w-10 h-10 flex items-center justify-center bg-gray-900 hover:bg-gray-800 text-white rounded-full transition-all active:scale-90 shadow-lg"
+                          className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-black hover:bg-gray-800 text-white rounded-full transition-colors shadow-sm"
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     )}
@@ -221,14 +207,12 @@ export default function Step2FoodSelection({
           })}
         </div>
       ) : (
-        <div className="text-center py-24 bg-white rounded-3xl shadow-lg">
-          <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-            <ChefHat className="w-12 h-12 text-gray-400" />
+        <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
+          <div className="w-16 h-16 bg-gray-50 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <ChefHat className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-gray-900 font-bold text-xl mb-3">No Food Items Available</p>
-          <p className="text-base text-gray-500">
-            Check back later for menu updates
-          </p>
+          <p className="text-gray-900 font-bold text-lg mb-1">No Food Items</p>
+          <p className="text-sm text-gray-500">Check back later for menu updates</p>
         </div>
       )}
     </div>
