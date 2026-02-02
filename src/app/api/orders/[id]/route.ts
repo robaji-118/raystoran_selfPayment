@@ -63,15 +63,10 @@ export async function PATCH(
     }
 
     // B. Status: READY (Trigger Email "Siap Diantar")
-    if (body.orderStatus === 'ready' && !order.readyAt) {
-      updateData.readyAt = new Date();
-      await OrderItem.updateMany(
-        { orderId: id, status: 'preparing' }, 
-        { status: 'ready', readyAt: new Date() }
-      );
-
-      // Kirim Email
+    if (body.orderStatus === 'delivering' && !order.deliveringAt) {
+      updateData.deliveringAt = new Date();
       if (order.customerEmail) {
+        console.log("Sending delivering email to:", order.customerEmail);
         sendReadyEmail(
           order.customerEmail,
           order.customerName,
