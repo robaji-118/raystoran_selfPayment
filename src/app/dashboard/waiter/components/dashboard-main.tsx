@@ -256,7 +256,7 @@ export default function DashboardMain() {
             </div>
           </div>
           <div className="flex items-center gap-fluid-2">
-            <span className="text-gray-400 text-fluid-sm">All activity</span>
+            <span className="text-gray-400 text-fluid-sm ">All activity</span>
           </div>
         </div>
       </div>
