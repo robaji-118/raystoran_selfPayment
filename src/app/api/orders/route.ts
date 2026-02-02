@@ -17,51 +17,69 @@ export async function GET(request: NextRequest) {
     await connectDB();
 
     // --- LOGIC 1: AUTO CANCEL DORMANT ORDERS (> 10 JAM) ---
-    const ONE_HOURS_IN_MS = 1 * 60 * 60 * 1000;
+    // REVISI: Update Order DAN OrderItem sekaligus
+    
+    const ONE_HOURS_IN_MS = 1 * 60 * 60 * 1000; // Ubah ke 10 jam sesuai komentar (sebelumnya 1 jam)
     const cutOffTime = new Date(Date.now() - ONE_HOURS_IN_MS);
 
-    // Update orders yang:
-    // 1. Terakhir update > 10 jam lalu
-    // 2. Statusnya MASIH AKTIF (belum selesai/batal) 
-    await Order.updateMany(
-      {
-        updatedAt: { $lt: cutOffTime },
-        orderStatus: { 
-          $nin: ["completed", "cancelled", "refunded", "served"] 
-        }
-      },
-      {
-        $set: {
-          orderStatus: "cancelled",
-          cancellationReason: "System: Auto-cancelled due to inactivity (10h)",
-          updatedAt: new Date()
-        }
+    // 1. Cari dulu order yang 'basi' (dormant)
+    const dormantOrders = await Order.find({
+      updatedAt: { $lt: cutOffTime },
+      orderStatus: { 
+        $nin: ["completed", "cancelled", "refunded", "served"] 
       }
-    );
+    }).select("_id"); // Kita cuma butuh ID-nya
+
+    if (dormantOrders.length > 0) {
+      const dormantOrderIds = dormantOrders.map(order => order._id);
+
+      // 2. Update Status Parent (ORDER) menjadi cancelled
+      await Order.updateMany(
+        { _id: { $in: dormantOrderIds } },
+        {
+          $set: {
+            orderStatus: "cancelled",
+            cancellationReason: "System: Auto-cancelled due to inactivity (10h)",
+            updatedAt: new Date()
+          }
+        }
+      );
+
+      // 3. Update Status Child (ORDER ITEMS) menjadi cancelled juga
+      // INI YANG KURANG SEBELUMNYA
+      await OrderItem.updateMany(
+        { orderId: { $in: dormantOrderIds } },
+        {
+          $set: {
+            status: "cancelled" 
+          }
+        }
+      );
+      
+      console.log(`Auto-cancelled ${dormantOrders.length} dormant orders and their items.`);
+    }
     // ------------------------------------------------------
 
+    // ... sisa kode fetch data query params (tidak berubah) ...
     const { searchParams } = new URL(request.url);
+    // ... dst ...
+    
+    // (Kode di bawah ini sama seperti sebelumnya, hanya copy paste bagian bawah file kamu)
     const status = searchParams.get("status");
     const tableId = searchParams.get("tableId");
     const orderType = searchParams.get("orderType");
     
-    // Build query
     const query: any = {};
-    
     if (status) query.orderStatus = status;
     if (tableId) query.tableId = tableId;
     if (orderType && (orderType === "dine-in" || orderType === "take-away")) {
       query.orderType = orderType;
     }
 
-    // Get orders - sort by newest first
     const orders = await Order.find(query).sort({ createdAt: -1 }).lean();
-
-    // Get all order items for these orders
     const orderIds = orders.map(order => order._id);
     const allItems = await OrderItem.find({ orderId: { $in: orderIds } }).lean();
 
-    // Group items by orderId
     const itemsByOrder = allItems.reduce((acc: any, item: any) => {
       const orderId = item.orderId.toString();
       if (!acc[orderId]) acc[orderId] = [];
@@ -69,7 +87,6 @@ export async function GET(request: NextRequest) {
       return acc;
     }, {});
 
-    // Attach items to orders
     const ordersWithItems = orders.map(order => ({
       ...order,
       items: itemsByOrder[order._id.toString()] || []
@@ -80,6 +97,7 @@ export async function GET(request: NextRequest) {
       data: ordersWithItems,
       count: ordersWithItems.length
     });
+
   } catch (error: any) {
     console.error("GET Orders Error:", error);
     return NextResponse.json(

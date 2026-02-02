@@ -4,17 +4,19 @@
 import { useState, useEffect } from "react";
 import {
   Truck,
-  Clock,
   CheckCircle,
   Package,
   TrendingUp,
   AlertCircle,
   ChefHat,
-  Table2,
   ArrowRight,
-  UtensilsCrossed,
+  Clock,
+  XCircle,
+  ClipboardList,
+  RefreshCw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface OrderItem {
   _id: string;
@@ -79,7 +81,17 @@ export default function DashboardMain() {
     return diff;
   };
 
-  // Helper untuk format currency (sama seperti Kitchen)
+  const getTimeAgo = (date: string | null): string => {
+    if (!date) return "—";
+    const minutes = getElapsedTime(date);
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return `${minutes} min ago`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (mins === 0) return `${hours}h ago`;
+    return `${hours}h ${mins}m ago`;
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -88,22 +100,80 @@ export default function DashboardMain() {
     }).format(amount);
   };
 
+  // Badge Status Helper (DIPERBARUI)
+  const getStatusBadge = (status: string) => {
+    const s = status.toLowerCase();
+
+    // 1. CONFIRMED (Order Baru Masuk / Belum Dimasak) - Warna Biru
+    if (s === "confirmed") {
+      return (
+        <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-fluid-xs font-medium border border-blue-200">
+          New Order
+        </span>
+      );
+    }
+    // 2. READY (Siap Saji) - Warna Hijau
+    else if (s === "ready") {
+      return (
+        <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-fluid-xs font-medium border border-green-200 animate-pulse">
+          Ready
+        </span>
+      );
+    }
+    // 3. DELIVERING (Sedang Diantar) - Warna Indigo (Biar beda sama Confirmed)
+    else if (s === "delivering") {
+      return (
+        <span className="px-2 py-1 rounded-full bg-indigo-100 text-indigo-800 text-fluid-xs font-medium border border-indigo-200">
+          Delivering
+        </span>
+      );
+    }
+    // 4. COMPLETED / SERVED (Selesai) - Warna Abu
+    else if (s === "completed" || s === "served") {
+      return (
+        <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-fluid-xs font-medium border border-gray-200">
+          Served
+        </span>
+      );
+    }
+    // 5. CANCELLED (Batal) - Warna Merah
+    else if (s === "cancelled") {
+      return (
+        <span className="px-2 py-1 rounded-full bg-red-100 text-red-800 text-fluid-xs font-medium border border-red-200">
+          Cancelled
+        </span>
+      );
+    }
+    // 6. PREPARING (Sedang Dimasak) - Default Orange
+    else {
+      return (
+        <span className="px-2 py-1 rounded-full bg-orange-100 text-orange-800 text-fluid-xs font-medium border border-orange-200">
+          Cooking
+        </span>
+      );
+    }
+  };
+
   return (
-    <div className="min-h-screen p-6">
-      {/* Stats Cards - STYLING DISAMAKAN DENGAN KITCHEN */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="min-h-screen">
+      {/* Stats Cards - Styling identical to Kitchen */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-fluid-4 mb-fluid-6">
         {/* Ready Orders Card */}
-        <div 
+        <div
           onClick={() => router.push("/dashboard/waiter?view=deliveries-ready")}
-          className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow group"
+          className="bg-white rounded-2xl p-fluid-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow group"
         >
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-fluid-4">
             <div>
-              <p className="text-gray-500 mb-1 text-base font-medium">Ready Orders</p>
-              <h4 className="font-bold text-gray-900 text-3xl">{stats.readyOrders}</h4>
+              <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+                Ready Orders
+              </p>
+              <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                {stats.readyOrders}
+              </h4>
             </div>
-            <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center group-hover:bg-green-100 transition-colors relative">
-              <ChefHat className="w-6 h-6 text-green-600" />
+            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center relative">
+              <ChefHat className="w-5 h-5 text-green-600" />
               {stats.readyOrders > 0 && (
                 <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -112,268 +182,259 @@ export default function DashboardMain() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-green-600 text-sm font-medium">Action Needed</span>
-            <span className="text-gray-400 text-sm">• Ready to deliver</span>
+          <div className="flex items-center gap-fluid-2">
+            <span className="text-gray-400 text-fluid-sm">Action needed</span>
           </div>
         </div>
 
         {/* Delivering Card */}
-        <div 
-          onClick={() => router.push("/dashboard/waiter?view=deliveries-active")}
-          className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow group"
+        <div
+          onClick={() =>
+            router.push("/dashboard/waiter?view=deliveries-active")
+          }
+          className="bg-white rounded-2xl p-fluid-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow group"
         >
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-fluid-4">
             <div>
-              <p className="text-gray-500 mb-1 text-base font-medium">Delivering</p>
-              <h4 className="font-bold text-gray-900 text-3xl">{stats.delivering}</h4>
+              <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+                Delivering
+              </p>
+              <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                {stats.delivering}
+              </h4>
             </div>
-            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-              <Truck className="w-6 h-6 text-blue-600" />
+            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+              <Truck className="w-5 h-5 text-blue-600" />
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-blue-600 text-sm font-medium">In Progress</span>
-            <span className="text-gray-400 text-sm">• On the way</span>
+          <div className="flex items-center gap-fluid-2">
+            <span className="text-gray-400 text-fluid-sm">In progress</span>
           </div>
         </div>
 
         {/* Completed Card */}
-        <div 
-          onClick={() => router.push("/dashboard/waiter?view=deliveries-completed")}
-          className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow group"
+        <div
+          onClick={() =>
+            router.push("/dashboard/waiter?view=deliveries-completed")
+          }
+          className="bg-white rounded-2xl p-fluid-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow group"
         >
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-fluid-4">
             <div>
-              <p className="text-gray-500 mb-1 text-base font-medium">Completed</p>
-              <h4 className="font-bold text-gray-900 text-3xl">{stats.completed}</h4>
+              <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+                Completed
+              </p>
+              <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                {stats.completed}
+              </h4>
             </div>
-            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center group-hover:bg-purple-100 transition-colors">
-              <CheckCircle className="w-6 h-6 text-purple-600" />
+            <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-purple-600" />
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-purple-600 text-sm font-medium">Done</span>
-            <span className="text-gray-400 text-sm">• Served today</span>
+          <div className="flex items-center gap-fluid-2">
+            <span className="text-gray-400 text-fluid-sm">Served today</span>
           </div>
         </div>
 
         {/* Total Active Card */}
-        <div 
+        <div
           onClick={() => router.push("/dashboard/waiter?view=tables")}
-          className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow group"
+          className="bg-white rounded-2xl p-fluid-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow group"
         >
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-fluid-4">
             <div>
-              <p className="text-gray-500 mb-1 text-base font-medium">All Orders</p>
-              <h4 className="font-bold text-gray-900 text-3xl">{stats.total}</h4>
+              <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+                Total Orders
+              </p>
+              <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                {stats.total}
+              </h4>
             </div>
-            <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center group-hover:bg-orange-100 transition-colors">
-              <Table2 className="w-6 h-6 text-orange-600" />
+            <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-orange-600" />
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-orange-600 text-sm font-medium">Active</span>
-            <span className="text-gray-400 text-sm">• Total activity</span>
+          <div className="flex items-center gap-fluid-2">
+            <span className="text-gray-400 text-fluid-sm">All activity</span>
           </div>
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        
-        {/* Urgent Deliveries Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col">
-          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-green-600" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-fluid-4">
+        <div className="lg:col-span-1 space-y-fluid-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full max-h-[600px]">
+            {/* Header */}
+            <div className="p-fluid-6 border-b border-gray-100 bg-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <AlertCircle className="w-5 h-5 text-gray-600" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+                </div>
+                <h3 className="font-bold text-gray-900 text-fluid-lg">
+                  Ready to Serve
+                </h3>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Ready to Serve</h3>
-                <p className="text-sm text-gray-500">Orders waiting for pickup</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="p-6 flex-1">
-            {orders.filter((o) => o.orderStatus === "ready").slice(0, 3).length > 0 ? (
-              <div className="space-y-3">
-                {orders
-                  .filter((o) => o.orderStatus === "ready")
-                  .slice(0, 3)
-                  .map((order) => (
-                    <div
-                      key={order._id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-green-200 transition-colors group"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-lg">
-                          {order.tableNumber}
-                        </div>
-                        <div>
-                          <p className="text-gray-900 font-bold text-lg">#{order.orderNumber}</p>
-                          <p className="text-sm text-gray-500 flex items-center gap-1">
-                            <UtensilsCrossed className="w-3 h-3" /> {order.items.length} Items
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-100 text-green-800 text-xs font-bold mb-1">
-                          READY
-                        </span>
-                        {order.readyAt && (
-                          <p className="text-xs text-gray-500 font-medium">
-                             {getElapsedTime(order.readyAt)} min ago
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                
-                {orders.filter((o) => o.orderStatus === "ready").length > 3 && (
-                  <button
-                    onClick={() => router.push("/dashboard/waiter?view=deliveries-ready")}
-                    className="w-full mt-2 py-3 flex items-center justify-center gap-2 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg font-medium transition-colors border border-gray-200"
-                  >
-                    View all {orders.filter((o) => o.orderStatus === "ready").length} ready orders <ArrowRight className="w-4 h-4" />
-                  </button>
+              <div className="flex items-center gap-2">
+                {loading && (
+                  <RefreshCw className="w-3 h-3 text-gray-400 animate-spin" />
                 )}
               </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center py-8 text-center">
-                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                  <CheckCircle className="w-8 h-8 text-gray-300" />
-                </div>
-                <h4 className="text-gray-900 font-medium">All caught up!</h4>
-                <p className="text-gray-500 text-sm mt-1">No orders waiting to be served.</p>
-              </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        {/* Today's Activity Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col">
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Today's Activity</h3>
-                <p className="text-sm text-gray-500">Delivery statistics overview</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="p-6 flex-1 flex flex-col justify-center space-y-4">
-             {/* Completed Stat Row */}
-             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-purple-600" />
+            {/* List Content - Background sedikit abu agar card putih terlihat jelas */}
+            <div className="p-fluid-4 overflow-y-auto flex-1 custom-scrollbar bg-gray-50/50">
+              {orders.filter((o) => o.orderStatus === "ready").length === 0 ? (
+                <div className="text-center py-12 flex flex-col items-center justify-center h-full">
+                  <div className="w-16 h-16 bg-white border border-gray-100 rounded-full flex items-center justify-center mb-3 shadow-sm">
+                    <CheckCircle className="w-8 h-8 text-gray-300" />
+                  </div>
+                  <p className="text-gray-900 font-medium">All caught up!</p>
+                  <p className="text-gray-500 text-fluid-sm">
+                    Waiting for kitchen...
+                  </p>
                 </div>
-                <span className="text-gray-700 font-medium">Completed Deliveries</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">{stats.completed}</span>
-            </div>
-            
-            {/* In Progress Stat Row */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Truck className="w-5 h-5 text-blue-600" />
-                </div>
-                <span className="text-gray-700 font-medium">Currently Delivering</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">{stats.delivering}</span>
-            </div>
-            
-            {/* Pending Stat Row */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-orange-600" />
-                </div>
-                <span className="text-gray-700 font-medium">Pending / Cooking</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">{stats.total - stats.completed - stats.delivering - stats.readyOrders}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+              ) : (
+                <div className="space-y-3">
+                  {orders
+                    .filter((o) => o.orderStatus === "ready")
+                    .map((order) => (
+                      // START: Clean Card Design (Putih & Border Abu)
+                      <div
+                        key={order._id}
+                        onClick={() =>
+                          router.push("/dashboard/waiter?view=deliveries-ready")
+                        }
+                        className="group bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-4">
+                            {/* Order Info */}
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-bold text-gray-900 text-sm">
+                                  #{order.orderNumber}
+                                </span>
 
-      {/* Recent Orders Table - STYLING SAMA SEPERTI KITCHEN TABLE */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
-                <Package className="w-5 h-5 text-gray-600" />
-              </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">Recent Orders</h3>
-              <p className="text-sm text-gray-500">Latest updates from the kitchen</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="text-center py-12">
-              <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No orders found</p>
-              <p className="text-gray-400 text-sm mt-1">Waiting for new orders...</p>
-            </div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50/50">
-                  <th className="text-left p-4 text-gray-600 font-medium text-sm">Order Details</th>
-                  <th className="text-left p-4 text-gray-600 font-medium text-sm">Table</th>
-                  <th className="text-left p-4 text-gray-600 font-medium text-sm">Status</th>
-                  <th className="text-left p-4 text-gray-600 font-medium text-sm">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {orders.slice(0, 5).map((order) => (
-                  <tr key={order._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div>
-                          <p className="text-gray-900 font-medium text-sm">#{order.orderNumber}</p>
-                          <p className="text-xs text-gray-500">{order.customerName}</p>
+                                {/* BADGE HIJAU (Hanya disini warna hijaunya) */}
+                                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full border border-green-200 flex items-center gap-1">
+                                  READY
+                                </span>
+                              </div>
+
+                              <div className="text-xs text-gray-500 flex items-center gap-1">
+                                <span>{order.items.length} Items</span>
+                                <span className="text-gray-300">•</span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />{" "}
+                                  {getTimeAgo(order.readyAt)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Arrow Icon (Netral) */}
+                          <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
                         </div>
                       </div>
-                    </td>
-                    <td className="p-4">
-                      <span className="px-2.5 py-1 rounded-md text-sm">
-                        Table {order.tableNumber}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                        order.orderStatus === "ready" ? "bg-green-100 text-green-800" :
-                        order.orderStatus === "delivering" ? "bg-blue-100 text-blue-800" :
-                        order.orderStatus === "completed" ? "bg-purple-100 text-purple-800" :
-                        "bg-gray-100 text-gray-800"
-                      }`}>
-                        {order.orderStatus === "ready" ? "READY TO SERVE" : order.orderStatus.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <p className="text-gray-900 font-medium text-sm">
-                        {formatCurrency(order.totalAmount)}
-                      </p>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                      // END: Clean Card Design
+                    ))}
+
+                  {orders.filter((o) => o.orderStatus === "ready").length >
+                    4 && (
+                    <button
+                      onClick={() =>
+                        router.push("/dashboard/waiter?view=deliveries-ready")
+                      }
+                      className="w-full py-3 text-center text-xs text-gray-500 font-medium hover:text-gray-800 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+                    >
+                      View All Ready Orders
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Recent Activity Table */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-fluid-6 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Package className="w-5 h-5 text-gray-400" />
+                <h3 className="font-bold text-gray-900 text-fluid-lg">
+                  Recent Orders
+                </h3>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              {loading ? (
+                <div className="flex items-center justify-center p-12">
+                  <div className="w-8 h-8 border-2 border-gray-200 border-t-black rounded-full animate-spin"></div>
+                </div>
+              ) : orders.length === 0 ? (
+                <div className="p-12 text-center">
+                  <p className="text-gray-500 text-fluid-base">
+                    No orders found
+                  </p>
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-100">
+                      <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                        Order
+                      </th>
+                      <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                        Table
+                      </th>
+                      <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                        Status
+                      </th>
+                      <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                        Amount
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.slice(0, 6).map((order) => (
+                      <tr
+                        key={order._id}
+                        className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      >
+                        <td className="p-fluid-4">
+                          <div className="flex flex-col">
+                            <span className="font-medium text-gray-900 text-fluid-sm">
+                              #{order.orderNumber}
+                            </span>
+                            <span className="text-gray-500 text-fluid-xs">
+                              {order.customerName}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-fluid-4">
+                          <span className="text-gray-900 font-medium text-fluid-sm">
+                            Table {order.tableNumber}
+                          </span>
+                        </td>
+                        <td className="p-fluid-4">
+                          {getStatusBadge(order.orderStatus)}
+                        </td>
+                        <td className="p-fluid-4">
+                          <span className="font-medium text-gray-900 text-fluid-sm">
+                            {formatCurrency(order.totalAmount)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

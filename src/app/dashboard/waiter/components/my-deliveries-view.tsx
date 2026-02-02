@@ -145,50 +145,6 @@ export default function MyDeliveriesView({ userId }: MyDeliveriesViewProps) {
 
   return (
     <div className="p-6 min-h-screen bg-gray-50/50">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm font-medium mb-1">Active Deliveries</p>
-            <p className="text-3xl font-bold text-gray-900">
-              {filteredOrders.length}
-            </p>
-          </div>
-          <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
-            <Truck className="w-6 h-6 text-blue-600" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm font-medium mb-1">Total Items</p>
-            <p className="text-3xl font-bold text-gray-900">
-              {filteredOrders.reduce(
-                (sum, order) =>
-                  sum +
-                  order.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
-                0
-              )}
-            </p>
-          </div>
-          <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
-            <Package className="w-6 h-6 text-orange-600" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-sm font-medium mb-1">Total Value</p>
-            <p className="text-3xl font-bold text-gray-900">
-              {formatCurrency(filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0))}
-            </p>
-          </div>
-          <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
-            <DollarSign className="w-6 h-6 text-purple-600" />
-          </div>
-        </div>
-      </div>
-
       {/* Search */}
       <div className="mb-6">
         <div className="relative max-w-md">

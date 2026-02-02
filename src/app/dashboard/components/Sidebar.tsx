@@ -72,7 +72,7 @@ const menuConfig: MenuConfig = {
       label: "Deliveries",
       submenu: [
         { label: "Ready Orders", path: "/dashboard/waiter?view=deliveries-ready" },
-        { label: "My Deliveries", path: "/dashboard/waiter?view=deliveries-active" },
+        { label: "Order Deliveries", path: "/dashboard/waiter?view=deliveries-active" },
         { label: "Completed", path: "/dashboard/waiter?view=deliveries-completed" },
       ],
     },

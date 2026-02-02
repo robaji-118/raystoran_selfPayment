@@ -12,7 +12,7 @@ import {
   UtensilsCrossed, 
   CheckCircle2,
   MapPin,
-  ChevronDown
+  Mail // Tambahkan icon Mail
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 
 interface CustomerInfo {
   name: string;
+  email: string; // ✅ Tambahkan field email (wajib)
   phone?: string;
   notes?: string;
 }
@@ -59,6 +60,9 @@ export default function Step1CustomerInfo({
 }: Step1CustomerInfoProps) {
   const [tables, setTables] = useState<TableSelection[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // ✅ State untuk menyimpan pesan error validasi email
+  const [emailError, setEmailError] = useState<string>("");
 
   useEffect(() => {
     if (orderType === "dine-in") {
@@ -94,7 +98,20 @@ export default function Step1CustomerInfo({
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    onUpdateCustomerInfo({ ...customerInfo, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // ✅ Logika Validasi Email
+    if (name === "email") {
+      if (!value) {
+        setEmailError("Email is required");
+      } else if (!value.toLowerCase().endsWith("@gmail.com")) {
+        setEmailError("Email must use domain @gmail.com");
+      } else {
+        setEmailError(""); // Clear error jika valid
+      }
+    }
+
+    onUpdateCustomerInfo({ ...customerInfo, [name]: value });
   };
 
   const handleSelectChange = (value: string) => {
@@ -131,10 +148,41 @@ export default function Step1CustomerInfo({
                   value={customerInfo.name}
                   onChange={handleInputChange}
                   placeholder="e.g. Rojabby"
-                  // Clean White Background with simple border
                   className="pl-11 h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
                 />
               </div>
+            </div>
+
+            {/* ✅ Email Address (New Input) */}
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
+                Email Address <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative group">
+                <Mail className={cn(
+                  "absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
+                  emailError ? "text-red-400" : "text-gray-400 group-focus-within:text-black"
+                )} />
+                <Input
+                  name="email"
+                  type="email"
+                  value={customerInfo.email || ""}
+                  onChange={handleInputChange}
+                  placeholder="example@gmail.com"
+                  className={cn(
+                    "pl-11 h-12 bg-white border rounded-xl transition-all font-medium text-black placeholder:text-gray-300 focus:ring-1",
+                    emailError 
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50" 
+                      : "border-gray-300 focus:border-black focus:ring-black"
+                  )}
+                />
+              </div>
+              {/* Validation Message */}
+              {emailError && (
+                <p className="text-xs text-red-500 font-medium ml-1 animate-in slide-in-from-top-1">
+                  {emailError}
+                </p>
+              )}
             </div>
 
             {/* Phone Number */}
@@ -187,7 +235,7 @@ export default function Step1CustomerInfo({
               </div>
             </div>
 
-            {/* Order Type Selector - High Contrast Buttons */}
+            {/* Order Type Selector */}
             <div className="grid grid-cols-2 gap-4 mb-8">
               <button
                 type="button"
@@ -196,7 +244,7 @@ export default function Step1CustomerInfo({
                   "relative flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden group",
                   orderType === "dine-in"
                     ? "bg-black border-black text-white shadow-lg scale-[1.02]"
-                    : "bg-white border-gray-200 text-black hover:border-black hover:bg-gray-50" // gray-50 here is only for hover state interaction, barely visible
+                    : "bg-white border-gray-200 text-black hover:border-black hover:bg-gray-50"
                 )}
               >
                  {orderType === "dine-in" && (

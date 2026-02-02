@@ -29,7 +29,7 @@ export default function StepIndicator({
   return (
     <div
       className={cn(
-        "bg-white border border-gray-100 shadow-sm overflow-hidden",
+        "bg-white overflow-hidden",
         "mb-6 px-4 py-6 rounded-xl",
         "md:mx-6 lg:mx-8 xl:mx-auto xl:max-w-5xl",
         "md:mb-8 md:px-6 md:py-6 lg:rounded-2xl"
