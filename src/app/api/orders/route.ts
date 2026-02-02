@@ -4,97 +4,152 @@ import Order from "@/models/Order";
 import OrderItem from "@/models/OrderItem";
 import Table from "@/models/Table";
 
+// --- GET: Fetch All Orders & Auto-Cancel Dormant Orders ---
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
-
-    // 1. Auto-Cancel Logic (Cleaned)
-    const oneHoursAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
+    
+    const cutOffTime = new Date(Date.now() - 1 * 60 * 60 * 1000);
     const dormantOrders = await Order.find({
-      updatedAt: { $lt: oneHoursAgo },
+      updatedAt: { $lt: cutOffTime },
       orderStatus: { $nin: ["completed", "cancelled", "refunded", "served"] }
     }).select("_id");
 
     if (dormantOrders.length > 0) {
-      const ids = dormantOrders.map(o => o._id);
+      const ids = dormantOrders.map((o) => o._id);
       await Promise.all([
         Order.updateMany(
-          { _id: { $in: ids } }, 
-          { $set: { orderStatus: "cancelled", cancellationReason: "System: Auto-timeout", updatedAt: new Date() } }
+          { _id: { $in: ids } },
+          { 
+            $set: { 
+              orderStatus: "cancelled", 
+              cancellationReason: "System: Auto-timeout (10h inactivity)", 
+              updatedAt: new Date() 
+            } 
+          }
         ),
-        OrderItem.updateMany({ orderId: { $in: ids } }, { $set: { status: "cancelled" } })
+        OrderItem.updateMany(
+          { orderId: { $in: ids } }, 
+          { $set: { status: "cancelled" } }
+        )
       ]);
     }
 
-    // 2. Query Params Fetching
+    // 2. Handle Query Parameters
     const { searchParams } = new URL(request.url);
     const query: any = {};
     if (searchParams.get("status")) query.orderStatus = searchParams.get("status");
     if (searchParams.get("tableId")) query.tableId = searchParams.get("tableId");
     if (searchParams.get("orderType")) query.orderType = searchParams.get("orderType");
 
+    // 3. Fetch Data
     const orders = await Order.find(query).sort({ createdAt: -1 }).lean();
-    const orderIds = orders.map(o => o._id);
+    const orderIds = orders.map((o) => o._id);
     const allItems = await OrderItem.find({ orderId: { $in: orderIds } }).lean();
 
-    // Map items to orders
+    // 4. Map Items to Orders
     const itemsMap = allItems.reduce((acc: any, item: any) => {
       acc[item.orderId] = acc[item.orderId] || [];
       acc[item.orderId].push(item);
       return acc;
     }, {});
 
+    const enrichedOrders = orders.map((order) => ({
+      ...order,
+      items: itemsMap[order._id] || []
+    }));
+
     return NextResponse.json({
       success: true,
-      data: orders.map(order => ({ ...order, items: itemsMap[order._id] || [] })),
-      count: orders.length
+      data: enrichedOrders,
+      count: enrichedOrders.length
     });
 
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error("GET Orders Error:", error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Failed to fetch orders" }, 
+      { status: 500 }
+    );
   }
 }
 
+// --- POST: Create New Order ---
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
     const body = await request.json();
 
-    // Validation
+    // 1. Validation
     if (!body.customerName || !body.items?.length || !body.customerEmail) {
-      return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Missing required fields: Name, Email, or Items" }, 
+        { status: 400 }
+      );
     }
 
     if (!body.customerEmail.endsWith("@gmail.com")) {
-      return NextResponse.json({ success: false, error: "Invalid Gmail address" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Email must be a valid @gmail.com address" }, 
+        { status: 400 }
+      );
     }
 
     if (body.orderType === "dine-in") {
+      if (!body.tableId) {
+        return NextResponse.json({ success: false, error: "Table is required for dine-in" }, { status: 400 });
+      }
       const table = await Table.findById(body.tableId);
-      if (!table) return NextResponse.json({ success: false, error: "Table not found" }, { status: 404 });
+      if (!table) {
+        return NextResponse.json({ success: false, error: "Selected table not found" }, { status: 404 });
+      }
     }
 
-    // Generate Order Number
+    // 2. Generate Order Number (ORD-YYMMDD-XXXX)
     const now = new Date();
-    const prefix = `ORD-${now.getFullYear().toString().slice(-2)}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
-    const lastOrder = await Order.findOne({ orderNumber: { $regex: `^${prefix}` } }).sort({ createdAt: -1 });
+    const year = now.getFullYear().toString().slice(-2);
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const prefix = `ORD-${year}${month}${day}`;
+
+    const lastOrder = await Order.findOne({ orderNumber: { $regex: `^${prefix}` } })
+      .sort({ createdAt: -1 })
+      .select("orderNumber");
     
     let sequence = "0001";
-    if (lastOrder) {
-      const lastSeq = parseInt(lastOrder.orderNumber.split("-").pop() || "0");
-      sequence = String(lastSeq + 1).padStart(4, "0");
+    if (lastOrder?.orderNumber) {
+      const lastSeqStr = lastOrder.orderNumber.split("-").pop();
+      const lastSeqNum = parseInt(lastSeqStr || "0");
+      if (!isNaN(lastSeqNum)) {
+        sequence = String(lastSeqNum + 1).padStart(4, "0");
+      }
     }
+    const orderNumber = `${prefix}-${sequence}`;
 
-    // Create Order
+    // 3. Create Order
     const newOrder = await Order.create({
-      ...body,
-      orderNumber: `${prefix}-${sequence}`,
+      orderNumber,
+      customerId: body.customerId || null,
+      orderType: body.orderType || "dine-in",
+      tableId: body.orderType === "dine-in" ? body.tableId : null,
+      tableNumber: body.orderType === "dine-in" ? body.tableNumber : "Take Away",
+      customerName: body.customerName,
+      customerEmail: body.customerEmail, // ✅ Email Saved Here
+      customerPhone: body.customerPhone || null,
+      customerNotes: body.customerNotes || null,
+      orderStatus: "confirmed",
       confirmedAt: new Date(),
-      paymentStatus: "paid", // As per your logic
-      paidAt: new Date()
+      subtotal: body.subtotal,
+      tax: body.tax || 0,
+      serviceCharge: body.serviceCharge || 0,
+      discount: body.discount || 0,
+      totalAmount: body.totalAmount,
+      paymentStatus: body.paymentStatus || "pending",
+      paymentMethod: body.paymentMethod || null,
+      paidAt: body.paymentStatus === "paid" ? new Date() : null,
     });
 
-    // Create Items
+    // 4. Create Order Items
     const orderItems = await OrderItem.insertMany(
       body.items.map((item: any) => ({
         orderId: newOrder._id,
@@ -103,7 +158,7 @@ export async function POST(request: NextRequest) {
         quantity: item.quantity,
         price: item.price,
         subtotal: item.price * item.quantity,
-        notes: item.notes,
+        notes: item.notes || null,
         status: "preparing",
         cookingStartedAt: new Date()
       }))
@@ -111,12 +166,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Order created",
+      message: "Order created successfully",
+      orderNumber: newOrder.orderNumber,
       data: { ...newOrder.toObject(), items: orderItems }
     }, { status: 201 });
 
   } catch (error: any) {
-    console.error("POST Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error("POST Order Error:", error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Failed to create order" }, 
+      { status: 500 }
+    );
   }
 }
