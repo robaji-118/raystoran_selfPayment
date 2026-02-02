@@ -23,6 +23,7 @@ import StepIndicator from "./step-indicator";
 export interface CustomerInfo {
   id?: string;
   name: string;
+  email: string; // ✅ Field email wajib
   phone?: string;
   notes?: string;
 }
@@ -59,10 +60,16 @@ const STEPS = [
 
 export default function DashboardMain() {
   const [currentStep, setCurrentStep] = useState(1);
+  
+  // ✅ Initialize email as empty string
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     id: "",
     name: "",
+    email: "", 
+    phone: "",
+    notes: "",
   });
+  
   const [selectedTable, setSelectedTable] = useState<TableSelection | null>(
     null,
   );
@@ -96,14 +103,20 @@ export default function DashboardMain() {
     };
   }, []);
 
+  // ✅ UPDATED VALIDATION LOGIC
   const getStepValidation = useCallback(
     (step: number) => {
       switch (step) {
         case 1:
+          // Validasi Nama & Email Wajib (+ Format Email)
+          const isEmailValid = customerInfo.email && customerInfo.email.toLowerCase().endsWith("@gmail.com");
+          const isNameValid = !!customerInfo.name;
+          
           if (orderType === "dine-in") {
-            return customerInfo.name && selectedTable;
+            return isNameValid && isEmailValid && !!selectedTable;
           }
-          return customerInfo.name;
+          return isNameValid && isEmailValid;
+          
         case 2:
         case 3:
         case 4:
@@ -114,12 +127,15 @@ export default function DashboardMain() {
           return false;
       }
     },
-    [customerInfo.name, selectedTable, cart.length, orderType],
+    [customerInfo.name, customerInfo.email, selectedTable, cart.length, orderType],
   );
 
   const goToNextStep = useCallback(() => {
     if (currentStep < 5 && getStepValidation(currentStep)) {
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length));
+    } else if (currentStep === 1) {
+        // Optional: Alert jika user mencoba next tapi data belum lengkap
+        alert("Please fill in Name, valid Gmail, and select a Table (if Dine-in).");
     }
   }, [currentStep, getStepValidation]);
 
@@ -131,11 +147,16 @@ export default function DashboardMain() {
 
   const handleStepClick = useCallback(
     (step: number) => {
+      // Prevent skipping step 1 if invalid
+      if (step > 1 && !getStepValidation(1)) {
+          return;
+      }
+      
       if (step <= currentStep && !orderId) {
         setCurrentStep(step);
       }
     },
-    [currentStep, orderId],
+    [currentStep, orderId, getStepValidation],
   );
 
   const handleUpdateCustomerInfo = useCallback(
@@ -202,6 +223,7 @@ export default function DashboardMain() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             customerName: customerInfo.name,
+            customerEmail: customerInfo.email, // ✅ Kirim Email ke Backend
             customerPhone: customerInfo.phone,
             orderType,
             tableId: selectedTable?.tableId,
@@ -253,8 +275,9 @@ export default function DashboardMain() {
       return;
     }
 
-    if (!customerInfo.name || cart.length === 0) {
-      alert("Please complete all required fields!");
+    // ✅ Validasi akhir sebelum payment
+    if (!customerInfo.name || !customerInfo.email || cart.length === 0) {
+      alert("Please complete all required fields (Name & Email)!");
       return;
     }
 
@@ -265,7 +288,7 @@ export default function DashboardMain() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerInfo,
+          customerInfo, // Pastikan object ini sudah ada email-nya
           orderType,
           tableId: selectedTable?.tableId,
           items: cart,
@@ -359,6 +382,7 @@ export default function DashboardMain() {
           {currentStep < 5 ? (
             <button
               onClick={goToNextStep}
+              // ✅ Disable tombol jika validasi step gagal
               disabled={!getStepValidation(currentStep)}
               className="flex items-center gap-1 p-2 bg-black hover:bg-gray-400 disabled:opacity-40 cursor-pointer text-white border border-gray-300 rounded-full transition-colors text-sm font-medium"
             >
@@ -391,7 +415,6 @@ export default function DashboardMain() {
   };
 
   return (
-    // TAMBAHKAN padding (px-4) dan max-w pada container utama
     <div className="space-y-4 px-4 pb-20 md:px-6 lg:px-8 xl:max-w-7xl xl:mx-auto min-h-screen">
       
       <StepIndicator
@@ -409,7 +432,7 @@ export default function DashboardMain() {
           }
         >
           <div className={currentStep === 1 || currentStep === 5 ? "w-full" : "lg:col-span-8"}>
-            <div className={`min-h-[60vh]`}> {/* Ubah min-h agar tidak terlalu panjang kosongnya di mobile */}
+            <div className={`min-h-[60vh]`}>
               {currentStep === 1 && (
                 <Step1CustomerInfo
                   customerInfo={customerInfo}
