@@ -261,14 +261,6 @@ function SummaryContent({
             </div>
           </div>
         </div>
-
-        {/* Info Box (Hanya tampil di mode static/review) */}
-        {isStatic && (
-          <div className="mt-4 flex items-center gap-2 text-xs text-gray-500 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
-             <Clock className="w-4 h-4 text-orange-500" />
-             <span>Est. preparation time: <span className="font-bold text-gray-900">15-20 mins</span></span>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -9,9 +9,9 @@ export async function GET(request: NextRequest) {
     await connectDB();
 
     // 1. Auto-Cancel Logic (Cleaned)
-    const tenHoursAgo = new Date(Date.now() - 10 * 60 * 60 * 1000);
+    const oneHoursAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
     const dormantOrders = await Order.find({
-      updatedAt: { $lt: tenHoursAgo },
+      updatedAt: { $lt: oneHoursAgo },
       orderStatus: { $nin: ["completed", "cancelled", "refunded", "served"] }
     }).select("_id");
 
