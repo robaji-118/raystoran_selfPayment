@@ -8,7 +8,8 @@ import {
   UtensilsCrossed, 
   User,
   MapPin,
-  Wallet
+  Wallet,
+  Utensils
 } from "lucide-react";
 import { CustomerInfo, TableSelection, CartItem, OrderType } from "../components/dashboard-main";
 import OrderSummary from "../components/order-summary"; 
@@ -125,6 +126,28 @@ export default function Step5Payment({
                       Table
                     </span>
                     <span className="text-sm font-bold text-gray-900">No. {selectedTable.tableNumber}</span>
+                  </div>
+                )}
+
+                {/* Daftar Menu yang Dipesan */}
+                {cart.length > 0 && (
+                  <div className="pb-3 border-b border-dashed border-gray-200">
+                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2">
+                      <Utensils className="w-4 h-4" />
+                      Menu Dipesan
+                    </span>
+                    <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                      {cart.map((item, idx) => (
+                        <div key={idx} className="flex justify-between items-start text-sm">
+                          <span className="text-gray-900 font-medium">
+                            {item.quantity}x {item.menuItemName}
+                          </span>
+                          <span className="text-gray-600 whitespace-nowrap ml-2">
+                            {formatCurrency(item.price * item.quantity)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/database";
 import Payment from "@/models/Payment";
 import Order from "@/models/Order";
+import OrderItem from "@/models/OrderItem";
 import crypto from "crypto";
 import { sendCancellationEmail } from "@/lib/mail";
 
@@ -78,12 +79,21 @@ export async function POST(req: NextRequest) {
     payment.gatewayResponse = body;
     await payment.save();
 
-    // Ambil data order dulu jika akan dikirim email pembatalan
+    // Ambil data order & items jika akan dikirim email pembatalan
     let orderForEmail = null;
+    let itemsForEmail: { menuItemName: string; quantity: number; price: number }[] = [];
     if (orderStatus === "cancelled") {
       orderForEmail = await Order.findById(payment.orderId)
         .select("customerEmail customerName orderNumber")
         .lean();
+      const orderItems = await OrderItem.find({ orderId: payment.orderId })
+        .select("menuItemName quantity price")
+        .lean();
+      itemsForEmail = orderItems.map((i) => ({
+        menuItemName: i.menuItemName,
+        quantity: i.quantity,
+        price: i.price,
+      }));
     }
 
     // Update order
@@ -109,7 +119,8 @@ export async function POST(req: NextRequest) {
           orderForEmail.customerEmail,
           orderForEmail.customerName,
           orderForEmail.orderNumber,
-          (updatePayload.cancellationReason as string) || "Pembayaran gagal"
+          (updatePayload.cancellationReason as string) || "Pembayaran gagal",
+          itemsForEmail
         );
       } catch (err) {
         console.error("Error kirim email pembatalan (webhook):", err);

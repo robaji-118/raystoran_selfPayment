@@ -67,11 +67,14 @@ export async function PATCH(
       updateData.deliveringAt = new Date();
       if (order.customerEmail) {
         try {
+          const orderItems = await OrderItem.find({ orderId: id }).select('menuItemName quantity price').lean();
+          const itemsForEmail = orderItems.map((i) => ({ menuItemName: i.menuItemName, quantity: i.quantity, price: i.price }));
           const sent = await sendReadyEmail(
             order.customerEmail,
             order.customerName,
             order.orderNumber,
-            order.tableNumber || 'N/A'
+            order.tableNumber || 'N/A',
+            itemsForEmail
           );
           if (!sent) console.warn("Email delivering gagal terkirim ke:", order.customerEmail);
         } catch (err) {
@@ -107,11 +110,14 @@ export async function PATCH(
       // Kirim Email Pembatalan
       if (order.customerEmail) {
         try {
+          const orderItems = await OrderItem.find({ orderId: id }).select('menuItemName quantity price').lean();
+          const itemsForEmail = orderItems.map((i) => ({ menuItemName: i.menuItemName, quantity: i.quantity, price: i.price }));
           const sent = await sendCancellationEmail(
             order.customerEmail,
             order.customerName,
             order.orderNumber,
-            reason
+            reason,
+            itemsForEmail
           );
           if (!sent) console.warn("Email pembatalan gagal terkirim ke:", order.customerEmail);
         } catch (err) {
@@ -166,11 +172,14 @@ export async function DELETE(
     // Kirim email notifikasi pembatalan
     if (order.customerEmail) {
       try {
+        const orderItems = await OrderItem.find({ orderId: id }).select('menuItemName quantity price').lean();
+        const itemsForEmail = orderItems.map((i) => ({ menuItemName: i.menuItemName, quantity: i.quantity, price: i.price }));
         await sendCancellationEmail(
           order.customerEmail,
           order.customerName,
           order.orderNumber,
-          reason
+          reason,
+          itemsForEmail
         );
       } catch (err) {
         console.error("Error kirim email pembatalan (DELETE):", err);

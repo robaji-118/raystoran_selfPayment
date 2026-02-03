@@ -35,16 +35,27 @@ export async function GET(request: NextRequest) {
           { $set: { status: "cancelled" } }
         )
       ]);
+      const allDormantItems = await OrderItem.find({ orderId: { $in: ids } })
+        .select("orderId menuItemName quantity price")
+        .lean();
+      const itemsByOrder = allDormantItems.reduce((acc: Record<string, { menuItemName: string; quantity: number; price: number }[]>, item: any) => {
+        const oid = String(item.orderId);
+        if (!acc[oid]) acc[oid] = [];
+        acc[oid].push({ menuItemName: item.menuItemName, quantity: item.quantity, price: item.price });
+        return acc;
+      }, {});
       // Kirim email notifikasi pembatalan ke email yang terdaftar pada order
       for (const order of dormantOrders) {
         const toEmail = order.customerEmail;
         if (toEmail && toEmail.includes("@")) {
           try {
+            const itemsForEmail = itemsByOrder[String(order._id)] || [];
             const sent = await sendCancellationEmail(
               toEmail,
               order.customerName || "Customer",
               order.orderNumber,
-              reason
+              reason,
+              itemsForEmail
             );
             if (sent) console.log("[AutoCancel] Email pembatalan terkirim ke:", toEmail, "| Order:", order.orderNumber);
             else console.warn("[AutoCancel] Email gagal terkirim ke:", toEmail);
