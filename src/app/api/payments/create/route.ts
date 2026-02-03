@@ -11,11 +11,16 @@ const snap = new Midtrans.Snap({
 
 export async function POST(request: Request) {
   try {
-    const { customerInfo, items } = await request.json();
+    const body = await request.json();
+    const { customerInfo, items } = body;
 
     // 1. Validasi Input
-    if (!items || items.length === 0) {
+    if (!items || !Array.isArray(items) || items.length === 0) {
         return NextResponse.json({ success: false, message: "Cart is empty" }, { status: 400 });
+    }
+
+    if (!customerInfo || typeof customerInfo !== "object" || !customerInfo.name?.trim()) {
+        return NextResponse.json({ success: false, message: "Customer name is required" }, { status: 400 });
     }
 
     // 2. Generate Order ID
@@ -25,15 +30,15 @@ export async function POST(request: Request) {
     let grossAmount = 0;
     
     const itemDetails = items.map((item: any) => {
-        const price = Math.round(item.price); // Hindari desimal
-        const quantity = item.quantity;
+        const price = Math.round(Number(item.price) || 0);
+        const quantity = Math.max(1, Math.floor(Number(item.quantity) || 1));
         grossAmount += price * quantity;
 
         return {
-            id: item.menuItemId.substring(0, 50),
+            id: String(item.menuItemId || item.id || "").substring(0, 50) || "item",
             price: price,
             quantity: quantity,
-            name: item.menuItemName.substring(0, 50),
+            name: String(item.menuItemName || item.name || "Item").substring(0, 50),
         };
     });
 

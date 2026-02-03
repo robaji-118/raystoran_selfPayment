@@ -62,23 +62,22 @@ export async function PATCH(
       );
     }
 
-    // B. Status: READY (Trigger Email "Siap Diantar")
+    // B. Status: DELIVERING (Trigger Email "Pesanan Sedang Diantar")
     if (body.orderStatus === 'delivering' && !order.deliveringAt) {
       updateData.deliveringAt = new Date();
       if (order.customerEmail) {
-        console.log("Sending delivering email to:", order.customerEmail);
-        sendReadyEmail(
-          order.customerEmail,
-          order.customerName,
-          order.orderNumber,
-          order.tableNumber
-        );
+        try {
+          const sent = await sendReadyEmail(
+            order.customerEmail,
+            order.customerName,
+            order.orderNumber,
+            order.tableNumber || 'N/A'
+          );
+          if (!sent) console.warn("Email delivering gagal terkirim ke:", order.customerEmail);
+        } catch (err) {
+          console.error("Error kirim email delivering:", err);
+        }
       }
-    }
-
-    // C. Status: DELIVERING
-    if (body.orderStatus === 'delivering' && !order.deliveringAt) {
-      updateData.deliveringAt = new Date();
     }
 
     // D. Status: COMPLETED (Bebaskan Meja)
@@ -105,14 +104,19 @@ export async function PATCH(
         await Table.findByIdAndUpdate(order.tableId, { status: 'available' });
       }
 
-      // Kirim Email
+      // Kirim Email Pembatalan
       if (order.customerEmail) {
-        sendCancellationEmail(
-          order.customerEmail,
-          order.customerName,
-          order.orderNumber,
-          reason
-        );
+        try {
+          const sent = await sendCancellationEmail(
+            order.customerEmail,
+            order.customerName,
+            order.orderNumber,
+            reason
+          );
+          if (!sent) console.warn("Email pembatalan gagal terkirim ke:", order.customerEmail);
+        } catch (err) {
+          console.error("Error kirim email pembatalan:", err);
+        }
       }
     }
 
@@ -151,12 +155,27 @@ export async function DELETE(
       await Table.findByIdAndUpdate(order.tableId, { status: 'available' });
     }
 
+    const reason = 'Order deleted';
     order.orderStatus = 'cancelled';
-    order.cancellationReason = 'Order deleted';
+    order.cancellationReason = reason;
     await order.save();
     
     // Also cancel items
     await OrderItem.updateMany({ orderId: id }, { status: 'cancelled' });
+
+    // Kirim email notifikasi pembatalan
+    if (order.customerEmail) {
+      try {
+        await sendCancellationEmail(
+          order.customerEmail,
+          order.customerName,
+          order.orderNumber,
+          reason
+        );
+      } catch (err) {
+        console.error("Error kirim email pembatalan (DELETE):", err);
+      }
+    }
 
     return NextResponse.json({ success: true, message: 'Order cancelled' });
 

@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/database";
 import Payment from "@/models/Payment";
 import Order from "@/models/Order";
 import crypto from "crypto";
+import { sendCancellationEmail } from "@/lib/mail";
 
 export async function POST(req: NextRequest) {
   try {
@@ -77,11 +78,43 @@ export async function POST(req: NextRequest) {
     payment.gatewayResponse = body;
     await payment.save();
 
+    // Ambil data order dulu jika akan dikirim email pembatalan
+    let orderForEmail = null;
+    if (orderStatus === "cancelled") {
+      orderForEmail = await Order.findById(payment.orderId)
+        .select("customerEmail customerName orderNumber")
+        .lean();
+    }
+
     // Update order
-    await Order.findByIdAndUpdate(payment.orderId, {
+    const updatePayload: Record<string, unknown> = {
       paymentStatus: paymentStatus === "success" ? "paid" : "unpaid",
       orderStatus: orderStatus,
-    });
+    };
+    if (orderStatus === "cancelled") {
+      const reasonMap: Record<string, string> = {
+        deny: "Pembayaran ditolak",
+        expire: "Pembayaran kedaluwarsa",
+        cancel: "Pembayaran dibatalkan",
+      };
+      updatePayload.cancellationReason =
+        reasonMap[transaction_status] || "Pembayaran gagal";
+    }
+    await Order.findByIdAndUpdate(payment.orderId, { $set: updatePayload });
+
+    // Kirim email pembatalan jika order dibatalkan via payment
+    if (orderStatus === "cancelled" && orderForEmail?.customerEmail) {
+      try {
+        await sendCancellationEmail(
+          orderForEmail.customerEmail,
+          orderForEmail.customerName,
+          orderForEmail.orderNumber,
+          (updatePayload.cancellationReason as string) || "Pembayaran gagal"
+        );
+      } catch (err) {
+        console.error("Error kirim email pembatalan (webhook):", err);
+      }
+    }
 
     console.log(`Payment ${order_id} updated to ${paymentStatus}`);
 

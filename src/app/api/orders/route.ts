@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/database";
 import Order from "@/models/Order";
 import OrderItem from "@/models/OrderItem";
 import Table from "@/models/Table";
+import { sendCancellationEmail } from "@/lib/mail";
 
 // --- GET: Fetch All Orders & Auto-Cancel Dormant Orders ---
 export async function GET(request: NextRequest) {
@@ -13,17 +14,18 @@ export async function GET(request: NextRequest) {
     const dormantOrders = await Order.find({
       updatedAt: { $lt: cutOffTime },
       orderStatus: { $nin: ["completed", "cancelled", "refunded", "served"] }
-    }).select("_id");
+    }).select("_id customerEmail customerName orderNumber").lean();
 
     if (dormantOrders.length > 0) {
       const ids = dormantOrders.map((o) => o._id);
+      const reason = "System: Auto-timeout (inactivity)";
       await Promise.all([
         Order.updateMany(
           { _id: { $in: ids } },
           { 
             $set: { 
               orderStatus: "cancelled", 
-              cancellationReason: "System: Auto-timeout (10h inactivity)", 
+              cancellationReason: reason, 
               updatedAt: new Date() 
             } 
           }
@@ -33,6 +35,24 @@ export async function GET(request: NextRequest) {
           { $set: { status: "cancelled" } }
         )
       ]);
+      // Kirim email notifikasi pembatalan ke email yang terdaftar pada order
+      for (const order of dormantOrders) {
+        const toEmail = order.customerEmail;
+        if (toEmail && toEmail.includes("@")) {
+          try {
+            const sent = await sendCancellationEmail(
+              toEmail,
+              order.customerName || "Customer",
+              order.orderNumber,
+              reason
+            );
+            if (sent) console.log("[AutoCancel] Email pembatalan terkirim ke:", toEmail, "| Order:", order.orderNumber);
+            else console.warn("[AutoCancel] Email gagal terkirim ke:", toEmail);
+          } catch (err) {
+            console.error("[AutoCancel] Error kirim email:", err);
+          }
+        }
+      }
     }
 
     // 2. Handle Query Parameters

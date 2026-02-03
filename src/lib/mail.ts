@@ -1,18 +1,50 @@
 // lib/mail.ts
 import nodemailer from 'nodemailer';
 
-// Konfigurasi Transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+// --- KONFIGURASI SMTP ---
 
-// --- FUNGSI 1: Notifikasi Pesanan Siap / Diantar ---
+// Helper: Ambil password dari env (dukung variasi penamaan)
+const getSmtpPass = () => process.env.SMTP_PASS || process.env.SMTP_PASSWORD;
+
+// Helper: Cek kelengkapan env
+function isSmtpConfigured(): boolean {
+  return !!(
+    process.env.SMTP_HOST &&
+    process.env.SMTP_PORT &&
+    process.env.SMTP_USER &&
+    getSmtpPass()
+  );
+}
+
+// Helper: Buat transporter (Lazy Loading)
+function getTransporter() {
+  if (!isSmtpConfigured()) {
+    console.warn("[Mail] SMTP Missing: Cek env SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS");
+    return null;
+  }
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: getSmtpPass(),
+    },
+  });
+}
+
+// --- STYLE CSS UMUM (Agar konsisten) ---
+const styles = {
+  container: `font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;`,
+  header: `background-color: #111827; padding: 24px; text-align: center;`,
+  headerText: `color: #ffffff; margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;`,
+  body: `padding: 32px 24px; color: #374151; line-height: 1.6;`,
+  footer: `background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af;`,
+  h1: `margin: 0 0 16px; font-size: 24px; font-weight: 700; color: #111827;`,
+  p: `margin: 0 0 16px; font-size: 16px;`,
+};
+
+// --- FUNGSI 1: Notifikasi Pesanan Siap (Ready) ---
 export const sendReadyEmail = async (
   to: string,
   customerName: string,
@@ -21,42 +53,48 @@ export const sendReadyEmail = async (
 ) => {
   try {
     if (!to || !to.includes('@')) return false;
+    const transporter = getTransporter();
+    if (!transporter) return false;
 
     await transporter.sendMail({
-      from: `"Restoran Enak" <${process.env.SMTP_USER}>`,
+      from: `"Raystorant Updates" <${process.env.SMTP_USER}>`,
       to: to,
-      subject: `🍽️ Pesanan #${orderNumber} Sedang Diantar!`,
+      subject: `✨ Pesanan #${orderNumber} Siap Disajikan!`,
       html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden;">
-          <div style="background-color: #2e7d32; padding: 20px; text-align: center;">
-            <h2 style="color: white; margin: 0;">Pesanan Siap Disajikan</h2>
+        <div style="${styles.container}">
+          <div style="${styles.header}">
+            <h2 style="${styles.headerText}">Raystorant</h2>
           </div>
           
-          <div style="padding: 25px;">
-            <p>Halo <strong>${customerName}</strong>,</p>
-            <p>Kabar gembira! Pesanan Anda <strong>#${orderNumber}</strong> sudah selesai dimasak.</p>
+          <div style="${styles.body}">
+            <h1 style="${styles.h1}">Bon Appétit! 🍽️</h1>
+            <p style="${styles.p}">Halo <strong>${customerName}</strong>,</p>
+            <p style="${styles.p}">Hidangan lezat Anda (Order <strong>#${orderNumber}</strong>) telah selesai dimasak oleh chef kami.</p>
             
-            <div style="background-color: #e8f5e9; border: 1px dashed #2e7d32; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;">
-              <p style="margin: 0; color: #1b5e20; font-size: 14px;">Waiter kami sedang menuju ke:</p>
-              <h1 style="margin: 5px 0 0 0; color: #2e7d32; font-size: 32px;">Meja ${tableNumber}</h1>
+            <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1px solid #a7f3d0; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center;">
+              <p style="margin: 0; color: #065f46; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Diantar ke Meja</p>
+              <p style="margin: 8px 0 0; color: #047857; font-size: 48px; font-weight: 800; line-height: 1;">${tableNumber}</p>
             </div>
 
-            <p style="color: #555;">Mohon siapkan ruang di meja Anda. Selamat menikmati hidangan!</p>
-            
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-            <p style="font-size: 11px; color: #999; text-align: center;">Terima kasih telah makan di Restoran Enak.</p>
+            <p style="${styles.p}">Waiter kami sedang menuju ke meja Anda sekarang. Mohon siapkan ruang di meja.</p>
+          </div>
+
+          <div style="${styles.footer}">
+            <p style="margin: 0;">Terima kasih telah bersantap di Raystorant.</p>
+            <p style="margin: 5px 0 0;">&copy; ${new Date().getFullYear()} Raystorant Group.</p>
           </div>
         </div>
       `,
     });
+    console.log(`[Mail] Ready email sent to ${to}`);
     return true;
   } catch (error) {
-    console.error("Gagal kirim email ready:", error);
+    console.error("[Mail] Failed sendReadyEmail:", error);
     return false;
   }
 };
 
-// --- FUNGSI 2: Notifikasi Pembatalan (Revisi) ---
+// --- FUNGSI 2: Notifikasi Pembatalan (Cancel) ---
 export const sendCancellationEmail = async (
   to: string, 
   customerName: string, 
@@ -65,44 +103,51 @@ export const sendCancellationEmail = async (
 ) => {
   try {
     if (!to || !to.includes('@')) return false;
+    const transporter = getTransporter();
+    if (!transporter) return false;
 
     await transporter.sendMail({
-      from: `"Restoran Enak" <${process.env.SMTP_USER}>`,
+      from: `"Raystorant Support" <${process.env.SMTP_USER}>`,
       to: to,
-      subject: `⚠️ Penting: Pesanan #${orderNumber} Dibatalkan`,
+      subject: `⚠️ Update Status Pesanan #${orderNumber}`,
       html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden;">
-          <div style="background-color: #d32f2f; padding: 20px; text-align: center;">
-            <h2 style="color: white; margin: 0;">Pemberitahuan Pembatalan</h2>
+        <div style="${styles.container}">
+          <div style="${styles.header}; background-color: #991b1b;">
+            <h2 style="${styles.headerText}">Raystorant</h2>
           </div>
           
-          <div style="padding: 25px;">
-            <p>Yth. <strong>${customerName}</strong>,</p>
-            <p>Kami memohon maaf yang sebesar-besarnya. Dengan berat hati kami menginformasikan bahwa pesanan <strong>#${orderNumber}</strong> harus kami batalkan karena adanya kendala internal.</p>
+          <div style="${styles.body}">
+            <h1 style="${styles.h1}">Mohon Maaf 🙏</h1>
+            <p style="${styles.p}">Yth. <strong>${customerName}</strong>,</p>
+            <p style="${styles.p}">Kami memohon maaf yang sebesar-besarnya. Pesanan <strong>#${orderNumber}</strong> tidak dapat kami proses saat ini.</p>
             
-            <div style="background-color: #ffebee; border-left: 4px solid #d32f2f; padding: 15px; margin: 20px 0;">
-              <p style="margin: 0; color: #b71c1c; font-size: 12px; font-weight: bold; text-transform: uppercase;">Detail Kendala:</p>
-              <p style="margin: 5px 0 0 0; color: #333;">${reason}</p>
+            <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin: 24px 0; border-radius: 4px;">
+              <p style="margin: 0 0 4px; color: #991b1b; font-size: 12px; font-weight: 700; text-transform: uppercase;">Alasan Pembatalan:</p>
+              <p style="margin: 0; color: #1f2937; font-weight: 500;">"${reason}"</p>
             </div>
 
-            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 8px;">
-              <h4 style="margin: 0 0 10px 0; color: #333;">ℹ️ Informasi Pengembalian Dana (Refund)</h4>
-              <p style="margin: 0; font-size: 14px; color: #555;">
-                Karena pesanan dibatalkan dari pihak restoran, <strong>dana Anda akan dikembalikan sepenuhnya (100%)</strong> secepat mungkin ke metode pembayaran asal Anda. Mohon tunggu konfirmasi dari payment gateway.
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 12px; margin-top: 24px;">
+              <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 18px; margin-right: 8px;">💸</span>
+                <strong style="color: #111827;">Jaminan Pengembalian Dana</strong>
+              </div>
+              <p style="margin: 0; font-size: 14px; color: #4b5563;">
+                Dana Anda akan dikembalikan <strong>100%</strong> secara otomatis ke metode pembayaran asal Anda. Proses ini biasanya instan atau memakan waktu maksimal 1x24 jam tergantung bank terkait.
               </p>
             </div>
-            
-            <p style="margin-top: 20px;">Kami akan mengevaluasi kejadian ini agar tidak terulang kembali.</p>
-            
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-            <p style="font-size: 11px; color: #999; text-align: center;">Restoran Enak Management</p>
+          </div>
+
+          <div style="${styles.footer}">
+             <p style="margin: 0;">Butuh bantuan? Balas email ini.</p>
+             <p style="margin: 5px 0 0;">&copy; ${new Date().getFullYear()} Raystorant Group.</p>
           </div>
         </div>
       `,
     });
+    console.log(`[Mail] Cancel email sent to ${to}`);
     return true;
   } catch (error) {
-    console.error("Gagal kirim email cancel:", error);
+    console.error("[Mail] Failed sendCancellationEmail:", error);
     return false;
   }
 };

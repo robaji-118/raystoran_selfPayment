@@ -79,6 +79,7 @@ export default function DashboardMain() {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>("qris");
+  const [snapReady, setSnapReady] = useState(false);
 
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -90,16 +91,25 @@ export default function DashboardMain() {
 
   // --- Load Midtrans Snap Script ---
   useEffect(() => {
+    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY;
+    if (!clientKey) {
+      console.error("[Payment] NEXT_PUBLIC_MIDTRANS_CLIENT_KEY tidak ditemukan di .env");
+      return;
+    }
+    if (typeof window !== "undefined" && (window as any).snap) {
+      setSnapReady(true);
+      return;
+    }
     const script = document.createElement("script");
     script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-    script.setAttribute(
-      "data-client-key",
-      process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY!,
-    );
+    script.setAttribute("data-client-key", clientKey);
+    script.async = true;
+    script.onload = () => setSnapReady(true);
+    script.onerror = () => console.error("[Payment] Gagal memuat Midtrans Snap script");
     document.head.appendChild(script);
 
     return () => {
-      document.head.removeChild(script);
+      if (script.parentNode) script.parentNode.removeChild(script);
     };
   }, []);
 
@@ -281,6 +291,11 @@ export default function DashboardMain() {
       return;
     }
 
+    if (!snapReady || typeof (window as any).snap === "undefined") {
+      alert("Payment gateway sedang memuat. Mohon tunggu beberapa detik lalu coba lagi.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -299,7 +314,7 @@ export default function DashboardMain() {
       const data = await response.json();
 
       if (!response.ok || !data.success || !data.snapToken) {
-        throw new Error(data.message || "Failed to initiate payment");
+        throw new Error(data.message || data.error || "Failed to initiate payment");
       }
 
       const currentOrderId = data.orderId;
@@ -312,7 +327,9 @@ export default function DashboardMain() {
           paymentCompleted = true;
           const method = result.payment_type ? result.payment_type : "qris";
 
-          finalizeOrder(currentOrderId, method);
+          finalizeOrder(currentOrderId, method).catch((err) => {
+            console.error("finalizeOrder error:", err);
+          });
           setIsLoading(false);
         },
 
@@ -321,7 +338,9 @@ export default function DashboardMain() {
           paymentCompleted = true;
           const method = result.payment_type ? result.payment_type : "qris";
 
-          finalizeOrder(currentOrderId, method);
+          finalizeOrder(currentOrderId, method).catch((err) => {
+            console.error("finalizeOrder error:", err);
+          });
           setIsLoading(false);
         },
 
@@ -336,7 +355,9 @@ export default function DashboardMain() {
 
           if (!paymentCompleted) {
             console.log("Auto-completing payment as qris (sandbox mode)");
-            finalizeOrder(currentOrderId, "qris");
+            finalizeOrder(currentOrderId, "qris").catch((err) => {
+              console.error("finalizeOrder error:", err);
+            });
           }
 
           setIsLoading(false);
@@ -358,6 +379,7 @@ export default function DashboardMain() {
     totalAmount,
     orderType,
     finalizeOrder,
+    snapReady,
   ]);
 
   // --- NAVIGATION BUTTONS ---
@@ -391,13 +413,18 @@ export default function DashboardMain() {
           ) : (
             <button
               onClick={handlePlaceOrder}
-              disabled={cart.length === 0 || isLoading}
+              disabled={cart.length === 0 || isLoading || !snapReady}
               className="flex items-center gap-1 p-3 bg-black disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors text-sm font-medium cursor-pointer"
             >
               {isLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Processing...
+                </>
+              ) : !snapReady ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span className="ml-2">Memuat gateway...</span>
                 </>
               ) : (
                 <>
