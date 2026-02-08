@@ -4,15 +4,13 @@
 
 import { useState, useEffect } from "react";
 import {
-  Truck,
   Clock,
   CheckCircle,
-  Package,
   Search,
   MapPin,
   ShoppingBag,
-  DollarSign,
-  ArrowRight
+  ArrowRight,
+  Package
 } from "lucide-react";
 
 interface OrderItem {
@@ -53,7 +51,8 @@ export default function MyDeliveriesView({ userId }: MyDeliveriesViewProps) {
 
   const fetchOrders = async () => {
     try {
-      setLoading(true);
+      if (orders.length === 0) setLoading(true);
+      
       const res = await fetch("/api/orders?status=delivering");
       if (res.ok) {
         const data = await res.json();
@@ -80,12 +79,12 @@ export default function MyDeliveriesView({ userId }: MyDeliveriesViewProps) {
     try {
       setProcessingOrder(orderId);
 
+      // Kita hanya kirim status "completed", backend yang isi tanggalnya
       const res = await fetch(`/api/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderStatus: "completed",
-          completedAt: new Date().toISOString(),
         }),
       });
 
@@ -100,10 +99,7 @@ export default function MyDeliveriesView({ userId }: MyDeliveriesViewProps) {
       }
 
       if (res.ok && responseData.success) {
-        // Remove from delivering list
         setOrders((prev) => prev.filter((order) => order._id !== orderId));
-
-        // Refresh after delay
         setTimeout(() => {
           fetchOrders();
         }, 500);
@@ -121,11 +117,12 @@ export default function MyDeliveriesView({ userId }: MyDeliveriesViewProps) {
     }
   };
 
-  const getElapsedTime = (startTime: string): number => {
+  const getElapsedTime = (startTime: string | null): number => {
+    if (!startTime) return 0;
     const now = new Date();
     const start = new Date(startTime);
     const diff = Math.floor((now.getTime() - start.getTime()) / 1000 / 60);
-    return diff;
+    return diff > 0 ? diff : 0;
   };
 
   const formatCurrency = (amount: number) => {
@@ -145,161 +142,145 @@ export default function MyDeliveriesView({ userId }: MyDeliveriesViewProps) {
 
   return (
     <div className="p-6 min-h-screen bg-gray-50/50">
-      {/* Search */}
-      <div className="mb-6">
-        <div className="relative max-w-md">
+      {/* Search Header */}
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl font-bold text-gray-800">My Deliveries</h1>
+        <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by #number, table, or name..."
+            placeholder="Search order #, table, or name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
           />
         </div>
       </div>
 
-      {/* Orders Grid */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
-          <span className="text-gray-500 font-medium">Loading deliveries...</span>
-        </div>
-      ) : filteredOrders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm text-center">
-          <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-            <ShoppingBag className="w-10 h-10 text-gray-300" />
+      {/* Table Container */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+            <span className="text-gray-500 font-medium">Loading deliveries...</span>
           </div>
-          <h3 className="text-gray-900 font-bold text-lg">No active deliveries</h3>
-          <p className="text-gray-500 text-sm mt-1 max-w-xs mx-auto">
-            You don't have any active deliveries at the moment. Pick up ready orders to start.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredOrders.map((order) => {
-            const deliveryTime = order.deliveringAt
-              ? getElapsedTime(order.deliveringAt)
-              : 0;
-
-            return (
-              <div
-                key={order._id}
-                className="flex flex-col rounded-xl border border-blue-200 bg-white shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-blue-300"
-              >
-                {/* Header */}
-                <div className="p-5 bg-blue-50 border-b border-blue-100">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xl font-bold text-gray-900">
-                                #{order.orderNumber}
-                            </span>
-                        </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MapPin className="w-4 h-4 text-blue-600" />
-                        <span className="font-semibold bg-white px-2 py-0.5 rounded border border-blue-100">Table {order.tableNumber}</span>
-                        <span>•</span>
-                        <span>{order.customerName}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold uppercase tracking-wide border border-blue-200">
-                        DELIVERING
-                      </span>
-                      <div className="flex items-center gap-1.5 text-xs text-blue-600 font-medium">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                        </span>
-                        <span>In Transit</span>
-                      </div>
-                    </div>
-                  </div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+              <ShoppingBag className="w-10 h-10 text-gray-300" />
+            </div>
+            <h3 className="text-gray-900 font-bold text-lg">No active deliveries</h3>
+            <p className="text-gray-500 text-sm mt-1 max-w-xs mx-auto">
+              You don&apos;t have any active deliveries at the moment.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Order Info</th>
+                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Table</th>
+                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Duration</th>
+                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">Items</th>
+                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Total</th>
+                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredOrders.map((order) => {
+                  const deliveryTime = getElapsedTime(order.deliveringAt);
                   
-                  <div className="mt-3 flex items-center gap-2 text-xs font-medium text-blue-800 bg-blue-100/50 w-fit px-2 py-1 rounded-md">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Delivering for {deliveryTime} min</span>
-                  </div>
-                </div>
-
-                {/* Items */}
-                <div className="p-4 bg-white flex-1">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Items to Deliver</p>
-                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        {order.items.map((item, index) => (
-                        <div
-                            key={`${item._id}-${index}`}
-                            className="flex items-start justify-between p-2.5 bg-gray-50 rounded-lg border border-gray-100"
-                        >
-                            <div className="flex-1">
-                                <p className="text-gray-900 font-medium text-sm">
-                                    {item.menuItemName}
-                                </p>
-                                {item.notes && (
-                                    <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
-                                    <span>📝</span> {item.notes}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="ml-3">
-                                <span className="inline-flex items-center justify-center bg-white border border-gray-200 text-gray-700 text-xs font-bold h-6 min-w-[24px] px-1 rounded">
-                                    x{item.quantity}
-                                </span>
-                            </div>
+                  return (
+                    <tr key={order._id} className="hover:bg-blue-50/30 transition-colors">
+                      {/* Order Info */}
+                      <td className="p-4 align-top">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-900">#{order.orderNumber}</span>
+                          <span className="text-sm text-gray-500 mt-1">{order.customerName}</span>
+                          <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit">
+                            <Package className="w-3 h-3" /> Delivering
+                          </span>
                         </div>
-                        ))}
-                    </div>
-                </div>
+                      </td>
 
-                {/* Actions */}
-                <div className="p-4 bg-gray-50 border-t border-gray-100 mt-auto">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm text-gray-500 font-medium">Total Amount</span>
-                    <span className="text-lg font-bold text-gray-900">
-                      {formatCurrency(order.totalAmount)}
-                    </span>
-                  </div>
+                      {/* Table */}
+                      <td className="p-4 align-top">
+                        <div className="flex items-center gap-1.5 text-gray-700 font-medium">
+                          <MapPin className="w-4 h-4 text-blue-500" />
+                          <span className="bg-gray-100 px-2 py-1 rounded text-sm">
+                            {order.tableNumber}
+                          </span>
+                        </div>
+                      </td>
 
-                  <button
-                    onClick={() => handleMarkDelivered(order._id)}
-                    disabled={processingOrder === order._id}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-all font-semibold shadow-sm hover:shadow active:scale-[0.98]"
-                  >
-                    {processingOrder === order._id ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Processing...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-5 h-5" />
-                        <span>Mark as Delivered</span>
-                        <ArrowRight className="w-4 h-4 ml-1 opacity-60" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                      {/* Duration */}
+                      <td className="p-4 align-top">
+                         <div className="flex items-center gap-1.5 text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded-md w-fit text-sm">
+                            <Clock className="w-4 h-4" />
+                            <span>{deliveryTime} min</span>
+                         </div>
+                      </td>
+
+                      {/* Items */}
+                      <td className="p-4 align-top">
+                        <div className="flex flex-col gap-1.5">
+                          {order.items.map((item, idx) => (
+                            <div key={idx} className="flex justify-between items-start text-sm">
+                              <span className="text-gray-700">
+                                <span className="font-semibold text-gray-900">{item.quantity}x</span> {item.menuItemName}
+                              </span>
+                              {item.notes && (
+                                <span className="text-xs text-orange-600 italic bg-orange-50 px-1 rounded ml-2 whitespace-nowrap">
+                                  Note: {item.notes}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+
+                      {/* Total */}
+                      <td className="p-4 align-top text-right">
+                        <span className="font-bold text-gray-900">
+                          {formatCurrency(order.totalAmount)}
+                        </span>
+                      </td>
+
+                      {/* Action */}
+                      <td className="p-4 align-top text-center">
+                        <button
+                          onClick={() => handleMarkDelivered(order._id)}
+                          disabled={processingOrder === order._id}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-semibold shadow-sm"
+                        >
+                          {processingOrder === order._id ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-4 h-4" />
+                              <span>Complete</span>
+                            </>
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       {/* Summary Footer */}
       {!loading && filteredOrders.length > 0 && (
-        <div className="mt-8 bg-white rounded-xl p-4 border border-gray-200 shadow-sm max-w-2xl mx-auto">
-          <div className="flex items-center justify-between text-sm">
+        <div className="mt-4 flex justify-end">
+          <div className="bg-white rounded-lg px-4 py-2 border border-gray-200 shadow-sm text-sm">
             <span className="text-gray-500">
-              Currently delivering{" "}
-              <span className="text-gray-900 font-bold">
-                {filteredOrders.length}
-              </span>{" "}
-              order{filteredOrders.length !== 1 ? "s" : ""}
-            </span>
-            <span className="text-gray-900 font-medium">
-              Total Value: <span className="text-green-600 font-bold">{formatCurrency(filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0))}</span>
+              Total Delivering Value: <span className="text-green-600 font-bold ml-1">{formatCurrency(filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0))}</span>
             </span>
           </div>
         </div>

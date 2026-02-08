@@ -197,27 +197,22 @@ export default function TableList() {
       </span>
     );
   };
-
-  const clearFilter = () => {
-    setSearchTerm("");
-    setSelectedStatus("all");
-    setSelectedActive("all");
-    setShowFilter(false);
-  };
-
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-fluid-12">
-        <Loader2 className="w-fluid-8 h-fluid-8 animate-spin text-purple-600 mb-fluid-4" />
-        <p className="text-gray-500 text-fluid-base">Loading tables...</p>
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-gray-500 text-fluid-base">Loading tables...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-fluid-12">
-        <div className="flex items-center text-red-600 mb-fluid-4">
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+        <div className="flex items-center text-red-600 mb-fluid-4 justify-center">
           <AlertCircle className="w-fluid-5 h-fluid-5 mr-fluid-2" />
           <span className="text-fluid-base">{error}</span>
         </div>
@@ -227,6 +222,7 @@ export default function TableList() {
         >
           Retry
         </button>
+        </div>
       </div>
     );
   }
@@ -252,24 +248,6 @@ export default function TableList() {
               </div>
             </div>
             <div className="flex items-center gap-fluid-3">
-              {/* Filter Button */}
-              <button
-                onClick={() => setShowFilter(!showFilter)}
-                className={cn(
-                  "flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-fluid-sm border border-gray-200",
-                  (selectedStatus !== "all" || selectedActive !== "all") &&
-                    "bg-purple-50 text-purple-700 border-purple-200",
-                )}
-              >
-                <Filter className="w-fluid-4 h-fluid-4" />
-                <span>Filter</span>
-                {(selectedStatus !== "all" || selectedActive !== "all") && (
-                  <span className="ml-fluid-1 px-fluid-2 py-fluid-0.5 bg-purple-100 text-purple-700 rounded-full text-fluid-xs">
-                    Filtered
-                  </span>
-                )}
-              </button>
-
               {/* Add Table Button */}
               <button
                 onClick={() => setIsAddModalOpen(true)}
@@ -280,73 +258,6 @@ export default function TableList() {
               </button>
             </div>
           </div>
-
-          {/* Filter Dropdown */}
-          {showFilter && (
-            <div className="mt-fluid-4 p-fluid-4 bg-gray-50 rounded-lg border border-gray-100">
-              <div className="flex items-center justify-between mb-fluid-3">
-                <p className="text-gray-700 font-medium text-fluid-sm">
-                  Filter Options
-                </p>
-                <button
-                  onClick={clearFilter}
-                  className="flex items-center gap-fluid-1 text-gray-500 hover:text-gray-700 text-fluid-xs"
-                >
-                  <X className="w-fluid-3 h-fluid-3" />
-                  Clear
-                </button>
-              </div>
-
-              {/* Search Input */}
-              <div className="mb-fluid-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-fluid-4 h-fluid-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search table number..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-fluid-10 pr-fluid-4 py-fluid-2.5 bg-white border border-gray-200 rounded-lg text-fluid-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-fluid-4">
-                {/* Status Filter */}
-                <div className="space-y-fluid-2">
-                  <label className="block text-gray-700 font-medium text-fluid-sm">
-                    Status
-                  </label>
-                  <select
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="w-full px-fluid-3 py-fluid-2.5 bg-white border border-gray-200 rounded-lg text-fluid-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="available">Available</option>
-                    <option value="occupied">Occupied</option>
-                    <option value="reserved">Reserved</option>
-                  </select>
-                </div>
-
-                {/* Active Filter */}
-                <div className="space-y-fluid-2">
-                  <label className="block text-gray-700 font-medium text-fluid-sm">
-                    Active Status
-                  </label>
-                  <select
-                    value={selectedActive}
-                    onChange={(e) => setSelectedActive(e.target.value)}
-                    className="w-full px-fluid-3 py-fluid-2.5 bg-white border border-gray-200 rounded-lg text-fluid-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  >
-                    <option value="all">All Tables</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Table */}
@@ -366,17 +277,6 @@ export default function TableList() {
                     : "Add your first table to get started"}
                 </p>
                 <div className="flex gap-fluid-3">
-                  {(searchTerm ||
-                    selectedStatus !== "all" ||
-                    selectedActive !== "all") && (
-                    <button
-                      onClick={clearFilter}
-                      className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-fluid-sm"
-                    >
-                      <X className="w-fluid-4 h-fluid-4" />
-                      Clear Filter
-                    </button>
-                  )}
                   <button
                     onClick={() => setIsAddModalOpen(true)}
                     className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-sm"

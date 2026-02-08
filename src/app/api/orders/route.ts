@@ -3,13 +3,17 @@ import { connectDB } from "@/lib/database";
 import Order from "@/models/Order";
 import OrderItem from "@/models/OrderItem";
 import Table from "@/models/Table";
+import Payment from "@/models/Payment";
 import { sendCancellationEmail } from "@/lib/mail";
 
 // --- GET: Fetch All Orders & Auto-Cancel Dormant Orders ---
+
+// ✅ TAMBAHKAN INI: Memaksa route ini tidak di-cache oleh Next.js
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
-    
+
+    // 1. Auto Cancel Logic (Order nganggur > 1 jam)
     const cutOffTime = new Date(Date.now() - 1 * 60 * 60 * 1000);
     const dormantOrders = await Order.find({
       updatedAt: { $lt: cutOffTime },
@@ -22,43 +26,43 @@ export async function GET(request: NextRequest) {
       await Promise.all([
         Order.updateMany(
           { _id: { $in: ids } },
-          { 
-            $set: { 
-              orderStatus: "cancelled", 
-              cancellationReason: reason, 
-              updatedAt: new Date() 
-            } 
+          {
+            $set: {
+              orderStatus: "cancelled",
+              cancellationReason: reason,
+              updatedAt: new Date()
+            }
           }
         ),
         OrderItem.updateMany(
-          { orderId: { $in: ids } }, 
+          { orderId: { $in: ids } },
           { $set: { status: "cancelled" } }
         )
       ]);
+
       const allDormantItems = await OrderItem.find({ orderId: { $in: ids } })
         .select("orderId menuItemName quantity price")
         .lean();
+
       const itemsByOrder = allDormantItems.reduce((acc: Record<string, { menuItemName: string; quantity: number; price: number }[]>, item: any) => {
         const oid = String(item.orderId);
         if (!acc[oid]) acc[oid] = [];
         acc[oid].push({ menuItemName: item.menuItemName, quantity: item.quantity, price: item.price });
         return acc;
       }, {});
-      // Kirim email notifikasi pembatalan ke email yang terdaftar pada order
+
       for (const order of dormantOrders) {
         const toEmail = order.customerEmail;
         if (toEmail && toEmail.includes("@")) {
           try {
             const itemsForEmail = itemsByOrder[String(order._id)] || [];
-            const sent = await sendCancellationEmail(
+            await sendCancellationEmail(
               toEmail,
               order.customerName || "Customer",
               order.orderNumber,
               reason,
               itemsForEmail
             );
-            if (sent) console.log("[AutoCancel] Email pembatalan terkirim ke:", toEmail, "| Order:", order.orderNumber);
-            else console.warn("[AutoCancel] Email gagal terkirim ke:", toEmail);
           } catch (err) {
             console.error("[AutoCancel] Error kirim email:", err);
           }
@@ -99,7 +103,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error("GET Orders Error:", error);
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch orders" }, 
+      { success: false, error: error.message || "Failed to fetch orders" },
       { status: 500 }
     );
   }
@@ -114,14 +118,14 @@ export async function POST(request: NextRequest) {
     // 1. Validation
     if (!body.customerName || !body.items?.length || !body.customerEmail) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields: Name, Email, or Items" }, 
+        { success: false, error: "Missing required fields: Name, Email, or Items" },
         { status: 400 }
       );
     }
 
     if (!body.customerEmail.endsWith("@gmail.com")) {
       return NextResponse.json(
-        { success: false, error: "Email must be a valid @gmail.com address" }, 
+        { success: false, error: "Email must be a valid @gmail.com address" },
         { status: 400 }
       );
     }
@@ -146,7 +150,7 @@ export async function POST(request: NextRequest) {
     const lastOrder = await Order.findOne({ orderNumber: { $regex: `^${prefix}` } })
       .sort({ createdAt: -1 })
       .select("orderNumber");
-    
+
     let sequence = "0001";
     if (lastOrder?.orderNumber) {
       const lastSeqStr = lastOrder.orderNumber.split("-").pop();
@@ -165,11 +169,19 @@ export async function POST(request: NextRequest) {
       tableId: body.orderType === "dine-in" ? body.tableId : null,
       tableNumber: body.orderType === "dine-in" ? body.tableNumber : "Take Away",
       customerName: body.customerName,
-      customerEmail: body.customerEmail, // ✅ Email Saved Here
+      customerEmail: body.customerEmail,
       customerPhone: body.customerPhone || null,
       customerNotes: body.customerNotes || null,
+
+      // -- LOGIC FIX TIMESTAMPS --
       orderStatus: "confirmed",
-      confirmedAt: new Date(),
+      confirmedAt: new Date(), // Otomatis isi sekarang
+      cookingStartedAt: null,
+      readyAt: null,
+      deliveringAt: null,
+      completedAt: null,
+      // --------------------------
+
       subtotal: body.subtotal,
       tax: body.tax || 0,
       serviceCharge: body.serviceCharge || 0,
@@ -191,9 +203,26 @@ export async function POST(request: NextRequest) {
         subtotal: item.price * item.quantity,
         notes: item.notes || null,
         status: "preparing",
-        cookingStartedAt: new Date()
+        cookingStartedAt: null // Nanti diisi saat status berubah
       }))
     );
+
+    // 5. Create Payment record
+    const paymentMethodRaw = body.paymentMethod || "qris";
+    const paymentMethod = String(paymentMethodRaw).toLowerCase().trim() || "qris";
+    const midtransOrderId = body.midtransOrderId || newOrder.orderNumber;
+
+    await Payment.create({
+      orderId: newOrder._id,
+      orderNumber: midtransOrderId,
+      customerId: body.customerId || null,
+      amount: body.totalAmount,
+      paymentMethod,
+      paymentStatus: body.paymentStatus === "paid" ? "success" : "pending",
+      transactionId: null,
+      gatewayResponse: null,
+      paidAt: body.paymentStatus === "paid" ? new Date() : null,
+    });
 
     return NextResponse.json({
       success: true,
@@ -205,7 +234,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("POST Order Error:", error);
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to create order" }, 
+      { success: false, error: error.message || "Failed to create order" },
       { status: 500 }
     );
   }

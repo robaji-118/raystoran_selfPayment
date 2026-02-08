@@ -7,6 +7,7 @@ import {
   FileDown,
   SlidersHorizontal,
   ChevronRight,
+  ChevronLeft,
   Search,
   Filter,
   Eye,
@@ -95,6 +96,9 @@ export default function AdminAllOrders() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
   const statusOptions: StatusOption[] = [
     { value: 'all', label: 'All Status', color: 'gray' },
@@ -120,6 +124,11 @@ export default function AdminAllOrders() {
   useEffect(() => {
     filterOrders();
   }, [orders, selectedStatus, selectedPaymentStatus, searchQuery]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStatus, selectedPaymentStatus, searchQuery, pageSize]);
 
   const fetchOrders = async () => {
     try {
@@ -159,6 +168,10 @@ export default function AdminAllOrders() {
 
     setFilteredOrders(filtered);
   };
+
+  const totalPages = Math.ceil(filteredOrders.length / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedOrders = filteredOrders.slice(startIndex, startIndex + pageSize);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -242,9 +255,9 @@ export default function AdminAllOrders() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-fluid-96">
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-          <div className="w-fluid-16 h-fluid-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-fluid-4"></div>
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
           <p className="text-neutral-500 text-fluid-base">Loading orders...</p>
         </div>
       </div>
@@ -351,11 +364,27 @@ export default function AdminAllOrders() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
           {/* Header */}
           <div className="p-fluid-6 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <h4 className="text-gray-900 text-fluid-lg font-medium">All Orders</h4>
-              <span className="text-gray-500 text-fluid-sm">
-                {filteredOrders.length} orders found
-              </span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-fluid-4">
+              <div className="flex items-center gap-fluid-4">
+                <h4 className="text-gray-900 text-fluid-lg font-medium">All Orders</h4>
+                <span className="text-gray-500 text-fluid-sm">
+                  {filteredOrders.length} orders found
+                </span>
+              </div>
+              <div className="flex items-center gap-fluid-2">
+                <span className="text-gray-600 text-fluid-sm whitespace-nowrap">Per page:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="px-fluid-3 py-fluid-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-fluid-sm"
+                >
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -409,7 +438,7 @@ export default function AdminAllOrders() {
                     </td>
                   </tr>
                 ) : (
-                  filteredOrders.map((order) => (
+                  paginatedOrders.map((order) => (
                     <tr
                       key={order._id}
                       className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
@@ -480,6 +509,36 @@ export default function AdminAllOrders() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {filteredOrders.length > 0 && (
+            <div className="p-fluid-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-fluid-4">
+              <p className="text-gray-600 text-fluid-sm">
+                Showing {startIndex + 1}–{Math.min(startIndex + pageSize, filteredOrders.length)} of {filteredOrders.length}
+              </p>
+              <div className="flex items-center gap-fluid-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-fluid-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="w-fluid-4 h-fluid-4" />
+                </button>
+                <span className="px-fluid-3 py-fluid-1 text-fluid-sm text-gray-700">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-fluid-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="w-fluid-4 h-fluid-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

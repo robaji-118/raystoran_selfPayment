@@ -440,9 +440,9 @@ export default function DashboardMain() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-fluid-96">
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-          <div className="w-fluid-16 h-fluid-16 border-4 border-purple-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4"></div>
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
           <p className="text-neutral-500 text-fluid-base">Loading dashboard...</p>
         </div>
       </div>
@@ -451,7 +451,7 @@ export default function DashboardMain() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-fluid-96">
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
           <div className="w-fluid-16 h-fluid-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-fluid-4">
             <ShoppingCart className="w-fluid-8 h-fluid-8 text-red-600" />

@@ -51,7 +51,10 @@ export async function POST(req: NextRequest) {
       currentOrderId: null
     });
 
-    return NextResponse.json(newTable, { status: 201 });
+    return NextResponse.json(
+      { success: true, data: newTable },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating table:", error);
     return NextResponse.json(

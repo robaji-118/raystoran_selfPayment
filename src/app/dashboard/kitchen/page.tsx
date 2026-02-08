@@ -10,10 +10,10 @@ export const metadata: Metadata = {
 const KitchenPage = () => {
   return (
     <Suspense fallback={
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex min-h-screen w-full items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500 font-medium">Loading Kitchen Dashboard...</p>
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-neutral-500 text-fluid-base">Loading Kitchen Dashboard...</p>
         </div>
       </div>
     }>

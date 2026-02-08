@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ /* eslint-disable @typescript-eslint/no-explicit-any */
 // app/dashboard/waiter/components/tables-status-view.tsx
 "use client";
 
@@ -55,12 +55,12 @@ export default function TablesStatusView() {
 
       if (tablesRes.ok) {
         const tablesData = await tablesRes.json();
-        setTables(tablesData.data || []);
+        setTables(Array.isArray(tablesData) ? tablesData : (tablesData?.data || []));
       }
 
       if (ordersRes.ok) {
         const ordersData = await ordersRes.json();
-        setOrders(ordersData.data || []);
+        setOrders(Array.isArray(ordersData) ? ordersData : (ordersData?.data || []));
       }
     } catch (error) {
       console.error("Error fetching data:", error);

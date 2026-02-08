@@ -84,42 +84,64 @@ export async function GET(
   }
 }
 
+async function updateUser(
+  request: NextRequest,
+  params: Promise<{ id: string }>
+) {
+  await connectDB();
+
+  const { id } = await params;
+
+  if (!id || id === 'undefined') {
+    return NextResponse.json(
+      { error: 'User ID is required' },
+      { status: 400 }
+    );
+  }
+
+  const data = await request.json();
+
+  const user = await User.findByIdAndUpdate(
+    id,
+    { $set: data },
+    { new: true, runValidators: true }
+  );
+
+  if (!user) {
+    return NextResponse.json(
+      { error: 'User not found' },
+      { status: 404 }
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: 'User updated successfully',
+    data: user
+  });
+}
+
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    return await updateUser(request, context.params);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return NextResponse.json(
+      { error: 'Failed to update user' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await connectDB();
-    
-    const { id } = await params; // ← unwrap params
-    
-    if (!id || id === 'undefined') {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
-      );
-    }
-    
-    const data = await request.json();
-    
-    const user = await User.findByIdAndUpdate(
-      id,
-      { $set: data },
-      { new: true, runValidators: true }
-    );
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-    
-    return NextResponse.json({
-      success: true,
-      message: 'User updated successfully',
-      data: user
-    });
+    return await updateUser(request, params);
   } catch (error) {
     console.error('Error updating user:', error);
     return NextResponse.json(

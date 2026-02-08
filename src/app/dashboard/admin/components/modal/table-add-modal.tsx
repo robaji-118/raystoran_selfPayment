@@ -57,7 +57,7 @@ export default function TableAddModal({
 
       const result = await response.json();
 
-      if (result.success) {
+      if (response.ok && (result.success !== false)) {
         onSuccess();
         onClose();
         // Reset form
@@ -68,7 +68,7 @@ export default function TableAddModal({
           isActive: true,
         });
       } else {
-        setError(result.error || "Failed to add table");
+        setError(result.error || result.message || "Failed to add table");
       }
     } catch (error) {
       console.error("Error adding table:", error);
@@ -151,76 +151,6 @@ export default function TableAddModal({
               <p className="text-gray-500 text-fluid-xs">
                 Number of people this table can accommodate
               </p>
-            </div>
-
-            {/* Status */}
-            <div className="space-y-fluid-2">
-              <label className="block text-gray-700 font-medium text-fluid-sm">
-                Initial Status
-              </label>
-              <div className="grid grid-cols-3 gap-fluid-2">
-                {[
-                  { value: "available", label: "Available", color: "border-green-500" },
-                  { value: "occupied", label: "Occupied", color: "border-red-500" },
-                  { value: "reserved", label: "Reserved", color: "border-yellow-500" },
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() =>
-                      setFormData({ ...formData, status: option.value })
-                    }
-                    className={`px-fluid-3 py-fluid-2.5 text-center border rounded-lg text-fluid-sm transition-colors ${
-                      formData.status === option.value
-                        ? `${option.color} bg-purple-50 text-purple-700 font-medium`
-                        : "border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
-                    disabled={loading}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Active Status */}
-            <div className="flex items-center justify-between p-fluid-4 bg-gray-50 rounded-lg">
-              <div className="space-y-fluid-1">
-                <label className="block text-gray-700 font-medium text-fluid-sm">
-                  Active Status
-                </label>
-                <p className="text-gray-500 text-fluid-xs">
-                  Inactive tables won&lsquo;t be visible for selection
-                </p>
-              </div>
-              <div className="relative inline-block w-fluid-10 mr-2 align-middle select-none">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) =>
-                    setFormData({ ...formData, isActive: e.target.checked })
-                  }
-                  className="sr-only"
-                  disabled={loading}
-                />
-                <label
-                  htmlFor="isActive"
-                  className={`block overflow-hidden h-fluid-6 rounded-full cursor-pointer transition-colors ${
-                    formData.isActive
-                      ? "bg-purple-600"
-                      : "bg-gray-300"
-                  } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-                >
-                  <span
-                    className={`block h-fluid-6 w-fluid-6 rounded-full bg-white shadow transform transition-transform ${
-                      formData.isActive
-                        ? "translate-x-fluid-4"
-                        : "translate-x-0"
-                    }`}
-                  />
-                </label>
-              </div>
             </div>
           </div>
 

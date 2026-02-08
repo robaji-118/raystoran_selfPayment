@@ -101,10 +101,12 @@ export default function UserList() {
       const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
       
       if (!res.ok) {
-        throw new Error("Failed to delete user");
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to delete user");
       }
-      
+
       setUsers((prev) => prev.filter((u) => u._id !== id));
+      setFilteredUsers((prev) => prev.filter((u) => u._id !== id));
     } catch (error) {
       console.error("Error deleting user:", error);
       alert("Failed to delete user");
@@ -161,17 +163,20 @@ export default function UserList() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-fluid-12">
-        <Loader2 className="w-fluid-8 h-fluid-8 animate-spin text-purple-600 mb-fluid-4" />
-        <p className="text-gray-500 text-fluid-base">Loading users...</p>
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-gray-500 text-fluid-base">Loading users...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-fluid-12">
-        <div className="flex items-center text-red-600 mb-fluid-4">
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+        <div className="flex items-center text-red-600 mb-fluid-4 justify-center">
           <AlertCircle className="w-fluid-5 h-fluid-5 mr-fluid-2" />
           <span className="text-fluid-base">{error}</span>
         </div>
@@ -181,6 +186,7 @@ export default function UserList() {
         >
           Retry
         </button>
+        </div>
       </div>
     );
   }

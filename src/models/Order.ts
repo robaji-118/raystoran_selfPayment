@@ -8,7 +8,7 @@ export interface IOrder extends Document {
   tableNumber: string;
   customerName: string;
   customerPhone: string | null;
-  customerEmail: string; // ✅ Added
+  customerEmail: string;
   orderStatus: string;
   confirmedAt: Date | null;
   cookingStartedAt: Date | null;

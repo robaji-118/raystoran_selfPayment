@@ -154,9 +154,11 @@ export default function AdminDailyReport() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-fluid-12">
-        <div className="w-fluid-16 h-fluid-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-fluid-4"></div>
-        <p className="text-gray-500 text-fluid-base">Loading daily report...</p>
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-gray-500 text-fluid-base">Loading daily report...</p>
+        </div>
       </div>
     );
   }

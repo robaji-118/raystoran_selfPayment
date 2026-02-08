@@ -87,6 +87,7 @@ export default function KitchenDashboardMain() {
 
   // Helper function untuk get elapsed time
   const getElapsedTime = (startTime: string): number => {
+    if (!startTime) return 0;
     const now = new Date();
     const start = new Date(startTime);
     const diff = Math.floor((now.getTime() - start.getTime()) / 1000 / 60);
@@ -104,7 +105,9 @@ export default function KitchenDashboardMain() {
       (sum, item) => sum + item.quantity * 15,
       0
     );
-    const avgPrepTime = totalPrepTime / order.items.length;
+    // Safety check div by zero
+    const itemCount = order.items.length || 1;
+    const avgPrepTime = totalPrepTime / itemCount;
 
     if (elapsedMinutes > avgPrepTime * 1.5) {
       return { status: "urgent", color: "red", minutes: elapsedMinutes };
@@ -137,7 +140,6 @@ export default function KitchenDashboardMain() {
 
   const playNotificationSound = () => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const audioContext = new (window.AudioContext ||
         (window as any).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
@@ -164,12 +166,13 @@ export default function KitchenDashboardMain() {
 
   const fetchOrders = async () => {
     try {
-      setLoading(true);
+        // Jangan set loading true saat interval agar tidak kedip-kedip
+      if (orders.length === 0) setLoading(true);
+      
       const res = await fetch("/api/orders");
       if (res.ok) {
         const data = await res.json();
-        console.log("Fetched orders:", data);
-
+        
         // Filter hanya orders yang relevant untuk kitchen
         const kitchenOrders = data.data.filter((order: Order) =>
           ["confirmed", "preparing", "ready"].includes(order.orderStatus)
@@ -181,45 +184,17 @@ export default function KitchenDashboardMain() {
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
-      alert("Failed to fetch orders. Please check your connection.");
     } finally {
       setLoading(false);
     }
   };
 
+  // --- LOGIC FIX 1: Start Cooking tanpa kirim tanggal (biar backend yang handle) ---
   const handleStartCooking = async (orderId: string) => {
-    console.log("=== START COOKING DEBUG ===");
-    console.log("1. Order ID received:", orderId);
-    console.log("2. Type of orderId:", typeof orderId);
-    console.log(
-      "3. Order object from state:",
-      orders.find((o) => o._id === orderId)
-    );
-
-    // VALIDASI: Pastikan orderId valid
-    if (!orderId || orderId === "undefined") {
-      console.error("Invalid order ID:", orderId);
-      alert("Invalid order ID. Please refresh the page.");
-      return;
-    }
+    if (!orderId) return;
 
     try {
       setProcessingOrder(orderId);
-
-      console.log("4. Making API call to:", `/api/orders/${orderId}`);
-
-      // Test dulu dengan GET untuk pastikan order ada
-      console.log("5. Testing GET request first...");
-      const testRes = await fetch(`/api/orders/${orderId}`);
-      const testData = await testRes.json();
-      console.log("6. GET test response:", testData);
-
-      if (!testRes.ok) {
-        alert(`Order not found. GET test failed: ${testData.error}`);
-        return;
-      }
-
-      console.log("7. Now making PATCH request...");
 
       const res = await fetch(`/api/orders/${orderId}`, {
         method: "PATCH",
@@ -228,39 +203,21 @@ export default function KitchenDashboardMain() {
         },
         body: JSON.stringify({
           orderStatus: "preparing",
-          cookingStartedAt: new Date().toISOString(),
+          // HAPUS: cookingStartedAt (Biarkan backend yang isi)
         }),
       });
 
-      console.log("8. PATCH response status:", res.status);
-      console.log(
-        "9. PATCH response headers:",
-        Object.fromEntries(res.headers.entries())
-      );
-
-      // Parse response text dulu untuk menghindari JSON parse error
+      // Parse response dengan aman
       const responseText = await res.text();
-      console.log("10. Raw response text:", responseText);
-
       let responseData;
       try {
         responseData = JSON.parse(responseText);
-        console.log("11. Parsed JSON response:", responseData);
-      } catch (parseError) {
-        console.error("Failed to parse JSON response:", parseError);
-        console.error("Response text that failed:", responseText);
-        throw new Error(
-          `Invalid JSON response from server: ${responseText.substring(
-            0,
-            100
-          )}...`
-        );
+      } catch (e) {
+        console.error("Invalid JSON:", responseText);
+        throw new Error("Server error: Invalid response");
       }
 
-      // Handle response
       if (res.ok && responseData.success) {
-        console.log("12. SUCCESS! Order updated");
-
         // Optimistic update UI
         setOrders((prev) =>
           prev.map((order) =>
@@ -268,7 +225,7 @@ export default function KitchenDashboardMain() {
               ? {
                   ...order,
                   orderStatus: "preparing",
-                  cookingStartedAt: new Date().toISOString(),
+                  cookingStartedAt: new Date().toISOString(), // Visual only
                 }
               : order
           )
@@ -276,80 +233,46 @@ export default function KitchenDashboardMain() {
 
         // Refresh from server after delay
         setTimeout(() => {
-          console.log("13. Refreshing orders from server...");
           fetchOrders();
         }, 500);
       } else {
-        console.error("14. API returned error:", responseData);
-
-        // Handle error dari API response
-        const errorMessage =
-          responseData.error || responseData.message || "Unknown error";
-        console.error("15. Error message:", errorMessage);
-
+        const errorMessage = responseData.error || "Unknown error";
         alert(`Failed to start cooking: ${errorMessage}`);
-
-        // Re-fetch untuk mendapatkan state yang benar
         fetchOrders();
       }
     } catch (error: any) {
-      console.error("16. CATCH BLOCK - Error:", error);
-      console.error("17. Error name:", error.name);
-      console.error("18. Error message:", error.message);
-      console.error("19. Error stack:", error.stack);
-
-      // Handle error dengan aman tanpa membaca .stack
-      let errorMessage = "Error starting cooking. Please try again.";
-      if (error.message && typeof error.message === "string") {
-        errorMessage = `Error: ${error.message}`;
-      }
-
-      alert(errorMessage);
-
-      // Re-fetch untuk mendapatkan state yang benar
+      console.error("Error starting cooking:", error);
+      alert("Error starting cooking. Please try again.");
       fetchOrders();
     } finally {
-      console.log("20. Finally block - clearing processing state");
       setProcessingOrder(null);
     }
   };
 
+  // --- LOGIC FIX 2: Mark Ready tanpa kirim tanggal ---
   const handleMarkReady = async (orderId: string) => {
-    // VALIDASI: Pastikan orderId valid
-    if (!orderId || orderId === "undefined") {
-      alert("Invalid order ID. Please refresh the page.");
-      return;
-    }
+    if (!orderId) return;
 
     try {
       setProcessingOrder(orderId);
-
-      console.log("Marking ready for order:", orderId);
 
       const res = await fetch(`/api/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderStatus: "ready",
-          readyAt: new Date().toISOString(),
+          // HAPUS: readyAt (Biarkan backend yang isi)
         }),
       });
 
-      // Parse response text dulu
       const responseText = await res.text();
-      console.log("Response text:", responseText);
-
       let responseData;
       try {
         responseData = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error("Failed to parse JSON response:", parseError);
-        throw new Error(
-          `Invalid JSON response: ${responseText.substring(0, 100)}...`
-        );
+      } catch (e) {
+        console.error("Invalid JSON:", responseText);
+        throw new Error("Server error");
       }
-
-      console.log("Parsed response:", responseData);
 
       if (res.ok && responseData.success) {
         // Optimistic update UI
@@ -359,7 +282,7 @@ export default function KitchenDashboardMain() {
               ? {
                   ...order,
                   orderStatus: "ready",
-                  readyAt: new Date().toISOString(),
+                  readyAt: new Date().toISOString(), // Visual only
                 }
               : order
           )
@@ -369,27 +292,17 @@ export default function KitchenDashboardMain() {
           playNotificationSound();
         }
 
-        // Refresh from server
         setTimeout(() => {
           fetchOrders();
         }, 500);
       } else {
-        // Handle error dari API response
-        const errorMessage =
-          responseData.error || responseData.message || "Unknown error";
+        const errorMessage = responseData.error || "Unknown error";
         alert(`Failed to mark as ready: ${errorMessage}`);
         fetchOrders();
       }
     } catch (error: any) {
       console.error("Error marking ready:", error);
-
-      // Handle error dengan aman
-      let errorMessage = "Error marking order as ready. Please try again.";
-      if (error.message && typeof error.message === "string") {
-        errorMessage = error.message;
-      }
-
-      alert(errorMessage);
+      alert("Error marking order as ready.");
       fetchOrders();
     } finally {
       setProcessingOrder(null);
@@ -466,7 +379,7 @@ export default function KitchenDashboardMain() {
     });
   };
 
-  // Get status color
+  // Get status color (unused in display but kept for consistency)
   const getStatusColor = (status: string) => {
     const statusLower = status.toLowerCase();
     switch (statusLower) {
@@ -871,4 +784,3 @@ export default function KitchenDashboardMain() {
     </div>
   );
 }
-

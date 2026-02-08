@@ -60,16 +60,16 @@ const STEPS = [
 
 export default function DashboardMain() {
   const [currentStep, setCurrentStep] = useState(1);
-  
+
   // ✅ Initialize email as empty string
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     id: "",
     name: "",
-    email: "", 
+    email: "",
     phone: "",
     notes: "",
   });
-  
+
   const [selectedTable, setSelectedTable] = useState<TableSelection | null>(
     null,
   );
@@ -121,12 +121,12 @@ export default function DashboardMain() {
           // Validasi Nama & Email Wajib (+ Format Email)
           const isEmailValid = customerInfo.email && customerInfo.email.toLowerCase().endsWith("@gmail.com");
           const isNameValid = !!customerInfo.name;
-          
+
           if (orderType === "dine-in") {
             return isNameValid && isEmailValid && !!selectedTable;
           }
           return isNameValid && isEmailValid;
-          
+
         case 2:
         case 3:
         case 4:
@@ -144,8 +144,8 @@ export default function DashboardMain() {
     if (currentStep < 5 && getStepValidation(currentStep)) {
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length));
     } else if (currentStep === 1) {
-        // Optional: Alert jika user mencoba next tapi data belum lengkap
-        alert("Please fill in Name, valid Gmail, and select a Table (if Dine-in).");
+      // Optional: Alert jika user mencoba next tapi data belum lengkap
+      alert("Please fill in Name, valid Gmail, and select a Table (if Dine-in).");
     }
   }, [currentStep, getStepValidation]);
 
@@ -159,9 +159,9 @@ export default function DashboardMain() {
     (step: number) => {
       // Prevent skipping step 1 if invalid
       if (step > 1 && !getStepValidation(1)) {
-          return;
+        return;
       }
-      
+
       if (step <= currentStep && !orderId) {
         setCurrentStep(step);
       }
@@ -224,16 +224,17 @@ export default function DashboardMain() {
     setCart((prev) => prev.filter((item) => item.menuItemId !== menuItemId));
   }, []);
 
-  // --- FUNGSI UTAMA: Simpan Order ke Database (Backend) ---
+  // --- FUNGSI UTAMA: Simpan Order ke Database (Backend) + Payment ---
   const finalizeOrder = useCallback(
     async (orderIdToFinalize: string, method: string = "qris") => {
       try {
+        const paymentMethod = (method && String(method).toLowerCase().trim()) || "qris";
         const response = await fetch("/api/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             customerName: customerInfo.name,
-            customerEmail: customerInfo.email, // ✅ Kirim Email ke Backend
+            customerEmail: customerInfo.email,
             customerPhone: customerInfo.phone,
             orderType,
             tableId: selectedTable?.tableId,
@@ -244,9 +245,10 @@ export default function DashboardMain() {
             serviceCharge,
             discount: 0,
             totalAmount,
-            paymentMethod: method, 
+            paymentMethod,
             paymentStatus: "paid",
             customerNotes: customerInfo.notes,
+            midtransOrderId: orderIdToFinalize,
           }),
         });
 
@@ -258,7 +260,7 @@ export default function DashboardMain() {
 
         setOrderId(orderIdToFinalize);
         setOrderNumber(data.orderNumber);
-        setPaymentMethod(method);
+        setPaymentMethod(paymentMethod);
       } catch (error) {
         console.error("Error finalizing order:", error);
         alert(
@@ -443,7 +445,7 @@ export default function DashboardMain() {
 
   return (
     <div className="space-y-4 px-4 pb-20 md:px-6 lg:px-8 xl:max-w-7xl xl:mx-auto min-h-screen">
-      
+
       <StepIndicator
         steps={STEPS}
         currentStep={currentStep}
