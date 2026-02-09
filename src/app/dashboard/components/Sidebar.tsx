@@ -334,7 +334,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Menu Items */}
-        <div className="flex-1 overflow-y-auto px-2 lg:px-fluid-2 scrollbar-hide">
+        <div className="flex-1 min-h-0 overflow-y-auto px-2 lg:px-fluid-2 scrollbar-hide">
           <nav className="space-y-1 lg:space-y-fluid-1">
             {menus.map((menu, i) => renderMenuItem(menu, i))}
           </nav>

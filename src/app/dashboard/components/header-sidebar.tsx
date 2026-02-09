@@ -68,18 +68,6 @@ const HeaderSidebar: React.FC<HeaderProps> = ({
 
           {/* Right Section: Notifications + User */}
           <div className="flex items-center gap-2 lg:gap-fluid-3">
-            {/* Notifications */}
-            {showNotifications && (
-              <button className="relative p-2 lg:p-fluid-2 hover:bg-neutral-100 rounded-lg lg:rounded-[0.556vw] transition-colors">
-                <Bell className="w-5 h-5 lg:w-fluid-6 lg:h-fluid-6 text-neutral-600" />
-                {notificationCount > 0 && (
-                  <span className="absolute top-1 right-1 lg:top-fluid-1 lg:right-fluid-1 w-4 h-4 lg:w-fluid-5 lg:h-fluid-5 bg-red-500 text-white text-[10px] lg:text-fluid-xs font-semibold rounded-full flex items-center justify-center">
-                    {notificationCount > 9 ? "9+" : notificationCount}
-                  </span>
-                )}
-              </button>
-            )}
-
             {/* User Info */}
             <div className="hidden sm:flex items-center gap-2 lg:gap-fluid-3 pl-2 lg:pl-fluid-3 border-l border-neutral-200/50">
               {/* Name & Role */}

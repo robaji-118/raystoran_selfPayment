@@ -15,7 +15,7 @@ import {
   ChevronDown,
   Check,
 } from "lucide-react";
-import { cn, fluidSize } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 // --- Types ---
 interface OrderItem {
@@ -223,25 +223,25 @@ export default function AllOrders() {
     return (
       <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
-          <p className="text-neutral-500 text-fluid-base">Loading orders...</p>
+          <div className="w-16 h-16 lg:w-fluid-16 lg:h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4 lg:mb-fluid-4" />
+          <p className="text-neutral-500 text-base lg:!text-fluid-base">Loading orders...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="flex flex-col md:flex-row gap-4 mb-fluid-6  items-center">
+    <div className="min-h-screen p-4 lg:p-fluid-6">
+      <div className="flex flex-col md:flex-row gap-4 lg:gap-fluid-4 mb-6 lg:mb-fluid-6 items-center">
         {/* Search Input */}
         <div className="relative flex-1 w-full group">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors pointer-events-none" />
+          <Search className="absolute left-3.5 lg:left-fluid-3.5 top-1/2 -translate-y-1/2 w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 transition-colors pointer-events-none" />
           <input
             type="text"
             placeholder="Search by order #, customer, table..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border-transparent focus:border-gray-400 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-400/10 transition-all placeholder:text-gray-400"
+            className="w-full pl-10 lg:pl-fluid-10 pr-4 lg:pr-fluid-4 py-3 lg:py-fluid-3 border-transparent focus:border-gray-400 rounded-xl lg:rounded-[0.833vw] text-sm lg:!text-fluid-sm text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-400/10 transition-all placeholder:text-gray-400"
           />
         </div>
 
@@ -250,28 +250,28 @@ export default function AllOrders() {
           <button
             onClick={() => setIsStatusOpen(!isStatusOpen)}
             className={cn(
-              "w-full flex items-center justify-between px-4 py-3 bg-white border rounded-xl text-sm font-medium text-gray-700 transition-all",
+              "w-full flex items-center justify-between px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 bg-white border rounded-xl lg:rounded-[0.833vw] text-sm lg:!text-fluid-sm font-medium text-gray-700 transition-all",
               isStatusOpen
                 ? "border-gray-400 ring-4 ring-gray-400/10"
                 : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
             )}
           >
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-500" />
+            <div className="flex items-center gap-2 lg:gap-fluid-2">
+              <Filter className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-gray-500" />
               <span>
                 {statusOptions.find((o) => o.value === selectedStatus)?.label}
               </span>
             </div>
             <ChevronDown
               className={cn(
-                "w-4 h-4 text-gray-400 transition-transform",
+                "w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-gray-400 transition-transform",
                 isStatusOpen && "rotate-180",
               )}
             />
           </button>
 
           {isStatusOpen && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-lg z-20 py-1 animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl lg:rounded-[0.833vw] shadow-lg z-20 py-1 animate-in fade-in zoom-in-95 duration-200">
               {statusOptions.map((option) => (
                 <button
                   key={option.value}
@@ -280,7 +280,7 @@ export default function AllOrders() {
                     setIsStatusOpen(false);
                   }}
                   className={cn(
-                    "w-full flex items-center justify-between px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors",
+                    "w-full flex items-center justify-between px-4 lg:px-fluid-4 py-2.5 lg:py-fluid-2.5 text-sm lg:!text-fluid-sm text-left hover:bg-gray-50 transition-colors",
                     selectedStatus === option.value
                       ? "text-gray-900 bg-gray-100 font-medium"
                       : "text-gray-600",
@@ -288,7 +288,7 @@ export default function AllOrders() {
                 >
                   {option.label}
                   {selectedStatus === option.value && (
-                    <Check className="w-4 h-4" />
+                    <Check className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4" />
                   )}
                 </button>
               ))}
@@ -298,33 +298,33 @@ export default function AllOrders() {
       </div>
 
       {/* Orders Table Container */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+      <div className="bg-white rounded-2xl lg:rounded-[1.111vw] shadow-sm border border-gray-100 overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-left text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Order Info
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-left text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Customer
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-left text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Location
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-left text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Items
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-left text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-left text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Payment
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-left text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Total
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-right text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Action
                 </th>
               </tr>
@@ -332,13 +332,13 @@ export default function AllOrders() {
             <tbody className="divide-y divide-gray-100">
               {currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-12 text-center">
+                  <td colSpan={8} className="p-12 lg:p-fluid-12 text-center">
                     <div className="flex flex-col items-center">
-                      <FileText className="w-16 h-16 text-gray-300 mb-4" />
-                      <p className="text-gray-500 mb-2 text-lg font-medium">
+                      <FileText className="w-16 h-16 lg:w-fluid-16 lg:h-fluid-16 text-gray-300 mb-4 lg:mb-fluid-4" />
+                      <p className="text-gray-500 mb-2 lg:mb-fluid-2 text-lg lg:!text-fluid-lg font-medium">
                         No orders found
                       </p>
-                      <p className="text-gray-400 text-sm">
+                      <p className="text-gray-400 text-sm lg:!text-fluid-sm">
                         Try adjusting your search or filters
                       </p>
                     </div>
@@ -350,75 +350,75 @@ export default function AllOrders() {
                     key={order._id}
                     className="hover:bg-gray-50/80 transition-colors group"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3">
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-gray-900">
+                        <span className="text-sm lg:!text-fluid-sm font-bold text-gray-900">
                           {order.orderNumber}
                         </span>
-                        <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                          <Clock className="w-3 h-3" />
+                        <div className="flex items-center gap-1 text-xs lg:!text-fluid-xs text-gray-500 mt-0.5">
+                          <Clock className="w-3 h-3 lg:w-fluid-3 lg:h-fluid-3" />
                           {formatDate(order.createdAt)}, {formatTime(order.createdAt)}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-gray-900">
+                    <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3">
+                      <div className="flex items-center gap-3 lg:gap-fluid-3">
+                        <span className="text-sm lg:!text-fluid-sm font-medium text-gray-900">
                           {order.customerName}
                         </span>
                       </div>
                       {order.customerPhone && (
-                        <div className="text-xs text-gray-500 mt-0.5">
+                        <div className="text-xs lg:!text-fluid-xs text-gray-500 mt-0.5">
                           {order.customerPhone}
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
-                        <MapPin className="w-3 h-3" />
+                    <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3">
+                      <span className="inline-flex items-center gap-1.5 lg:gap-fluid-1.5 px-2.5 lg:px-fluid-2.5 py-1 lg:py-fluid-1 rounded-md lg:rounded-[0.417vw] text-xs lg:!text-fluid-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                        <MapPin className="w-3 h-3 lg:w-fluid-3 lg:h-fluid-3" />
                         Table {order.tableNumber}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600">{order.items?.length || 0} items</span>
+                    <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3">
+                      <span className="text-sm lg:!text-fluid-sm text-gray-600">{order.items?.length || 0} items</span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3">
                       <span
                         className={cn(
-                          "px-2.5 py-1 inline-flex text-xs font-semibold rounded-full border",
+                          "px-2.5 lg:px-fluid-2.5 py-1 lg:py-fluid-1 inline-flex text-xs lg:!text-fluid-xs font-semibold rounded-full border",
                           getStatusBadge(order.orderStatus)
                         )}
                       >
                         {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
+                    <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3">
+                      <div className="flex flex-col gap-1 lg:gap-fluid-1">
                         <span
                           className={cn(
-                            "px-2.5 py-1 inline-flex text-xs font-semibold rounded-full border w-fit",
+                            "px-2.5 lg:px-fluid-2.5 py-1 lg:py-fluid-1 inline-flex text-xs lg:!text-fluid-xs font-semibold rounded-full border w-fit",
                             getPaymentStatusBadge(order.paymentStatus)
                           )}
                         >
                           {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
                         </span>
-                        <span className="text-xs text-gray-500 capitalize ml-1">
+                        <span className="text-xs lg:!text-fluid-xs text-gray-500 capitalize ml-1">
                           {order.paymentMethod}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-bold text-gray-900">
+                    <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3">
+                      <span className="text-sm lg:!text-fluid-sm font-bold text-gray-900">
                         {formatCurrency(order.totalAmount)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-right">
                       <button
                         onClick={() => handleViewDetails(order)}
-                        className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all border border-transparent hover:border-gray-200"
+                        className="p-2 lg:p-fluid-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg lg:rounded-[0.556vw] transition-all border border-transparent hover:border-gray-200"
                         title="View Details"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4" />
                       </button>
                     </td>
                   </tr>
@@ -430,21 +430,21 @@ export default function AllOrders() {
 
         {/* --- Modern Pagination Footer --- */}
         {filteredOrders.length > 0 && (
-          <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/30">
+          <div className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 lg:gap-fluid-4 bg-gray-50/30">
             {/* Rows Per Page Selector */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">Rows per page:</span>
+            <div className="flex items-center gap-3 lg:gap-fluid-3">
+              <span className="text-sm lg:!text-fluid-sm text-gray-500">Rows per page:</span>
               <div className="relative" ref={rowSelectRef}>
                 <button
                   onClick={() => setIsRowSelectOpen(!isRowSelectOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-gray-300 focus:ring-2 focus:ring-gray-400/20 transition-all"
+                  className="flex items-center gap-2 lg:gap-fluid-2 px-3 lg:px-fluid-3 py-1.5 lg:py-fluid-1.5 bg-white border border-gray-200 rounded-lg lg:rounded-[0.556vw] text-sm lg:!text-fluid-sm text-gray-700 hover:border-gray-300 focus:ring-2 focus:ring-gray-400/20 transition-all"
                 >
                   {itemsPerPage}
-                  <ChevronDown className="w-3 h-3 text-gray-400" />
+                  <ChevronDown className="w-3 h-3 lg:w-fluid-3 lg:h-fluid-3 text-gray-400" />
                 </button>
 
                 {isRowSelectOpen && (
-                  <div className="absolute bottom-full left-0 mb-1 w-20 bg-white border border-gray-100 rounded-lg shadow-lg z-20 py-1 overflow-hidden">
+                  <div className="absolute bottom-full left-0 mb-1 w-20 bg-white border border-gray-100 rounded-lg lg:rounded-[0.556vw] shadow-lg z-20 py-1 overflow-hidden">
                     {rowOptions.map((option) => (
                       <button
                         key={option}
@@ -454,7 +454,7 @@ export default function AllOrders() {
                           setIsRowSelectOpen(false);
                         }}
                         className={cn(
-                          "w-full px-3 py-1.5 text-sm text-left hover:bg-gray-50 transition-colors",
+                          "w-full px-3 lg:px-fluid-3 py-1.5 lg:py-fluid-1.5 text-sm lg:!text-fluid-sm text-left hover:bg-gray-50 transition-colors",
                           itemsPerPage === option
                             ? "text-gray-900 bg-gray-100 font-medium"
                             : "text-gray-600",
@@ -466,7 +466,7 @@ export default function AllOrders() {
                   </div>
                 )}
               </div>
-              <span className="text-sm text-gray-500 border-l border-gray-200 pl-3">
+              <span className="text-sm lg:!text-fluid-sm text-gray-500 border-l border-gray-200 pl-3 lg:pl-fluid-3">
                 {indexOfFirstItem + 1}-
                 {Math.min(indexOfLastItem, filteredOrders.length)} of{" "}
                 {filteredOrders.length}
@@ -474,16 +474,16 @@ export default function AllOrders() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 lg:gap-fluid-1">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="p-2 rounded-lg hover:bg-white hover:shadow-sm text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all border border-transparent hover:border-gray-200"
+                className="p-2 lg:p-fluid-2 rounded-lg lg:rounded-[0.556vw] hover:bg-white hover:shadow-sm text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all border border-transparent hover:border-gray-200"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-5 h-5 lg:w-fluid-5 lg:h-fluid-5" />
               </button>
 
-              <div className="flex items-center gap-1 px-1">
+              <div className="flex items-center gap-1 lg:gap-fluid-1 px-1 lg:px-fluid-1">
                 {(() => {
                   const siblingCount = 1;
                   const pageNumbers = new Set<number>();
@@ -517,7 +517,7 @@ export default function AllOrders() {
                   return result.map((item) => {
                     if (typeof item === 'string') {
                       return (
-                        <span key={item} className="w-8 h-8 flex items-center justify-center text-gray-400">
+                        <span key={item} className="w-8 h-8 lg:w-fluid-8 lg:h-fluid-8 flex items-center justify-center text-gray-400">
                           ...
                         </span>
                       );
@@ -527,7 +527,7 @@ export default function AllOrders() {
                         key={item}
                         onClick={() => handlePageChange(item)}
                         className={cn(
-                          "w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all",
+                          "w-8 h-8 lg:w-fluid-8 lg:h-fluid-8 flex items-center justify-center rounded-lg lg:rounded-[0.556vw] text-sm lg:!text-fluid-sm font-medium transition-all",
                           currentPage === item
                             ? "bg-gray-900 text-white shadow-sm ring-2 ring-gray-900 ring-offset-1"
                             : "text-gray-600 hover:bg-white hover:shadow-sm hover:border-gray-200 border border-transparent",
@@ -543,30 +543,29 @@ export default function AllOrders() {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="p-2 rounded-lg hover:bg-white hover:shadow-sm text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all border border-transparent hover:border-gray-200"
+                className="p-2 lg:p-fluid-2 rounded-lg lg:rounded-[0.556vw] hover:bg-white hover:shadow-sm text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all border border-transparent hover:border-gray-200"
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-5 h-5 lg:w-fluid-5 lg:h-fluid-5" />
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Order Details Modal (Same content, kept concise for display) */}
+      {/* Order Details Modal */}
       {showModal && selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 lg:p-fluid-4">
           <div
             className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
             onClick={closeModal}
           />
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
-            {/* ... Modal content similar to previous answer but ensures Tailwind classes are consistent ... */}
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <div className="relative bg-white rounded-2xl lg:rounded-[1.111vw] shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 lg:px-fluid-6 py-4 lg:py-fluid-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">
+                <h3 className="text-lg lg:!text-fluid-lg font-bold text-gray-900">
                   Order Details
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm lg:!text-fluid-sm text-gray-500">
                   Transaction ID:{" "}
                   <span className="font-mono text-gray-700">
                     {selectedOrder.orderNumber}
@@ -575,66 +574,65 @@ export default function AllOrders() {
               </div>
               <button
                 onClick={closeModal}
-                className="p-2 bg-white rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors border border-gray-200"
+                className="p-2 lg:p-fluid-2 bg-white rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors border border-gray-200"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 lg:w-fluid-5 lg:h-fluid-5" />
               </button>
             </div>
-            <div className="p-6 overflow-y-auto space-y-6">
-              {/* Detail content... (Same as provided previously) */}
+            <div className="p-6 lg:p-fluid-6 overflow-y-auto space-y-6 lg:space-y-fluid-6">
               {/* Order Info Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <div className="flex items-center gap-2 mb-1">
-                    <User className="w-4 h-4 text-gray-500" />
-                    <span className="text-xs font-semibold text-gray-500 uppercase">
+              <div className="grid grid-cols-2 gap-4 lg:gap-fluid-4">
+                <div className="p-3 lg:p-fluid-3 bg-gray-50 rounded-xl lg:rounded-[0.833vw] border border-gray-100">
+                  <div className="flex items-center gap-2 lg:gap-fluid-2 mb-1 lg:mb-fluid-1">
+                    <User className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-gray-500" />
+                    <span className="text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
                       Customer
                     </span>
                   </div>
-                  <p className="font-medium text-gray-900 text-sm ml-6">
+                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-6 lg:ml-fluid-6">
                     {selectedOrder.customerName}
                   </p>
                   {selectedOrder.customerEmail && (
-                    <p className="text-xs text-gray-500 ml-6">
+                    <p className="text-xs lg:!text-fluid-xs text-gray-500 ml-6 lg:ml-fluid-6">
                       {selectedOrder.customerEmail}
                     </p>
                   )}
                   {selectedOrder.customerPhone && (
-                    <p className="text-xs text-gray-500 ml-6">
+                    <p className="text-xs lg:!text-fluid-xs text-gray-500 ml-6 lg:ml-fluid-6">
                       {selectedOrder.customerPhone}
                     </p>
                   )}
                 </div>
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <div className="flex items-center gap-2 mb-1">
-                    <MapPin className="w-4 h-4 text-orange-500" />
-                    <span className="text-xs font-semibold text-gray-500 uppercase">
+                <div className="p-3 lg:p-fluid-3 bg-gray-50 rounded-xl lg:rounded-[0.833vw] border border-gray-100">
+                  <div className="flex items-center gap-2 lg:gap-fluid-2 mb-1 lg:mb-fluid-1">
+                    <MapPin className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-orange-500" />
+                    <span className="text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
                       Location
                     </span>
                   </div>
-                  <p className="font-medium text-gray-900 text-sm ml-6">
+                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-6 lg:ml-fluid-6">
                     Table {selectedOrder.tableNumber}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="w-4 h-4 text-blue-500" />
-                    <span className="text-xs font-semibold text-gray-500 uppercase">
+                <div className="p-3 lg:p-fluid-3 bg-gray-50 rounded-xl lg:rounded-[0.833vw] border border-gray-100">
+                  <div className="flex items-center gap-2 lg:gap-fluid-2 mb-1 lg:mb-fluid-1">
+                    <Calendar className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-blue-500" />
+                    <span className="text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
                       Date
                     </span>
                   </div>
-                  <p className="font-medium text-gray-900 text-sm ml-6">
+                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-6 lg:ml-fluid-6">
                     {formatDate(selectedOrder.createdAt)}
                   </p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-4 h-4 text-green-500" />
-                    <span className="text-xs font-semibold text-gray-500 uppercase">
+                <div className="p-3 lg:p-fluid-3 bg-gray-50 rounded-xl lg:rounded-[0.833vw] border border-gray-100">
+                  <div className="flex items-center gap-2 lg:gap-fluid-2 mb-1 lg:mb-fluid-1">
+                    <Clock className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-green-500" />
+                    <span className="text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
                       Time
                     </span>
                   </div>
-                  <p className="font-medium text-gray-900 text-sm ml-6">
+                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-6 lg:ml-fluid-6">
                     {formatTime(selectedOrder.createdAt)}
                   </p>
                 </div>
@@ -642,37 +640,37 @@ export default function AllOrders() {
 
               {/* Order Items List */}
               <div>
-                <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-gray-500" /> Order Summary
+                <h4 className="text-sm lg:!text-fluid-sm font-bold text-gray-900 mb-3 lg:mb-fluid-3 flex items-center gap-2 lg:gap-fluid-2">
+                  <FileText className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-gray-500" /> Order Summary
                 </h4>
-                <div className="border border-gray-100 rounded-xl overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-medium">
+                <div className="border border-gray-100 rounded-xl lg:rounded-[0.833vw] overflow-hidden">
+                  <table className="w-full text-sm lg:!text-fluid-sm">
+                    <thead className="bg-gray-50 text-gray-500 text-xs lg:!text-fluid-xs uppercase font-medium">
                       <tr>
-                        <th className="px-4 py-2 text-left">Item</th>
-                        <th className="px-4 py-2 text-center">Qty</th>
-                        <th className="px-4 py-2 text-right">Price</th>
-                        <th className="px-4 py-2 text-right">Total</th>
+                        <th className="px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-left">Item</th>
+                        <th className="px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-center">Qty</th>
+                        <th className="px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-right">Price</th>
+                        <th className="px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-right">Total</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {selectedOrder.items?.map((item, idx) => (
                         <tr key={idx}>
-                          <td className="px-4 py-3 text-gray-900 font-medium">
+                          <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-gray-900 font-medium">
                             {item.menuItemName}
                             {item.notes && (
-                              <p className="text-xs text-gray-500 font-normal italic mt-0.5">
-                                "{item.notes}"
+                              <p className="text-xs lg:!text-fluid-xs text-gray-500 font-normal italic mt-0.5">
+                                &quot;{item.notes}&quot;
                               </p>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-center text-gray-600">
+                          <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-center text-gray-600">
                             x{item.quantity}
                           </td>
-                          <td className="px-4 py-3 text-right text-gray-600">
+                          <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-right text-gray-600">
                             {formatCurrency(item.price)}
                           </td>
-                          <td className="px-4 py-3 text-right text-gray-900 font-medium">
+                          <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-right text-gray-900 font-medium">
                             {formatCurrency(item.subtotal)}
                           </td>
                         </tr>
@@ -683,24 +681,24 @@ export default function AllOrders() {
               </div>
 
               {/* Total Calculation */}
-              <div className="bg-gray-50 p-4 rounded-xl space-y-2 border border-gray-100">
-                <div className="flex justify-between text-sm text-gray-600">
+              <div className="bg-gray-50 p-4 lg:p-fluid-4 rounded-xl lg:rounded-[0.833vw] space-y-2 lg:space-y-fluid-2 border border-gray-100">
+                <div className="flex justify-between text-sm lg:!text-fluid-sm text-gray-600">
                   <span>Subtotal</span>
                   <span>{formatCurrency(selectedOrder.subtotal)}</span>
                 </div>
                 {selectedOrder.tax > 0 && (
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <div className="flex justify-between text-sm lg:!text-fluid-sm text-gray-600">
                     <span>Tax (10%)</span>
                     <span>{formatCurrency(selectedOrder.tax)}</span>
                   </div>
                 )}
                 {selectedOrder.serviceCharge > 0 && (
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <div className="flex justify-between text-sm lg:!text-fluid-sm text-gray-600">
                     <span>Service Charge (5%)</span>
                     <span>{formatCurrency(selectedOrder.serviceCharge)}</span>
                   </div>
                 )}
-                <div className="border-t border-gray-200 my-2 pt-2 flex justify-between text-base font-bold text-gray-900">
+                <div className="border-t border-gray-200 my-2 lg:my-fluid-2 pt-2 lg:pt-fluid-2 flex justify-between text-base lg:!text-fluid-base font-bold text-gray-900">
                   <span>Total Amount</span>
                   <span className="text-gray-900">
                     {formatCurrency(selectedOrder.totalAmount)}

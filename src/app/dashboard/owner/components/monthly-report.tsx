@@ -9,7 +9,6 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { fluidSize } from "@/lib/utils";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -260,11 +259,11 @@ export default function MonthlyReport() {
       {
         label: "Weekly Revenue",
         data: weeklyStats.map(stat => stat.revenue),
-        borderColor: "#8B5CF6",
-        backgroundColor: "rgba(139, 92, 246, 0.1)",
+        borderColor: "#000000",
+        backgroundColor: "rgba(0, 0, 0, 0.1)",
         fill: true,
         tension: 0.4,
-        pointBackgroundColor: "#8B5CF6",
+        pointBackgroundColor: "#000000",
         pointBorderColor: "#FFFFFF",
         pointBorderWidth: 2,
         pointRadius: 4,
@@ -272,11 +271,11 @@ export default function MonthlyReport() {
       {
         label: "Weekly Orders",
         data: weeklyStats.map(stat => stat.orders),
-        borderColor: "#10B981",
-        backgroundColor: "rgba(16, 185, 129, 0.1)",
+        borderColor: "#6B7280",
+        backgroundColor: "rgba(107, 114, 128, 0.1)",
         fill: true,
         tension: 0.4,
-        pointBackgroundColor: "#10B981",
+        pointBackgroundColor: "#6B7280",
         pointBorderColor: "#FFFFFF",
         pointBorderWidth: 2,
         pointRadius: 4,
@@ -291,7 +290,7 @@ export default function MonthlyReport() {
       {
         label: "Revenue",
         data: topMenuItems.map(item => item.revenue),
-        backgroundColor: "#8B5CF6",
+        backgroundColor: "#000000",
         borderRadius: 4,
         borderWidth: 1,
         barPercentage: 0.7,
@@ -299,7 +298,7 @@ export default function MonthlyReport() {
       {
         label: "Quantity",
         data: topMenuItems.map(item => item.quantity),
-        backgroundColor: "#10B981",
+        backgroundColor: "#9CA3AF",
         borderRadius: 4,
         borderWidth: 1,
         barPercentage: 0.7,
@@ -318,9 +317,9 @@ export default function MonthlyReport() {
         labels: {
           color: "#6B7280",
           font: {
-            size: Math.max(10, window.innerWidth * 0.00694),
+            size: 11,
           },
-          padding: Math.max(12, window.innerWidth * 0.01389),
+          padding: 20,
           usePointStyle: true,
           pointStyle: 'circle',
         }
@@ -331,15 +330,9 @@ export default function MonthlyReport() {
         bodyColor: "#1F2937",
         borderColor: "#E5E7EB",
         borderWidth: 1,
-        padding: Math.max(8, window.innerWidth * 0.00833),
-        boxPadding: Math.max(3, window.innerWidth * 0.00417),
+        padding: 12,
+        boxPadding: 4,
         usePointStyle: true,
-        bodyFont: {
-          size: Math.max(10, window.innerWidth * 0.00694),
-        },
-        titleFont: {
-          size: Math.max(10, window.innerWidth * 0.00694),
-        },
         callbacks: {
           label: function (context: any) {
             if (context.dataset.label?.includes('Revenue')) {
@@ -367,9 +360,9 @@ export default function MonthlyReport() {
         ticks: {
           color: "#6B7280",
           font: {
-            size: Math.max(10, window.innerWidth * 0.00694),
+            size: 11,
           },
-          padding: Math.max(8, window.innerWidth * 0.00833),
+          padding: 8,
           callback: function (value: any) {
             return `Rp ${Number(value).toLocaleString('id-ID')}`;
           },
@@ -390,9 +383,9 @@ export default function MonthlyReport() {
         ticks: {
           color: "#6B7280",
           font: {
-            size: Math.max(10, window.innerWidth * 0.00694),
+            size: 11,
           },
-          padding: Math.max(8, window.innerWidth * 0.00833),
+          padding: 8,
         },
       },
       x: {
@@ -406,9 +399,9 @@ export default function MonthlyReport() {
         ticks: {
           color: "#6B7280",
           font: {
-            size: Math.max(10, window.innerWidth * 0.00694),
+            size: 11,
           },
-          padding: Math.max(8, window.innerWidth * 0.00833),
+          padding: 8,
         },
       },
     },
@@ -427,28 +420,28 @@ export default function MonthlyReport() {
     return (
       <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
-          <p className="text-gray-500 text-fluid-base">Loading monthly report...</p>
+          <div className="w-16 h-16 lg:w-fluid-16 lg:h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4 lg:mb-fluid-4" />
+          <p className="text-gray-500 text-base lg:!text-fluid-base">Loading monthly report...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen p-4 lg:p-fluid-4">
       <div className="">
         {/* Header with Month Navigation */}
-        <div className="bg-white mb-fluid-6" style={{ borderRadius: fluidSize(16) }}>
+        <div className="bg-white mb-6 lg:mb-fluid-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center bg-white border border-gray-200 rounded-lg">
+            <div className="flex items-center bg-white border border-gray-200 rounded-lg lg:rounded-[0.556vw]">
               <button
                 onClick={handlePreviousMonth}
-                className="p-fluid-2 text-gray-600 hover:bg-gray-50 rounded-l-lg transition-colors"
+                className="p-2 lg:p-fluid-2 text-gray-600 hover:bg-gray-50 rounded-l-lg lg:rounded-l-[0.556vw] transition-colors"
               >
-                <ChevronLeft className="w-fluid-5 h-fluid-5" />
+                <ChevronLeft className="w-5 h-5 lg:w-fluid-5 lg:h-fluid-5" />
               </button>
-              <div className="px-fluid-4 py-fluid-2 text-center" style={{ minWidth: fluidSize(160) }}>
-                <span className="font-medium text-gray-900 text-fluid-base">
+              <div className="px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-center min-w-[160px]">
+                <span className="font-medium text-gray-900 text-base lg:!text-fluid-base">
                   {months[selectedMonth.month]} {selectedMonth.year}
                 </span>
               </div>
@@ -456,47 +449,47 @@ export default function MonthlyReport() {
                 onClick={handleNextMonth}
                 disabled={selectedMonth.month === new Date().getMonth() && selectedMonth.year === new Date().getFullYear()}
                 className={cn(
-                  "p-fluid-2 rounded-r-lg transition-colors",
+                  "p-2 lg:p-fluid-2 rounded-r-lg lg:rounded-r-[0.556vw] transition-colors",
                   selectedMonth.month === new Date().getMonth() && selectedMonth.year === new Date().getFullYear()
                     ? "text-gray-400 cursor-not-allowed"
                     : "text-gray-600 hover:bg-gray-50"
                 )}
               >
-                <ChevronRight className="w-fluid-5 h-fluid-5" />
+                <ChevronRight className="w-5 h-5 lg:w-fluid-5 lg:h-fluid-5" />
               </button>
             </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-fluid-4 mb-fluid-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-fluid-4 mb-6 lg:mb-fluid-6">
           {/* Total Orders */}
-          <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
-            <div className="flex items-start justify-between mb-fluid-4">
+          <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-start justify-between mb-4 lg:mb-fluid-4">
               <div>
-                <p className="text-gray-500 mb-fluid-1 text-fluid-base">Total Orders</p>
-                <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:!text-fluid-base">Total Orders</p>
+                <h4 className="font-bold text-gray-900 text-2xl lg:!text-fluid-2xl">
                   {monthlyTotals.totalOrders}
                 </h4>
               </div>
             </div>
-            <div className="flex items-center gap-fluid-2">
-              <div className="flex items-center text-green-600 text-fluid-sm">
-                <TrendingUp className="w-fluid-4 h-fluid-4 mr-fluid-1" />
+            <div className="flex items-center gap-2 lg:gap-fluid-2">
+              <div className="flex items-center text-green-600 text-sm lg:!text-fluid-sm">
+                <TrendingUp className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 mr-1 lg:mr-fluid-1" />
                 <span className="font-medium">
                   {monthlyTotals.completedOrders} completed
                 </span>
               </div>
-              <span className="text-gray-400 text-fluid-sm">{monthlyTotals.cancelledOrders} cancelled</span>
+              <span className="text-gray-400 text-sm lg:!text-fluid-sm">{monthlyTotals.cancelledOrders} cancelled</span>
             </div>
           </div>
 
           {/* Total Revenue */}
-          <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
-            <div className="flex items-start justify-between mb-fluid-4">
+          <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-start justify-between mb-4 lg:mb-fluid-4">
               <div>
-                <p className="text-gray-500 mb-fluid-1 text-fluid-base">Total Revenue</p>
-                <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:!text-fluid-base">Total Revenue</p>
+                <h4 className="font-bold text-gray-900 text-2xl lg:!text-fluid-2xl">
                   {formatCurrency(monthlyTotals.totalRevenue)}
                 </h4>
               </div>
@@ -504,18 +497,18 @@ export default function MonthlyReport() {
           </div>
 
           {/* Total Items */}
-          <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
-            <div className="flex items-start justify-between mb-fluid-4">
+          <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-start justify-between mb-4 lg:mb-fluid-4">
               <div>
-                <p className="text-gray-500 mb-fluid-1 text-fluid-base">Total Items</p>
-                <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:!text-fluid-base">Total Items</p>
+                <h4 className="font-bold text-gray-900 text-2xl lg:!text-fluid-2xl">
                   {monthlyTotals.totalItems}
                 </h4>
               </div>
             </div>
-            <div className="flex items-center gap-fluid-2">
-              <div className="flex items-center text-gray-600 text-fluid-sm">
-                <Users className="w-fluid-4 h-fluid-4 mr-fluid-1" />
+            <div className="flex items-center gap-2 lg:gap-fluid-2">
+              <div className="flex items-center text-gray-600 text-sm lg:!text-fluid-sm">
+                <Users className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 mr-1 lg:mr-fluid-1" />
                 <span className="font-medium">
                   {monthlyTotals.uniqueCustomers} customers
                 </span>
@@ -524,19 +517,19 @@ export default function MonthlyReport() {
           </div>
 
           {/* Success Rate */}
-          <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
-            <div className="flex items-start justify-between mb-fluid-4">
+          <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-start justify-between mb-4 lg:mb-fluid-4">
               <div>
-                <p className="text-gray-500 mb-fluid-1 text-fluid-base">Success Rate</p>
-                <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:!text-fluid-base">Success Rate</p>
+                <h4 className="font-bold text-gray-900 text-2xl lg:!text-fluid-2xl">
                   {monthlyTotals.totalOrders > 0
                     ? `${Math.round((monthlyTotals.completedOrders / monthlyTotals.totalOrders) * 100)}%`
                     : "0%"}
                 </h4>
               </div>
             </div>
-            <div className="flex items-center gap-fluid-2">
-              <span className="text-gray-400 text-fluid-sm">
+            <div className="flex items-center gap-2 lg:gap-fluid-2">
+              <span className="text-gray-400 text-sm lg:!text-fluid-sm">
                 {monthlyTotals.completedOrders} of {monthlyTotals.totalOrders} orders
               </span>
             </div>
@@ -544,15 +537,15 @@ export default function MonthlyReport() {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-fluid-6 mb-6 lg:mb-fluid-6">
           {/* Weekly Performance Chart */}
-          <div className="bg-white p-6 shadow-sm border border-gray-100 rounded-xl">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-center justify-between mb-6 lg:mb-fluid-6">
               <div>
-                <h4 className="text-gray-900 text-lg font-semibold">Weekly Performance</h4>
+                <h4 className="text-gray-900 text-lg lg:!text-fluid-lg font-bold">Weekly Performance</h4>
               </div>
             </div>
-            <div className="h-64">
+            <div className="h-64 lg:h-fluid-64">
               <Line
                 data={weeklyChartData}
                 options={chartOptions}
@@ -561,16 +554,16 @@ export default function MonthlyReport() {
           </div>
 
           {/* Top Menu Items Chart */}
-          <div className="bg-white p-6 shadow-sm border border-gray-100 rounded-xl">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-center justify-between mb-6 lg:mb-fluid-6">
               <div>
-                <h4 className="text-gray-900 text-lg font-semibold">Top Menu Items</h4>
+                <h4 className="text-gray-900 text-lg lg:!text-fluid-lg font-bold">Top Menu Items</h4>
               </div>
             </div>
-            <div className="h-64">
+            <div className="h-64 lg:h-fluid-64">
               {topMenuItems.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-500">No data available</p>
+                  <p className="text-gray-500 text-base lg:!text-fluid-base">No data available</p>
                 </div>
               ) : (
                 <Bar
@@ -583,38 +576,38 @@ export default function MonthlyReport() {
         </div>
 
         {/* Top Menu Items List */}
-        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
-          <div className="flex items-center justify-between mb-fluid-6">
+        <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+          <div className="flex items-center justify-between mb-6 lg:mb-fluid-6">
             <div>
-              <h4 className="text-gray-900 text-fluid-lg font-semibold">Top Selling Items</h4>
-              <p className="text-gray-500 text-fluid-sm mt-fluid-1">Most popular menu items by quantity sold</p>
+              <h4 className="text-gray-900 text-lg lg:!text-fluid-lg font-bold">Top Selling Items</h4>
+              <p className="text-gray-500 text-sm lg:!text-fluid-sm mt-1 lg:mt-fluid-1">Most popular menu items by quantity sold</p>
             </div>
           </div>
 
           {topMenuItems.length === 0 ? (
-            <div className="flex items-center justify-center py-fluid-12">
-              <p className="text-gray-500 text-fluid-base">No data available</p>
+            <div className="flex items-center justify-center py-12 lg:py-fluid-12">
+              <p className="text-gray-500 text-base lg:!text-fluid-base">No data available</p>
             </div>
           ) : (
-            <div className="space-y-fluid-3">
+            <div className="space-y-3 lg:space-y-fluid-3">
               {topMenuItems.map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-fluid-3 rounded-lg transition-colors">
-                  <div className="flex items-center gap-fluid-3">
+                <div key={index} className="flex items-center justify-between p-3 lg:p-fluid-3 rounded-lg lg:rounded-[0.556vw] transition-colors">
+                  <div className="flex items-center gap-3 lg:gap-fluid-3">
                     <div className={cn(
-                      "flex items-center justify-center w-fluid-8 h-fluid-8 rounded-full font-bold text-fluid-sm",
+                      "flex items-center justify-center w-8 h-8 lg:w-fluid-8 lg:h-fluid-8 rounded-full font-bold text-sm lg:!text-fluid-sm",
                       index === 0 ? "bg-yellow-100 text-yellow-600" :
                         index === 1 ? "bg-gray-100 text-gray-600" :
                           index === 2 ? "bg-orange-100 text-orange-600" :
-                            "bg-purple-100 text-purple-600"
+                            "bg-gray-100 text-gray-600"
                     )}>
                       {index + 1}
                     </div>
                     <div>
-                      <p className="text-gray-900 font-semibold text-fluid-base">{item.name}</p>
-                      <span className="text-gray-500 text-fluid-sm">{item.quantity} sold</span>
+                      <p className="text-gray-900 font-semibold text-base lg:!text-fluid-base">{item.name}</p>
+                      <span className="text-gray-500 text-sm lg:!text-fluid-sm">{item.quantity} sold</span>
                     </div>
                   </div>
-                  <span className="text-gray-900 font-bold text-fluid-base">{formatCurrency(item.revenue)}</span>
+                  <span className="text-gray-900 font-bold text-base lg:!text-fluid-base">{formatCurrency(item.revenue)}</span>
                 </div>
               ))}
             </div>

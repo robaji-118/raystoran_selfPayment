@@ -356,8 +356,8 @@ export default function OwnerDashboardMain() {
     return (
       <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
-          <p className="text-neutral-500 text-fluid-base">Loading owner dashboard...</p>
+          <div className="w-16 h-16 lg:w-fluid-16 lg:h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4 lg:mb-fluid-4" />
+          <p className="text-neutral-500 text-base lg:!text-fluid-base">Loading owner dashboard...</p>
         </div>
       </div>
     );
@@ -365,7 +365,7 @@ export default function OwnerDashboardMain() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-fluid-96">
+      <div className="flex items-center justify-center h-96 lg:h-fluid-96">
         <p className="text-red-600 font-medium">{error}</p>
         <button onClick={fetchDashboardData} className="ml-4 underline">Retry</button>
       </div>
@@ -373,59 +373,59 @@ export default function OwnerDashboardMain() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen p-4 lg:p-0">
 
       {/* --- ROW 1: Summary Cards & Charts --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-fluid-4 mb-fluid-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-fluid-4 mb-4 lg:mb-fluid-4">
 
         {/* Card 1: Total Income */}
-        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
-          <div className="flex items-start justify-between mb-fluid-4">
+        <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+          <div className="flex items-start justify-between mb-4 lg:mb-fluid-4">
             <div>
-              <p className="text-gray-500 mb-fluid-1 text-fluid-base">Total Income (All Time)</p>
-              <h4 className="font-bold text-gray-900 text-fluid-2xl">
+              <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:!text-fluid-base">Total Income (All Time)</p>
+              <h4 className="font-bold text-gray-900 text-2xl lg:!text-fluid-2xl">
                 {formatCurrency(stats.totalRevenue)}
               </h4>
             </div>
           </div>
-          <div className="flex items-center gap-fluid-2">
-            <div className="flex items-center text-green-600 text-fluid-sm">
-              <TrendingUp className="w-fluid-4 h-fluid-4 mr-fluid-1" />
+          <div className="flex items-center gap-2 lg:gap-fluid-2">
+            <div className="flex items-center text-green-600 text-sm lg:!text-fluid-sm">
+              <TrendingUp className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 mr-1 lg:mr-fluid-1" />
               <span className="font-medium">
                 {stats.completedOrders} orders
               </span>
             </div>
-            <span className="text-gray-400 text-fluid-sm">completed</span>
+            <span className="text-gray-400 text-sm lg:!text-fluid-sm">completed</span>
           </div>
         </div>
 
         {/* Card 2: Weekly Revenue Chart */}
-        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
-          <div className="flex flex-col items-start gap-fluid-6 justify-between h-full">
+        <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+          <div className="flex flex-col items-start gap-6 lg:gap-fluid-6 justify-between h-full">
             <div className="flex-1 w-full">
-              <p className="text-gray-500 mb-fluid-1 text-fluid-base">Weekly Revenue</p>
-              <h4 className="font-bold text-gray-900 mb-fluid-2 text-fluid-2xl">
+              <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:!text-fluid-base">Weekly Revenue</p>
+              <h4 className="font-bold text-gray-900 mb-2 lg:mb-fluid-2 text-2xl lg:!text-fluid-2xl">
                 {formatCurrency(stats.averageMonthlyRevenue)}
               </h4>
-              <span className="text-gray-400 text-fluid-sm">Last 7 days</span>
+              <span className="text-gray-400 text-sm lg:!text-fluid-sm">Last 7 days</span>
             </div>
-            <div className="w-full h-fluid-32">
+            <div className="w-full h-32 lg:h-fluid-32">
               <Line data={revenueChartData} options={chartOptions} />
             </div>
           </div>
         </div>
 
         {/* Card 3: Weekly Orders Chart */}
-        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
-          <div className="flex flex-col items-start gap-fluid-6 justify-between h-full">
+        <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+          <div className="flex flex-col items-start gap-6 lg:gap-fluid-6 justify-between h-full">
             <div className="flex-1 w-full">
-              <p className="text-gray-500 mb-fluid-1 text-fluid-base">Weekly Orders</p>
-              <h4 className="font-bold text-gray-900 mb-fluid-2 text-fluid-2xl">
+              <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:!text-fluid-base">Weekly Orders</p>
+              <h4 className="font-bold text-gray-900 mb-2 lg:mb-fluid-2 text-2xl lg:!text-fluid-2xl">
                 {stats.averageMonthlySales}
               </h4>
-              <span className="text-gray-400 text-fluid-sm">Last 7 days</span>
+              <span className="text-gray-400 text-sm lg:!text-fluid-sm">Last 7 days</span>
             </div>
-            <div className="w-full h-fluid-28">
+            <div className="w-full h-28 lg:h-fluid-28">
               <Bar data={salesChartData} options={chartOptions} />
             </div>
           </div>
@@ -433,47 +433,47 @@ export default function OwnerDashboardMain() {
       </div>
 
       {/* --- ROW 2: Top Selling Items --- */}
-      <div className="mb-fluid-4">
-        <div className="bg-white shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
-          <div className="p-fluid-6 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-fluid-3">
+      <div className="mb-4 lg:mb-fluid-4">
+        <div className="bg-white shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+          <div className="p-6 lg:p-fluid-6 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-3 lg:gap-fluid-3">
               <div>
-                <h4 className="text-gray-900 font-bold text-fluid-lg">Top 5 Selling Items</h4>
-                <p className="text-gray-500 text-fluid-sm">Most popular menu items based on order quantity</p>
+                <h4 className="text-gray-900 font-bold text-lg lg:!text-fluid-lg">Top 5 Selling Items</h4>
+                <p className="text-gray-500 text-sm lg:!text-fluid-sm">Most popular menu items based on order quantity</p>
               </div>
             </div>
           </div>
 
-          <div className="p-fluid-6">
+          <div className="p-6 lg:p-fluid-6">
             {topSellingItems.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-fluid-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-fluid-4">
                 {topSellingItems.map((item, index) => (
                   <div
                     key={index}
-                    className="group relative bg-gray-50 p-fluid-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all duration-300"
+                    className="group relative bg-gray-50 p-4 lg:p-fluid-4 rounded-xl lg:rounded-[0.833vw] border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all duration-300"
                   >
-                    <div className="absolute -top-3 -right-3 w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold text-sm shadow-sm z-10">
+                    <div className="absolute -top-3 -right-3 w-10 h-10 lg:w-fluid-10 lg:h-fluid-10 bg-white text-black rounded-full flex items-center justify-center font-bold text-sm lg:!text-fluid-sm shadow-sm z-10">
                       #{index + 1}
                     </div>
 
-                    <div className="mb-fluid-3">
-                      <h5 className="font-bold text-gray-900 text-fluid-base line-clamp-1 group-hover:text-purple-700 transition-colors">
+                    <div className="mb-3 lg:mb-fluid-3">
+                      <h5 className="font-bold text-gray-900 text-base lg:!text-fluid-base line-clamp-1 group-hover:text-purple-700 transition-colors">
                         {item.name}
                       </h5>
                     </div>
 
-                    <div className="space-y-fluid-2">
-                      <div className="flex items-center justify-between text-fluid-sm">
+                    <div className="space-y-2 lg:space-y-fluid-2">
+                      <div className="flex items-center justify-between text-sm lg:!text-fluid-sm">
                         <span className="text-gray-500">Sold</span>
                         <span className="font-bold text-gray-900">{item.count}</span>
                       </div>
-                      <div className="flex items-center justify-between text-fluid-sm">
+                      <div className="flex items-center justify-between text-sm lg:!text-fluid-sm">
                         <span className="text-gray-500">Revenue</span>
                         <span className="font-bold text-green-600">{formatCurrency(item.revenue)}</span>
                       </div>
                     </div>
 
-                    <div className="mt-fluid-3 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                    <div className="mt-3 lg:mt-fluid-3 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
                       <div
                         className={cn(
                           "h-full rounded-full",
@@ -488,7 +488,7 @@ export default function OwnerDashboardMain() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-fluid-8">
+              <div className="text-center py-8 lg:py-fluid-8">
                 <p className="text-gray-500">No sales data available to determine top items.</p>
               </div>
             )}
@@ -497,20 +497,20 @@ export default function OwnerDashboardMain() {
       </div>
 
       {/* --- ROW 3: Transactions (Weekly Reset + Pagination) --- */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
-        <div className="p-fluid-6 border-b border-gray-100">
+      <div className="bg-white rounded-2xl lg:rounded-[1.111vw] shadow-sm border border-gray-100">
+        <div className="p-6 lg:p-fluid-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-gray-900 text-fluid-lg font-bold">Transactions (This Week)</h4>
-              <p className="text-gray-500 text-fluid-xs mt-1">Resets every Monday</p>
+              <h4 className="text-gray-900 text-lg lg:!text-fluid-lg font-bold">Transactions (This Week)</h4>
+              <p className="text-gray-500 text-xs lg:!text-fluid-xs mt-1">Resets every Monday</p>
             </div>
 
             <button
               onClick={handleExport}
-              className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+              className="flex items-center gap-2 lg:gap-fluid-2 px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-gray-600 hover:bg-gray-50 rounded-lg lg:rounded-[0.556vw] transition-colors"
             >
-              <FileDown className="w-fluid-4 h-fluid-4" />
-              <span className="text-fluid-sm">Export Weekly</span>
+              <FileDown className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4" />
+              <span className="text-sm lg:!text-fluid-sm">Export Weekly</span>
             </button>
           </div>
         </div>
@@ -519,38 +519,38 @@ export default function OwnerDashboardMain() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
-                <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">Order ID</th>
-                <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">Customer</th>
-                <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">Date</th>
-                <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">Amount</th>
-                <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">Status</th>
+                <th className="text-left p-4 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:!text-fluid-sm">Order ID</th>
+                <th className="text-left p-4 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:!text-fluid-sm">Customer</th>
+                <th className="text-left p-4 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:!text-fluid-sm">Date</th>
+                <th className="text-left p-4 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:!text-fluid-sm">Amount</th>
+                <th className="text-left p-4 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:!text-fluid-sm">Status</th>
               </tr>
             </thead>
             <tbody>
               {paginatedOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-fluid-12 text-center text-gray-500">
+                  <td colSpan={5} className="p-12 lg:p-fluid-12 text-center text-gray-500">
                     No transactions found for this week.
                   </td>
                 </tr>
               ) : (
                 paginatedOrders.map((order) => (
                   <tr key={order._id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                    <td className="p-fluid-4">
-                      <div className="font-medium text-gray-900 text-fluid-sm">#{order.orderNumber}</div>
-                      <div className="text-gray-500 text-fluid-xs">Table {order.tableNumber}</div>
+                    <td className="p-4 lg:p-fluid-4">
+                      <div className="font-medium text-gray-900 text-sm lg:!text-fluid-sm">#{order.orderNumber}</div>
+                      <div className="text-gray-500 text-xs lg:!text-fluid-xs">Table {order.tableNumber}</div>
                     </td>
-                    <td className="p-fluid-4 text-gray-900 text-fluid-sm font-medium">
+                    <td className="p-4 lg:p-fluid-4 text-gray-900 text-sm lg:!text-fluid-sm font-medium">
                       {order.customerName || "Guest"}
                     </td>
-                    <td className="p-fluid-4 text-gray-600 text-fluid-sm">
+                    <td className="p-4 lg:p-fluid-4 text-gray-600 text-sm lg:!text-fluid-sm">
                       {formatDate(order.createdAt)}
                     </td>
-                    <td className="p-fluid-4 text-gray-900 font-bold text-fluid-sm">
+                    <td className="p-4 lg:p-fluid-4 text-gray-900 font-bold text-sm lg:!text-fluid-sm">
                       {formatCurrency(order.totalAmount)}
                     </td>
-                    <td className="p-fluid-4">
-                      <span className={cn("px-fluid-3 py-fluid-1 rounded-full font-medium !text-fluid-sm", getStatusColor(order.orderStatus))}>
+                    <td className="p-4 lg:p-fluid-4">
+                      <span className={cn("px-3 lg:px-fluid-3 py-1 lg:py-fluid-1 rounded-full font-medium text-sm lg:!text-fluid-sm", getStatusColor(order.orderStatus))}>
                         {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
                       </span>
                     </td>
@@ -563,28 +563,28 @@ export default function OwnerDashboardMain() {
 
         {/* Pagination Controls */}
         {weeklyOrders.length > itemsPerPage && (
-          <div className="flex items-center justify-between p-fluid-4 border-t border-gray-100">
-            <span className="text-gray-500 text-fluid-sm">
-              Showing {(currentPage - 1) * itemsPerPage + 1}-
+          <div className="flex items-center justify-between p-4 lg:p-fluid-4 border-t border-gray-100">
+            <span className="text-gray-500 text-sm lg:!text-fluid-sm">
+              {(currentPage - 1) * itemsPerPage + 1}-
               {Math.min(currentPage * itemsPerPage, weeklyOrders.length)} of {weeklyOrders.length}
             </span>
-            <div className="flex items-center gap-fluid-2">
+            <div className="flex items-center gap-2 lg:gap-fluid-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="p-fluid-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 lg:p-fluid-2 rounded-lg lg:rounded-[0.556vw] border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ChevronLeft className="w-fluid-4 h-fluid-4" />
+                <ChevronLeft className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4" />
               </button>
-              <span className="text-fluid-sm font-medium px-fluid-2">
+              <span className="text-sm lg:!text-fluid-sm font-medium px-2 lg:px-fluid-2">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="p-fluid-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 lg:p-fluid-2 rounded-lg lg:rounded-[0.556vw] border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ChevronRight className="w-fluid-4 h-fluid-4" />
+                <ChevronRight className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4" />
               </button>
             </div>
           </div>

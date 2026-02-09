@@ -157,7 +157,7 @@ const CompletedOrderCard = ({ order }: { order: Order }) => {
             <p className="text-[10px] lg:!text-fluid-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 lg:mb-fluid-3">
               Order Details
             </p>
-            <div className="bg-white rounded-lg lg:rounded-[0.556vw] border border-gray-200 divide-y divide-gray-100">
+            <div className="bg-white rounded-lg lg:rounded-[0.556vw] border border-gray-200 max-h-40 lg:max-h-48 overflow-y-auto divide-y divide-gray-100">
               {order.items.map((item, index) => (
                 <div key={`${item._id}-${index}`} className="p-2 lg:p-fluid-3 flex justify-between items-start">
                   <div className="flex gap-2 lg:gap-fluid-3">
@@ -332,42 +332,6 @@ export default function CompletedDeliveriesView({
 
   return (
     <div className="min-h-screen p-fluid-4">
-      {/* Stats Cards (White Theme) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-fluid-6 mb-4 lg:mb-fluid-8">
-        <div className="bg-white rounded-xl lg:rounded-[1.389vw] p-4 lg:p-fluid-6 shadow-sm border border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-xs lg:!text-fluid-sm font-medium mb-1">Total Delivered</p>
-            <p className="text-2xl lg:!text-fluid-3xl font-bold text-gray-900">{stats.total}</p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl lg:rounded-[1.389vw] p-4 lg:p-fluid-6 shadow-sm border border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-xs lg:!text-fluid-sm font-medium mb-1">Total Revenue</p>
-            <p className="text-2xl lg:!text-fluid-3xl font-bold text-gray-900">
-              {formatRupiah(stats.totalRevenue)}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl lg:rounded-[1.389vw] p-4 lg:p-fluid-6 shadow-sm border border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-xs lg:!text-fluid-sm font-medium mb-1">Avg Delivery Time</p>
-            <p className="text-2xl lg:!text-fluid-3xl font-bold text-gray-900">
-              {stats.avgDeliveryTime}m
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl lg:rounded-[1.389vw] p-4 lg:p-fluid-6 shadow-sm border border-gray-100 flex items-center justify-between">
-          <div>
-            <p className="text-gray-500 text-xs lg:!text-fluid-sm font-medium mb-1">Items Delivered</p>
-            <p className="text-2xl lg:!text-fluid-3xl font-bold text-gray-900">
-              {stats.totalItems}
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Filters & Search */}
       <div className="flex flex-col sm:flex-row gap-3 lg:gap-fluid-4 mb-4 lg:mb-fluid-6">

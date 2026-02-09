@@ -18,7 +18,6 @@ import {
   TrendingDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { fluidSize } from "@/lib/utils";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -267,50 +266,6 @@ export default function WeeklyReport() {
     setTopMenuItems(sorted);
   };
 
-  const findTopMenuItemsToday = (orderList: Order[]) => {
-    // Filter hanya order hari ini
-    const today = new Date().toISOString().split("T")[0];
-    const todayOrders = orderList.filter((order) => {
-      const orderDate = new Date(order.createdAt).toISOString().split("T")[0];
-      return orderDate === today;
-    });
-
-    const menuStats: Record<
-      string,
-      { quantity: number; revenue: number; totalPrice: number }
-    > = {};
-
-    todayOrders.forEach((order) => {
-      order.items.forEach((item) => {
-        if (!menuStats[item.menuItemName]) {
-          menuStats[item.menuItemName] = {
-            quantity: 0,
-            revenue: 0,
-            totalPrice: 0,
-          };
-        }
-        menuStats[item.menuItemName].quantity += item.quantity;
-        menuStats[item.menuItemName].revenue += item.subtotal;
-        menuStats[item.menuItemName].totalPrice += item.price * item.quantity;
-      });
-    });
-
-    const sorted = Object.entries(menuStats)
-      .map(([name, stats]) => ({
-        name,
-        quantity: stats.quantity,
-        revenue: stats.revenue,
-        avgPrice:
-          stats.quantity > 0
-            ? Math.round(stats.totalPrice / stats.quantity)
-            : 0,
-      }))
-      .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 10);
-
-    setTopMenuItems(sorted);
-  };
-
   const findTopDay = (orderList: Order[]) => {
     const dailyStats: Record<string, DailyStat> = {};
 
@@ -377,11 +332,11 @@ export default function WeeklyReport() {
       {
         label: "Daily Revenue",
         data: dailyStats.map((stat) => stat.revenue),
-        borderColor: "#8B5CF6", // Purple
-        backgroundColor: "rgba(139, 92, 246, 0.1)",
+        borderColor: "#000000",
+        backgroundColor: "rgba(0, 0, 0, 0.1)",
         fill: true,
         tension: 0.4,
-        pointBackgroundColor: "#8B5CF6",
+        pointBackgroundColor: "#000000",
         pointBorderColor: "#FFFFFF",
         pointBorderWidth: 2,
         pointRadius: 4,
@@ -389,11 +344,11 @@ export default function WeeklyReport() {
       {
         label: "Daily Orders",
         data: dailyStats.map((stat) => stat.orders),
-        borderColor: "#10B981", // Green
-        backgroundColor: "rgba(16, 185, 129, 0.1)",
+        borderColor: "#6B7280",
+        backgroundColor: "rgba(107, 114, 128, 0.1)",
         fill: true,
         tension: 0.4,
-        pointBackgroundColor: "#10B981",
+        pointBackgroundColor: "#6B7280",
         pointBorderColor: "#FFFFFF",
         pointBorderWidth: 2,
         pointRadius: 4,
@@ -500,28 +455,28 @@ export default function WeeklyReport() {
     return (
       <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
-          <p className="text-neutral-500 text-fluid-base">Loading weekly report...</p>
+          <div className="w-16 h-16 lg:w-fluid-16 lg:h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4 lg:mb-fluid-4" />
+          <p className="text-neutral-500 text-base lg:!text-fluid-base">Loading weekly report...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-fluid-4">
+    <div className="min-h-screen p-4 lg:p-fluid-4">
       <div className="">
         {/* Header with Week Navigation */}
-        <div className="mb-fluid-6" style={{ borderRadius: fluidSize(16) }}>
+        <div className="mb-6 lg:mb-fluid-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center bg-white border border-gray-200 rounded-lg">
+            <div className="flex items-center bg-white border border-gray-200 rounded-lg lg:rounded-[0.556vw]">
               <button
                 onClick={handlePreviousWeek}
-                className="p-fluid-2 text-gray-600 hover:bg-gray-50 rounded-l-lg transition-colors"
+                className="p-2 lg:p-fluid-2 text-gray-600 hover:bg-gray-50 rounded-l-lg lg:rounded-l-[0.556vw] transition-colors"
               >
-                <ChevronLeft className="w-fluid-5 h-fluid-5" />
+                <ChevronLeft className="w-5 h-5 lg:w-fluid-5 lg:h-fluid-5" />
               </button>
-              <div className="px-fluid-4 py-fluid-2 text-center min-w-[180px]">
-                <span className="font-medium text-gray-900 text-fluid-base">
+              <div className="px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-center min-w-[180px]">
+                <span className="font-medium text-gray-900 text-base lg:!text-fluid-base">
                   {new Date(selectedWeek.start).toLocaleDateString("id-ID", {
                     day: "numeric",
                     month: "short",
@@ -537,38 +492,35 @@ export default function WeeklyReport() {
                 onClick={handleNextWeek}
                 disabled={new Date(selectedWeek.end) >= new Date()}
                 className={cn(
-                  "p-fluid-2 rounded-r-lg transition-colors",
+                  "p-2 lg:p-fluid-2 rounded-r-lg lg:rounded-r-[0.556vw] transition-colors",
                   new Date(selectedWeek.end) >= new Date()
                     ? "text-gray-400 cursor-not-allowed"
                     : "text-gray-600 hover:bg-gray-50",
                 )}
               >
-                <ChevronRight className="w-fluid-5 h-fluid-5" />
+                <ChevronRight className="w-5 h-5 lg:w-fluid-5 lg:h-fluid-5" />
               </button>
             </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-fluid-4 mb-fluid-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-fluid-4 mb-6 lg:mb-fluid-6">
           {/* Total Orders */}
-          <div
-            className="bg-white p-fluid-6 shadow-sm border border-gray-100"
-            style={{ borderRadius: fluidSize(16) }}
-          >
-            <div className="flex items-start justify-between mb-fluid-4">
+          <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-start justify-between mb-4 lg:mb-fluid-4">
               <div>
-                <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+                <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:!text-fluid-base">
                   Total Orders
                 </p>
-                <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                <h4 className="font-bold text-gray-900 text-2xl lg:!text-fluid-2xl">
                   {weeklyTotals.totalOrders}
                 </h4>
               </div>
             </div>
-            <div className="flex items-center gap-fluid-2">
-              <div className="flex items-center text-green-600 text-fluid-sm">
-                <TrendingUp className="w-fluid-4 h-fluid-4 mr-fluid-1" />
+            <div className="flex items-center gap-2 lg:gap-fluid-2">
+              <div className="flex items-center text-green-600 text-sm lg:!text-fluid-sm">
+                <TrendingUp className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 mr-1 lg:mr-fluid-1" />
                 <span className="font-medium">
                   {weeklyTotals.completedOrders} completed
                 </span>
@@ -577,36 +529,30 @@ export default function WeeklyReport() {
           </div>
 
           {/* Total Revenue */}
-          <div
-            className="bg-white p-fluid-6 shadow-sm border border-gray-100"
-            style={{ borderRadius: fluidSize(16) }}
-          >
-            <div className="flex items-start justify-between mb-fluid-4">
+          <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-start justify-between mb-4 lg:mb-fluid-4">
               <div>
-                <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+                <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:!text-fluid-base">
                   Total Revenue
                 </p>
-                <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                <h4 className="font-bold text-gray-900 text-2xl lg:!text-fluid-2xl">
                   {formatCurrency(weeklyTotals.totalRevenue)}
                 </h4>
               </div>
             </div>
-            <div className="flex items-center gap-fluid-2">
-              <span className="text-gray-400 text-fluid-sm">This week</span>
+            <div className="flex items-center gap-2 lg:gap-fluid-2">
+              <span className="text-gray-400 text-sm lg:!text-fluid-sm">This week</span>
             </div>
           </div>
 
           {/* Avg Order Value */}
-          <div
-            className="bg-white p-fluid-6 shadow-sm border border-gray-100"
-            style={{ borderRadius: fluidSize(16) }}
-          >
-            <div className="flex items-start justify-between mb-fluid-4">
+          <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-start justify-between mb-4 lg:mb-fluid-4">
               <div>
-                <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+                <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:!text-fluid-base">
                   Avg Order Value
                 </p>
-                <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                <h4 className="font-bold text-gray-900 text-2xl lg:!text-fluid-2xl">
                   {formatCurrency(weeklyTotals.avgOrderValue)}
                 </h4>
               </div>
@@ -614,23 +560,20 @@ export default function WeeklyReport() {
           </div>
 
           {/* Total Items */}
-          <div
-            className="bg-white p-fluid-6 shadow-sm border border-gray-100"
-            style={{ borderRadius: fluidSize(16) }}
-          >
-            <div className="flex items-start justify-between mb-fluid-4">
+          <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-start justify-between mb-4 lg:mb-fluid-4">
               <div>
-                <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+                <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:!text-fluid-base">
                   Total Items
                 </p>
-                <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                <h4 className="font-bold text-gray-900 text-2xl lg:!text-fluid-2xl">
                   {weeklyTotals.totalItems}
                 </h4>
               </div>
             </div>
-            <div className="flex items-center gap-fluid-2">
-              <div className="flex items-center text-gray-600 text-fluid-sm">
-                <Users className="w-fluid-4 h-fluid-4 mr-fluid-1" />
+            <div className="flex items-center gap-2 lg:gap-fluid-2">
+              <div className="flex items-center text-gray-600 text-sm lg:!text-fluid-sm">
+                <Users className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 mr-1 lg:mr-fluid-1" />
                 <span className="font-medium">
                   {weeklyTotals.uniqueCustomers} customers
                 </span>
@@ -640,45 +583,38 @@ export default function WeeklyReport() {
         </div>
 
         {/* Charts and Top Selling Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-fluid-6 mb-fluid-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-fluid-6 mb-6 lg:mb-fluid-6">
           {/* Daily Performance Chart */}
-          <div
-            className="lg:col-span-2 bg-white p-fluid-6 shadow-sm border border-gray-100"
-            style={{ borderRadius: fluidSize(16) }}
-          >
-            <div className="flex items-center justify-between mb-fluid-6">
+          <div className="lg:col-span-2 bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-center justify-between mb-6 lg:mb-fluid-6">
               <div>
-                <h4 className="text-gray-900 text-fluid-lg">
+                <h4 className="text-gray-900 text-lg lg:!text-fluid-lg font-bold">
                   Daily Performance
                 </h4>
-                <p className="text-gray-500 text-fluid-sm mt-fluid-1">
+                <p className="text-gray-500 text-sm lg:!text-fluid-sm mt-1 lg:mt-fluid-1">
                   Revenue and orders throughout the week
                 </p>
               </div>
-              <div className="flex items-center gap-fluid-4"></div>
             </div>
-            <div className="h-fluid-64">
+            <div className="h-64 lg:h-fluid-64">
               <Line data={dailyChartData} options={chartOptions} />
             </div>
           </div>
 
           {/* Top Selling This Week Section */}
-          <div
-            className="bg-white p-fluid-4 shadow-sm border border-gray-100"
-            style={{ borderRadius: fluidSize(16) }}
-          >
-            <div className="flex items-center justify-between mb-fluid-6">
+          <div className="bg-white p-4 lg:p-fluid-4 shadow-sm border border-gray-100 rounded-2xl lg:rounded-[1.111vw]">
+            <div className="flex items-center justify-between mb-6 lg:mb-fluid-6">
               <div>
-                <h5 className="text-gray-900">Top Selling This Week</h5>
+                <h5 className="text-gray-900 font-bold text-base lg:!text-fluid-base">Top Selling This Week</h5>
               </div>
             </div>
 
             {/* Top Menu Items This Week */}
-            <div className="space-y-fluid-3">
+            <div className="space-y-3 lg:space-y-fluid-3">
               {topMenuItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-fluid-8">
-                  <Package className="w-fluid-8 h-fluid-8 text-gray-300 mb-fluid-3" />
-                  <p className="text-gray-500 text-fluid-sm text-center">
+                <div className="flex flex-col items-center justify-center py-8 lg:py-fluid-8">
+                  <Package className="w-8 h-8 lg:w-fluid-8 lg:h-fluid-8 text-gray-300 mb-3 lg:mb-fluid-3" />
+                  <p className="text-gray-500 text-sm lg:!text-fluid-sm text-center">
                     No menu items sold this week
                   </p>
                 </div>
@@ -687,33 +623,32 @@ export default function WeeklyReport() {
                   {topMenuItems.slice(0, 5).map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-fluid-3 transition-colors"
-                      style={{ borderRadius: fluidSize(12) }}
+                      className="flex items-center justify-between p-3 lg:p-fluid-3 transition-colors rounded-xl lg:rounded-[0.833vw]"
                     >
-                      <div className="flex items-center gap-fluid-3">
+                      <div className="flex items-center gap-3 lg:gap-fluid-3">
                         <div
                           className={cn(
-                            "flex items-center justify-center w-fluid-8 h-fluid-8 rounded-full font-bold text-fluid-xs",
+                            "flex items-center justify-center w-8 h-8 lg:w-fluid-8 lg:h-fluid-8 rounded-full font-bold text-xs lg:!text-fluid-xs",
                             index === 0
                               ? "bg-yellow-100 text-yellow-600"
                               : index === 1
                                 ? "bg-gray-100 text-gray-600"
                                 : index === 2
                                   ? "bg-orange-100 text-orange-600"
-                                  : "bg-purple-100 text-purple-600",
+                                  : "bg-gray-100 text-gray-600",
                           )}
                         >
                           {index === 0 ? (
-                            <Star className="w-fluid-4 h-fluid-4" />
+                            <Star className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4" />
                           ) : (
                             index + 1
                           )}
                         </div>
-                        <div className="" style={{ maxWidth: fluidSize(140) }}>
-                          <p className="text-gray-900 font-semibold truncate">
+                        <div className="max-w-[140px] lg:max-w-fluid-35">
+                          <p className="text-gray-900 font-semibold text-sm lg:!text-fluid-sm truncate">
                             {item.name}
                           </p>
-                          <span className="text-gray-500 !text-fluid-sm">
+                          <span className="text-gray-500 text-xs lg:!text-fluid-xs">
                             {formatCurrency(item.avgPrice)}
                           </span>
                         </div>
@@ -727,16 +662,13 @@ export default function WeeklyReport() {
         </div>
 
         {/* Daily Summary Table */}
-        <div
-          className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-fluid-6"
-          style={{ borderRadius: fluidSize(16) }}
-        >
+        <div className="bg-white shadow-sm border border-gray-100 mb-6 lg:mb-fluid-6 rounded-2xl lg:rounded-[1.111vw]">
           {/* Header */}
-          <div className="p-fluid-6 border-b border-gray-100">
+          <div className="p-6 lg:p-fluid-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-gray-900 text-fluid-lg">Daily Summary</h4>
-                <p className="text-gray-500 text-fluid-sm mt-fluid-1">
+                <h4 className="text-gray-900 text-lg lg:!text-fluid-lg font-bold">Daily Summary</h4>
+                <p className="text-gray-500 text-sm lg:!text-fluid-sm mt-1 lg:mt-fluid-1">
                   Detailed breakdown of each day&lsquo;s performance
                 </p>
               </div>
@@ -747,20 +679,20 @@ export default function WeeklyReport() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <th className="text-left p-4 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:!text-fluid-sm">
                     Day
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-4 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:!text-fluid-sm">
                     Date
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-4 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:!text-fluid-sm">
                     Orders
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-4 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:!text-fluid-sm">
                     Items Sold
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-4 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:!text-fluid-sm">
                     Revenue
                   </th>
                 </tr>
@@ -771,41 +703,41 @@ export default function WeeklyReport() {
                     key={index}
                     className={cn(
                       "border-b border-gray-50 hover:bg-gray-50 transition-colors",
-                      topDay && stat.date === topDay.date && "bg-purple-50",
+                      topDay && stat.date === topDay.date && "bg-gray-100",
                     )}
                   >
-                    <td className="p-fluid-4">
-                      <div className="flex items-center gap-fluid-2">
-                        <span className="font-medium text-gray-900 text-fluid-sm">
+                    <td className="p-4 lg:p-fluid-4">
+                      <div className="flex items-center gap-2 lg:gap-fluid-2">
+                        <span className="font-medium text-gray-900 text-sm lg:!text-fluid-sm">
                           {stat.day}
                         </span>
                         {topDay && stat.date === topDay.date && (
-                          <span className="px-fluid-1.5 py-fluid-0.5 bg-yellow-100 text-yellow-700 rounded text-fluid-xs font-medium">
+                          <span className="px-1.5 lg:px-fluid-1.5 py-0.5 lg:py-fluid-0.5 bg-yellow-100 text-yellow-700 rounded text-xs lg:!text-fluid-xs font-medium">
                             Top
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="p-fluid-4">
-                      <span className="text-gray-600 text-fluid-sm">
+                    <td className="p-4 lg:p-fluid-4">
+                      <span className="text-gray-600 text-sm lg:!text-fluid-sm">
                         {new Date(stat.date).toLocaleDateString("id-ID", {
                           day: "numeric",
                           month: "short",
                         })}
                       </span>
                     </td>
-                    <td className="p-fluid-4">
-                      <span className="text-gray-900 text-fluid-sm">
+                    <td className="p-4 lg:p-fluid-4">
+                      <span className="text-gray-900 text-sm lg:!text-fluid-sm">
                         {stat.orders}
                       </span>
                     </td>
-                    <td className="p-fluid-4">
-                      <span className="text-gray-900 text-fluid-sm">
+                    <td className="p-4 lg:p-fluid-4">
+                      <span className="text-gray-900 text-sm lg:!text-fluid-sm">
                         {stat.items}
                       </span>
                     </td>
-                    <td className="p-fluid-4">
-                      <span className="font-medium text-gray-900 text-fluid-sm">
+                    <td className="p-4 lg:p-fluid-4">
+                      <span className="font-medium text-gray-900 text-sm lg:!text-fluid-sm">
                         {formatCurrency(stat.revenue)}
                       </span>
                     </td>
