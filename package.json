@@ -24,6 +24,8 @@
     "cloudinary": "^2.8.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.24.5",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.1.0",
     "lucide-react": "^0.562.0",
     "midtrans-client": "^1.4.3",
     "mongodb": "^7.0.0",
