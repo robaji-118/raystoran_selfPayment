@@ -546,10 +546,6 @@ export default function WeeklyReport() {
                 <ChevronRight className="w-fluid-5 h-fluid-5" />
               </button>
             </div>
-            <button className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-fluid-sm border border-gray-200">
-              <FileDown className="w-fluid-4 h-fluid-4" />
-              <span>Export</span>
-            </button>
           </div>
         </div>
 

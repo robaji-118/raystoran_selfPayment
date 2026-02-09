@@ -30,6 +30,7 @@ interface Order {
   _id: string;
   orderNumber: string;
   customerName: string;
+  customerEmail?: string;
   customerPhone?: string;
   tableNumber: number;
   items: OrderItem[];
@@ -191,7 +192,7 @@ export default function AllOrders() {
   const getStatusBadge = (status: Order["orderStatus"]) => {
     const config: Record<Order["orderStatus"], string> = {
       confirmed: "bg-blue-50 text-blue-700 border-blue-100",
-      preparing: "bg-purple-50 text-purple-700 border-purple-100",
+      preparing: "bg-gray-100 text-gray-700 border-gray-200",
       ready: "bg-orange-50 text-orange-700 border-orange-100",
       completed: "bg-green-50 text-green-700 border-green-100",
       cancelled: "bg-red-50 text-red-700 border-red-100",
@@ -240,7 +241,7 @@ export default function AllOrders() {
             placeholder="Search by order #, customer, table..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border-transparent focus:border-purple-500 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-4 focus:ring-purple-500/10 transition-all placeholder:text-gray-400"
+            className="w-full pl-10 pr-4 py-3 border-transparent focus:border-gray-400 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-400/10 transition-all placeholder:text-gray-400"
           />
         </div>
 
@@ -251,7 +252,7 @@ export default function AllOrders() {
             className={cn(
               "w-full flex items-center justify-between px-4 py-3 bg-white border rounded-xl text-sm font-medium text-gray-700 transition-all",
               isStatusOpen
-                ? "border-purple-500 ring-4 ring-purple-500/10"
+                ? "border-gray-400 ring-4 ring-gray-400/10"
                 : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
             )}
           >
@@ -281,7 +282,7 @@ export default function AllOrders() {
                   className={cn(
                     "w-full flex items-center justify-between px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition-colors",
                     selectedStatus === option.value
-                      ? "text-purple-600 bg-purple-50 font-medium"
+                      ? "text-gray-900 bg-gray-100 font-medium"
                       : "text-gray-600",
                   )}
                 >
@@ -414,7 +415,7 @@ export default function AllOrders() {
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleViewDetails(order)}
-                        className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all border border-transparent hover:border-purple-100"
+                        className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all border border-transparent hover:border-gray-200"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />
@@ -436,7 +437,7 @@ export default function AllOrders() {
               <div className="relative" ref={rowSelectRef}>
                 <button
                   onClick={() => setIsRowSelectOpen(!isRowSelectOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-gray-300 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:border-gray-300 focus:ring-2 focus:ring-gray-400/20 transition-all"
                 >
                   {itemsPerPage}
                   <ChevronDown className="w-3 h-3 text-gray-400" />
@@ -455,7 +456,7 @@ export default function AllOrders() {
                         className={cn(
                           "w-full px-3 py-1.5 text-sm text-left hover:bg-gray-50 transition-colors",
                           itemsPerPage === option
-                            ? "text-purple-600 bg-purple-50 font-medium"
+                            ? "text-gray-900 bg-gray-100 font-medium"
                             : "text-gray-600",
                         )}
                       >
@@ -483,28 +484,60 @@ export default function AllOrders() {
               </button>
 
               <div className="flex items-center gap-1 px-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum = i + 1;
-                  if (totalPages > 5 && currentPage > 3) {
-                    pageNum = currentPage - 2 + i;
-                    if (pageNum > totalPages) pageNum = totalPages - (4 - i);
+                {(() => {
+                  const siblingCount = 1;
+                  const pageNumbers = new Set<number>();
+
+                  // Always add first and last page
+                  pageNumbers.add(1);
+                  if (totalPages > 1) pageNumbers.add(totalPages);
+
+                  // Add current page and siblings
+                  for (let i = currentPage - siblingCount; i <= currentPage + siblingCount; i++) {
+                    if (i > 1 && i < totalPages) {
+                      pageNumbers.add(i);
+                    }
                   }
 
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={cn(
-                        "w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all",
-                        currentPage === pageNum
-                          ? "bg-purple-600 text-white shadow-sm ring-2 ring-purple-600 ring-offset-1"
-                          : "text-gray-600 hover:bg-white hover:shadow-sm hover:border-gray-200 border border-transparent",
-                      )}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
+                  // Convert to sorted array
+                  const sortedPages = Array.from(pageNumbers).sort((a, b) => a - b);
+
+                  // Build final array with ellipsis
+                  const result: (number | string)[] = [];
+                  sortedPages.forEach((page, index) => {
+                    if (index > 0) {
+                      const prevPage = sortedPages[index - 1];
+                      if (page - prevPage > 1) {
+                        result.push(`ellipsis-${prevPage}`);
+                      }
+                    }
+                    result.push(page);
+                  });
+
+                  return result.map((item) => {
+                    if (typeof item === 'string') {
+                      return (
+                        <span key={item} className="w-8 h-8 flex items-center justify-center text-gray-400">
+                          ...
+                        </span>
+                      );
+                    }
+                    return (
+                      <button
+                        key={item}
+                        onClick={() => handlePageChange(item)}
+                        className={cn(
+                          "w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all",
+                          currentPage === item
+                            ? "bg-gray-900 text-white shadow-sm ring-2 ring-gray-900 ring-offset-1"
+                            : "text-gray-600 hover:bg-white hover:shadow-sm hover:border-gray-200 border border-transparent",
+                        )}
+                      >
+                        {item}
+                      </button>
+                    );
+                  });
+                })()}
               </div>
 
               <button
@@ -553,7 +586,7 @@ export default function AllOrders() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
                   <div className="flex items-center gap-2 mb-1">
-                    <User className="w-4 h-4 text-purple-500" />
+                    <User className="w-4 h-4 text-gray-500" />
                     <span className="text-xs font-semibold text-gray-500 uppercase">
                       Customer
                     </span>
@@ -561,6 +594,11 @@ export default function AllOrders() {
                   <p className="font-medium text-gray-900 text-sm ml-6">
                     {selectedOrder.customerName}
                   </p>
+                  {selectedOrder.customerEmail && (
+                    <p className="text-xs text-gray-500 ml-6">
+                      {selectedOrder.customerEmail}
+                    </p>
+                  )}
                   {selectedOrder.customerPhone && (
                     <p className="text-xs text-gray-500 ml-6">
                       {selectedOrder.customerPhone}
@@ -664,7 +702,7 @@ export default function AllOrders() {
                 )}
                 <div className="border-t border-gray-200 my-2 pt-2 flex justify-between text-base font-bold text-gray-900">
                   <span>Total Amount</span>
-                  <span className="text-purple-600">
+                  <span className="text-gray-900">
                     {formatCurrency(selectedOrder.totalAmount)}
                   </span>
                 </div>

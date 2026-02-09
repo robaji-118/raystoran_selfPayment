@@ -68,6 +68,7 @@ interface Order {
   _id: string;
   orderNumber: string;
   customerName: string;
+  customerEmail?: string;
   customerPhone?: string;
   tableNumber: number;
   items: OrderItem[];
@@ -603,6 +604,11 @@ export default function AdminAllOrders() {
                   <p className="font-medium text-gray-900 text-sm ml-6">
                     {selectedOrder.customerName}
                   </p>
+                  {selectedOrder.customerEmail && (
+                    <p className="text-xs text-gray-500 ml-6">
+                      {selectedOrder.customerEmail}
+                    </p>
+                  )}
                   {selectedOrder.customerPhone && (
                     <p className="text-xs text-gray-500 ml-6">
                       {selectedOrder.customerPhone}

@@ -2,14 +2,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  User, 
-  Phone, 
-  MessageSquare, 
-  Table2, 
-  Users, 
-  ShoppingBag, 
-  UtensilsCrossed, 
+import {
+  User,
+  Phone,
+  MessageSquare,
+  Table2,
+  Users,
+  ShoppingBag,
+  UtensilsCrossed,
   CheckCircle2,
   MapPin,
   Mail // Tambahkan icon Mail
@@ -17,12 +17,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectTrigger, 
-  SelectContent, 
-  SelectItem, 
-  SelectValue 
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
@@ -60,7 +60,7 @@ export default function Step1CustomerInfo({
 }: Step1CustomerInfoProps) {
   const [tables, setTables] = useState<TableSelection[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // ✅ State untuk menyimpan pesan error validasi email
   const [emailError, setEmailError] = useState<string>("");
 
@@ -80,7 +80,7 @@ export default function Step1CustomerInfo({
         const data = await res.json();
         setTables(
           data.map((table: any) => ({
-            tableId: table._id, 
+            tableId: table._id,
             tableNumber: table.tableNumber,
             capacity: table.capacity,
           }))
@@ -122,7 +122,7 @@ export default function Step1CustomerInfo({
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-        
+
         {/* --- LEFT COLUMN: CUSTOMER INFO --- */}
         <div className="bg-white p-6 lg:p-8 rounded-3xl border border-gray-200 shadow-sm h-fit">
           <div className="flex items-center gap-3 mb-8 border-b border-black pb-4">
@@ -171,8 +171,8 @@ export default function Step1CustomerInfo({
                   placeholder="example@gmail.com"
                   className={cn(
                     "pl-11 h-12 bg-white border rounded-xl transition-all font-medium text-black placeholder:text-gray-300 focus:ring-1",
-                    emailError 
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50" 
+                    emailError
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50"
                       : "border-gray-300 focus:border-black focus:ring-black"
                   )}
                 />
@@ -223,7 +223,7 @@ export default function Step1CustomerInfo({
 
         {/* --- RIGHT COLUMN: ORDER TYPE & TABLE --- */}
         <div className="space-y-6">
-          
+
           <div className="bg-white p-6 lg:p-8 rounded-3xl border border-gray-200 shadow-sm">
             <div className="flex items-center gap-3 mb-8 border-b border-black pb-4">
               <div className="w-10 h-10 rounded-full flex items-center justify-center">
@@ -247,7 +247,7 @@ export default function Step1CustomerInfo({
                     : "bg-white border-gray-200 text-black hover:border-black hover:bg-gray-50"
                 )}
               >
-                 {orderType === "dine-in" && (
+                {orderType === "dine-in" && (
                   <div className="absolute top-3 right-3">
                     <CheckCircle2 className="w-5 h-5 fill-white text-black" />
                   </div>
@@ -295,12 +295,12 @@ export default function Step1CustomerInfo({
                   <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
                     Select a Table
                   </Label>
-                  
+
                   {loading ? (
-                     <div className="h-14 w-full bg-gray-100 animate-pulse rounded-xl" />
+                    <div className="h-14 w-full bg-gray-100 animate-pulse rounded-xl" />
                   ) : tables.length === 0 ? (
                     <div className="p-4 bg-white text-black text-sm font-medium rounded-xl border border-black flex items-center gap-2">
-                       <span>⚠️</span> Full House! No tables available.
+                      <span>⚠️</span> Full House! No tables available.
                     </div>
                   ) : (
                     <>
@@ -311,7 +311,7 @@ export default function Step1CustomerInfo({
                         <SelectTrigger className="h-14 bg-white border border-gray-300 rounded-xl font-medium text-black px-4 cursor-pointer transition-all">
                           <SelectValue placeholder="Choose your spot..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-white rounded-xl shadow-xl">
+                        <SelectContent className="bg-white rounded-xl shadow-xl max-h-60 overflow-y-auto">
                           {tables.map((t) => (
                             <SelectItem key={t.tableId} value={t.tableId} className="cursor-pointer py-3">
                               <span className="font-semibold">Table {t.tableNumber}</span>
@@ -331,7 +331,7 @@ export default function Step1CustomerInfo({
                               Table {selectedTable.tableNumber}
                             </p>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <Users className="w-3.5 h-3.5 text-gray-400" /> 
+                              <Users className="w-3.5 h-3.5 text-gray-400" />
                               <span className="text-xs font-medium text-gray-500">{selectedTable.capacity} Seats Available</span>
                             </div>
                           </div>
