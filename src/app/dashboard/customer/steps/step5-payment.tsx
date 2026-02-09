@@ -82,47 +82,51 @@ export default function Step5Payment({
           {/* Global Print Styles */}
           <style>{`
             @media print {
-              /* Hide everything by default */
-              body > * {
-                display: none !important;
-              }
-              /* Show the Next.js root */
-              body > #__next,
-              body > div[data-nextjs-scroll-focus-boundary] {
-                display: block !important;
-              }
-              /* Hide everything except the printable area */
-              .print-hide {
-                display: none !important;
-              }
-              /* Show only the receipt */
-              #receipt-print-area {
-                display: block !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                background: white !important;
-                padding: 24px !important;
-                margin: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-                z-index: 99999 !important;
-              }
-              /* Prevent page break inside receipt */
-              #receipt-print-area * {
-                page-break-inside: avoid !important;
-              }
-              /* Force single page */
+              /* 1. Reset Global - Hilangkan margin browser & animasi */
               @page {
                 size: auto;
-                margin: 10mm;
+                margin: 0mm; /* Menghapus margin default browser supaya pas 1 halaman */
               }
+
+              /* 2. Sembunyikan SEMUA elemen website */
+              body * {
+                visibility: hidden;
+              }
+
+              /* 3. Matikan scroll & set tinggi body agar tidak ada halaman kedua kosong */
               html, body {
                 height: auto !important;
-                overflow: visible !important;
+                overflow: hidden !important;
+                background: white !important;
+              }
+
+              /* 4. Target KHUSUS area struk */
+              #receipt-print-area, 
+              #receipt-print-area * {
+                visibility: visible !important; /* Paksa muncul */
+              }
+
+              /* 5. Posisikan Struk di Pojok Kiri Atas Kertas */
+              #receipt-print-area {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 20px !important; /* Beri sedikit padding internal agar rapi */
+                background: white !important;
+                
+                /* Penting: Matikan efek shadow/border/animasi saat print */
+                box-shadow: none !important;
+                border: none !important;
+                
+                /* Pastikan teks hitam pekat untuk printer thermal/inkjet */
+                color: black !important; 
+              }
+
+              /* 6. Sembunyikan elemen yang punya class .print-hide (tombol download, dll) */
+              .print-hide {
+                display: none !important;
               }
             }
           `}</style>
