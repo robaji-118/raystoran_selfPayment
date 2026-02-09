@@ -65,34 +65,54 @@ export default function Step5Payment({
 
     try {
       // 1. Capture elemen HTML menjadi Canvas (Gambar)
+      // Menggunakan onclone untuk memperbaiki CSS yang tidak didukung html2canvas
       const canvas = await html2canvas(input, {
-        scale: 2, // Tingkatkan resolusi agar teks tajam
-        backgroundColor: "#ffffff", // Pastikan background putih, bukan transparan
-        useCORS: true, // Izinkan gambar cross-origin jika ada
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        logging: false,
+        // Workaround: Clone dan normalisasi warna sebelum render
+        onclone: (clonedDoc: Document) => {
+          // Cari semua elemen dengan style yang bermasalah dan reset
+          const allElements = clonedDoc.querySelectorAll('*');
+          allElements.forEach((el) => {
+            const htmlEl = el as HTMLElement;
+            const computedStyle = window.getComputedStyle(htmlEl);
+
+            // Reset color dan background-color jika mengandung fungsi yang tidak didukung
+            const color = computedStyle.color;
+            const bgColor = computedStyle.backgroundColor;
+
+            if (color && (color.includes('lab(') || color.includes('lch(') || color.includes('oklch('))) {
+              htmlEl.style.color = '#000000';
+            }
+            if (bgColor && (bgColor.includes('lab(') || bgColor.includes('lch(') || bgColor.includes('oklch('))) {
+              htmlEl.style.backgroundColor = '#ffffff';
+            }
+          });
+        }
       });
 
       const imgData = canvas.toDataURL("image/png");
 
       // 2. Setup PDF (Ukuran A4 Portrait)
       const pdf = new jsPDF("p", "mm", "a4");
-      
+
       // Hitung dimensi agar pas di lebar A4
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
+
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-      
+
       // Margin PDF (misal 10mm kiri kanan)
-      const margin = 10; 
+      const margin = 10;
       const contentWidth = pdfWidth - (margin * 2);
-      
+
       // Skala tinggi berdasarkan rasio lebar
       const ratio = contentWidth / imgWidth;
       const contentHeight = imgHeight * ratio;
 
       // 3. Masukkan gambar ke PDF
-      // Posisi: (x, y, width, height)
       pdf.addImage(imgData, "PNG", margin, margin, contentWidth, contentHeight);
 
       // 4. Download File
@@ -134,15 +154,15 @@ export default function Step5Payment({
       {/* --- MODAL SUCCESS (Overlay) --- */}
       {orderId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          
+
           <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
-            
+
             {/* WRAPPER SCROLLABLE UNTUK STRUK */}
             <div className="overflow-y-auto flex-1">
-              
+
               {/* ID ini yang akan difoto oleh html2canvas */}
               <div id="receipt-print-area" className="bg-white p-6">
-                
+
                 {/* Header Struk */}
                 <div className="flex flex-col items-center pb-6 border-b border-gray-100">
                   <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4 ring-4 ring-green-50/50">
@@ -157,7 +177,7 @@ export default function Step5Payment({
                 {/* Detail Struk */}
                 <div className="mt-6 space-y-4">
                   <div className="bg-gray-50/80 rounded-xl border border-gray-100 p-4 space-y-3">
-                    
+
                     {/* Type */}
                     <div className="flex justify-between items-center text-sm border-b border-dashed border-gray-200 pb-2">
                       <span className="text-gray-500 flex items-center gap-2">
@@ -212,10 +232,10 @@ export default function Step5Payment({
                       <span className="text-sm font-bold text-gray-900">TOTAL</span>
                       <span className="text-lg font-black text-gray-900">{formatCurrency(totalAmount)}</span>
                     </div>
-                    
+
                     <div className="text-center mt-4">
-                       <p className="text-[10px] text-gray-400">Terima kasih atas kunjungan Anda</p>
-                       <p className="text-[10px] text-gray-400 font-mono">www.raystoran.com</p>
+                      <p className="text-[10px] text-gray-400">Terima kasih atas kunjungan Anda</p>
+                      <p className="text-[10px] text-gray-400 font-mono">www.raystoran.com</p>
                     </div>
 
                   </div>
@@ -231,12 +251,12 @@ export default function Step5Payment({
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all text-sm font-bold shadow-sm disabled:opacity-50"
               >
                 {isDownloading ? (
-                   <>Processing...</>
+                  <>Processing...</>
                 ) : (
-                   <>
-                     <Download className="w-4 h-4" />
-                     Download Receipt (PDF)
-                   </>
+                  <>
+                    <Download className="w-4 h-4" />
+                    Download Receipt (PDF)
+                  </>
                 )}
               </button>
 
