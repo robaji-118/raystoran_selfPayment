@@ -151,10 +151,10 @@ export default function MonthlyReport() {
       // Tentukan akhir minggu (Minggu atau akhir bulan)
       const currentEnd = new Date(currentStart);
       const dayOfWeek = currentStart.getDay(); // 0 = Sunday
-      const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek; 
-      
+      const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+
       currentEnd.setDate(currentStart.getDate() + daysUntilSunday);
-      
+
       // Jika akhir minggu melebihi akhir bulan, gunakan akhir bulan
       const effectiveEnd = currentEnd > lastDay ? lastDay : currentEnd;
 
@@ -192,10 +192,10 @@ export default function MonthlyReport() {
     const data = [];
 
     for (let i = 1; i <= daysInMonth; i++) {
-        const dateStr = `${i}`; // Label tanggal 1, 2, 3...
-        const ordersToday = orderList.filter(o => new Date(o.createdAt).getDate() === i);
-        const revenue = ordersToday.reduce((sum, o) => sum + o.totalAmount, 0);
-        data.push({ day: dateStr, revenue });
+      const dateStr = `${i}`; // Label tanggal 1, 2, 3...
+      const ordersToday = orderList.filter(o => new Date(o.createdAt).getDate() === i);
+      const revenue = ordersToday.reduce((sum, o) => sum + o.totalAmount, 0);
+      data.push({ day: dateStr, revenue });
     }
     setDailyData(data);
   };
@@ -262,9 +262,11 @@ export default function MonthlyReport() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-fluid-12">
-        <div className="w-fluid-16 h-fluid-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-fluid-4"></div>
-        <p className="text-gray-500 text-fluid-base">Loading monthly report...</p>
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-neutral-500 text-fluid-base">Loading monthly report...</p>
+        </div>
       </div>
     );
   }
@@ -274,14 +276,9 @@ export default function MonthlyReport() {
 
   return (
     <div className="min-h-screen p-6">
-      
+
       {/* Header */}
       <div className="mb-fluid-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-gray-900 font-bold text-fluid-2xl">Monthly Report</h2>
-          <p className="text-gray-500 text-fluid-sm mt-1">{months[selectedMonth.month]} {selectedMonth.year}</p>
-        </div>
-
         <div className="flex items-center gap-fluid-3">
           <div className="flex items-center bg-white border border-gray-200 rounded-lg shadow-sm">
             <button
@@ -303,10 +300,6 @@ export default function MonthlyReport() {
               <ChevronRight className="w-fluid-5 h-fluid-5" />
             </button>
           </div>
-          <button className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg shadow-sm transition-colors">
-            <FileDown className="w-fluid-4 h-fluid-4" />
-            <span className="text-fluid-sm font-medium">Export</span>
-          </button>
         </div>
       </div>
 
@@ -316,7 +309,7 @@ export default function MonthlyReport() {
           <p className="text-gray-500 text-fluid-sm font-medium mb-2">Total Revenue</p>
           <h3 className="text-gray-900 font-bold text-fluid-2xl">{formatCurrency(monthlyTotals.totalRevenue)}</h3>
           <div className="flex items-center gap-2 mt-2">
-             <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-medium">Avg: {formatCurrency(monthlyTotals.avgOrderValue)}</span>
+            <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-medium">Avg: {formatCurrency(monthlyTotals.avgOrderValue)}</span>
           </div>
         </div>
 
@@ -324,8 +317,8 @@ export default function MonthlyReport() {
           <p className="text-gray-500 text-fluid-sm font-medium mb-2">Total Orders</p>
           <h3 className="text-gray-900 font-bold text-fluid-2xl">{monthlyTotals.totalOrders}</h3>
           <div className="flex items-center gap-2 mt-2 text-gray-500 text-fluid-xs">
-             <ShoppingCart className="w-3 h-3 text-blue-500" />
-             <span>{monthlyTotals.completedOrders} Completed</span>
+            <ShoppingCart className="w-3 h-3 text-blue-500" />
+            <span>{monthlyTotals.completedOrders} Completed</span>
           </div>
         </div>
 
@@ -333,8 +326,8 @@ export default function MonthlyReport() {
           <p className="text-gray-500 text-fluid-sm font-medium mb-2">Items Sold</p>
           <h3 className="text-gray-900 font-bold text-fluid-2xl">{monthlyTotals.totalItems}</h3>
           <div className="flex items-center gap-2 mt-2 text-gray-500 text-fluid-xs">
-             <Package className="w-3 h-3 text-purple-500" />
-             <span>Across all weeks</span>
+            <Package className="w-3 h-3 text-purple-500" />
+            <span>Across all weeks</span>
           </div>
         </div>
 
@@ -342,15 +335,15 @@ export default function MonthlyReport() {
           <p className="text-gray-500 text-fluid-sm font-medium mb-2">Customers</p>
           <h3 className="text-gray-900 font-bold text-fluid-2xl">{monthlyTotals.uniqueCustomers}</h3>
           <div className="flex items-center gap-2 mt-2 text-gray-500 text-fluid-xs">
-             <Calendar className="w-3 h-3 text-orange-500" />
-             <span>Unique visitors</span>
+            <Calendar className="w-3 h-3 text-orange-500" />
+            <span>Unique visitors</span>
           </div>
         </div>
       </div>
 
       {/* Charts & Top Performing Weeks */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-fluid-6 mb-fluid-6">
-        
+
         {/* Daily Trend Chart */}
         <div className="lg:col-span-2 bg-white p-fluid-6 rounded-2xl shadow-sm border border-gray-100">
           <h4 className="text-gray-900 font-bold text-fluid-lg mb-4">Revenue Trend (Daily)</h4>
@@ -371,8 +364,8 @@ export default function MonthlyReport() {
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold",
-                      index === 0 ? "bg-yellow-100 text-yellow-700" : 
-                      index === 1 ? "bg-gray-200 text-gray-700" : "bg-white border border-gray-200 text-gray-500"
+                      index === 0 ? "bg-yellow-100 text-yellow-700" :
+                        index === 1 ? "bg-gray-200 text-gray-700" : "bg-white border border-gray-200 text-gray-500"
                     )}>
                       {index + 1}
                     </div>

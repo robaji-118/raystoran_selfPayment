@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import {
   TrendingUp,
   FileDown,
-  Award, 
+  Award,
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
@@ -88,7 +88,7 @@ export default function OwnerDashboardMain() {
   // Ganti recentOrders dengan weeklyOrders untuk menampung data seminggu
   const [weeklyOrders, setWeeklyOrders] = useState<Order[]>([]);
   const [topSellingItems, setTopSellingItems] = useState<TopMenuItem[]>([]);
-  
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -131,9 +131,9 @@ export default function OwnerDashboardMain() {
       // 2. Tentukan Rentang Waktu Minggu Ini (Senin 00:00 - Sekarang)
       const weeklyRevenue = [0, 0, 0, 0, 0, 0, 0];
       const dailyOrders = [0, 0, 0, 0, 0, 0, 0];
-      
+
       const today = new Date();
-      const dayOfWeek = today.getDay(); 
+      const dayOfWeek = today.getDay();
       const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
       const monday = new Date(today);
       monday.setDate(today.getDate() + mondayOffset);
@@ -148,9 +148,9 @@ export default function OwnerDashboardMain() {
       });
 
       const newChartLabels = weekDates.map((date) => {
-         const d = date.getDay(); 
-         const standardDays = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
-         return standardDays[d];
+        const d = date.getDay();
+        const standardDays = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+        return standardDays[d];
       });
       setChartLabels(newChartLabels);
 
@@ -179,20 +179,20 @@ export default function OwnerDashboardMain() {
 
       // 4. Hitung Top Selling Items
       const menuCount: { [key: string]: TopMenuItem } = {};
-      
+
       orders.forEach((order) => {
         if (order.items && Array.isArray(order.items)) {
           order.items.forEach((item: any) => {
-             const name = item.menuItemName || item.name || "Unknown Item";
-             const price = item.price || 0;
-             const qty = item.quantity || 1;
-             const subtotal = item.subtotal || (price * qty);
+            const name = item.menuItemName || item.name || "Unknown Item";
+            const price = item.price || 0;
+            const qty = item.quantity || 1;
+            const subtotal = item.subtotal || (price * qty);
 
-             if (!menuCount[name]) {
-               menuCount[name] = { name, count: 0, revenue: 0 };
-             }
-             menuCount[name].count += qty;
-             menuCount[name].revenue += subtotal;
+            if (!menuCount[name]) {
+              menuCount[name] = { name, count: 0, revenue: 0 };
+            }
+            menuCount[name].count += qty;
+            menuCount[name].revenue += subtotal;
           });
         }
       });
@@ -341,8 +341,8 @@ export default function OwnerDashboardMain() {
     plugins: { legend: { display: false } },
     scales: {
       y: { display: false, beginAtZero: true },
-      x: { 
-        display: true, 
+      x: {
+        display: true,
         grid: { display: false, drawBorder: false },
         ticks: { font: { size: 11 } }
       },
@@ -354,10 +354,10 @@ export default function OwnerDashboardMain() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-fluid-96">
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-          <div className="w-fluid-16 h-fluid-16 border-4 border-purple-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4"></div>
-          <p className="text-gray-500 text-fluid-base">Loading owner dashboard...</p>
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-neutral-500 text-fluid-base">Loading owner dashboard...</p>
         </div>
       </div>
     );
@@ -374,12 +374,12 @@ export default function OwnerDashboardMain() {
 
   return (
     <div className="min-h-screen">
-      
+
       {/* --- ROW 1: Summary Cards & Charts --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-fluid-4 mb-fluid-4">
-        
+
         {/* Card 1: Total Income */}
-        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
           <div className="flex items-start justify-between mb-fluid-4">
             <div>
               <p className="text-gray-500 mb-fluid-1 text-fluid-base">Total Income (All Time)</p>
@@ -400,7 +400,7 @@ export default function OwnerDashboardMain() {
         </div>
 
         {/* Card 2: Weekly Revenue Chart */}
-        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
           <div className="flex flex-col items-start gap-fluid-6 justify-between h-full">
             <div className="flex-1 w-full">
               <p className="text-gray-500 mb-fluid-1 text-fluid-base">Weekly Revenue</p>
@@ -416,8 +416,8 @@ export default function OwnerDashboardMain() {
         </div>
 
         {/* Card 3: Weekly Orders Chart */}
-        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
-           <div className="flex flex-col items-start gap-fluid-6 justify-between h-full">
+        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
+          <div className="flex flex-col items-start gap-fluid-6 justify-between h-full">
             <div className="flex-1 w-full">
               <p className="text-gray-500 mb-fluid-1 text-fluid-base">Weekly Orders</p>
               <h4 className="font-bold text-gray-900 mb-fluid-2 text-fluid-2xl">
@@ -434,7 +434,7 @@ export default function OwnerDashboardMain() {
 
       {/* --- ROW 2: Top Selling Items --- */}
       <div className="mb-fluid-4">
-        <div className="bg-white shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+        <div className="bg-white shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
           <div className="p-fluid-6 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-fluid-3">
               <div>
@@ -443,46 +443,46 @@ export default function OwnerDashboardMain() {
               </div>
             </div>
           </div>
-          
+
           <div className="p-fluid-6">
             {topSellingItems.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-fluid-4">
                 {topSellingItems.map((item, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="group relative bg-gray-50 p-fluid-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all duration-300"
                   >
                     <div className="absolute -top-3 -right-3 w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold text-sm shadow-sm z-10">
                       #{index + 1}
                     </div>
-                    
+
                     <div className="mb-fluid-3">
-                       <h5 className="font-bold text-gray-900 text-fluid-base line-clamp-1 group-hover:text-purple-700 transition-colors">
-                         {item.name}
-                       </h5>
+                      <h5 className="font-bold text-gray-900 text-fluid-base line-clamp-1 group-hover:text-purple-700 transition-colors">
+                        {item.name}
+                      </h5>
                     </div>
-                    
+
                     <div className="space-y-fluid-2">
-                       <div className="flex items-center justify-between text-fluid-sm">
-                          <span className="text-gray-500">Sold</span>
-                          <span className="font-bold text-gray-900">{item.count}</span>
-                       </div>
-                       <div className="flex items-center justify-between text-fluid-sm">
-                          <span className="text-gray-500">Revenue</span>
-                          <span className="font-bold text-green-600">{formatCurrency(item.revenue)}</span>
-                       </div>
+                      <div className="flex items-center justify-between text-fluid-sm">
+                        <span className="text-gray-500">Sold</span>
+                        <span className="font-bold text-gray-900">{item.count}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-fluid-sm">
+                        <span className="text-gray-500">Revenue</span>
+                        <span className="font-bold text-green-600">{formatCurrency(item.revenue)}</span>
+                      </div>
                     </div>
 
                     <div className="mt-fluid-3 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                       <div 
-                         className={cn(
-                           "h-full rounded-full", 
-                           index === 0 ? "bg-gray-600 w-full" : 
-                           index === 1 ? "bg-gray-500 w-[85%]" :
-                           index === 2 ? "bg-gray-400 w-[70%]" :
-                           "bg-gray-300 w-[50%]"
-                         )} 
-                       />
+                      <div
+                        className={cn(
+                          "h-full rounded-full",
+                          index === 0 ? "bg-gray-600 w-full" :
+                            index === 1 ? "bg-gray-500 w-[85%]" :
+                              index === 2 ? "bg-gray-400 w-[70%]" :
+                                "bg-gray-300 w-[50%]"
+                        )}
+                      />
                     </div>
                   </div>
                 ))}
@@ -497,15 +497,15 @@ export default function OwnerDashboardMain() {
       </div>
 
       {/* --- ROW 3: Transactions (Weekly Reset + Pagination) --- */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
         <div className="p-fluid-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-gray-900 text-fluid-lg font-bold">Transactions (This Week)</h4>
               <p className="text-gray-500 text-fluid-xs mt-1">Resets every Monday</p>
             </div>
-            
-            <button 
+
+            <button
               onClick={handleExport}
               className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
             >

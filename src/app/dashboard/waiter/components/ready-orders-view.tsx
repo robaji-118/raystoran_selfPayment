@@ -48,7 +48,7 @@ export default function ReadyOrdersView() {
   const fetchOrders = async () => {
     try {
       if (orders.length === 0) setLoading(true);
-      
+
       const res = await fetch("/api/orders?status=ready");
       if (res.ok) {
         const data = await res.json();
@@ -81,7 +81,7 @@ export default function ReadyOrdersView() {
 
       const responseText = await res.text();
       let responseData;
-      
+
       try {
         responseData = JSON.parse(responseText);
       } catch (parseError) {
@@ -145,26 +145,38 @@ export default function ReadyOrdersView() {
     (o) => o.readyAt && getWaitingStatus(o.readyAt).status === "urgent"
   ).length;
 
+
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-neutral-500 text-fluid-base">Fetching ready orders...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 min-h-screen">
       {/* Header & Urgent Alert */}
       <div className="mb-6 flex flex-col gap-4">
         {urgentCount > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-pulse flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <AlertTriangle className="w-5 h-5 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-red-800 font-bold">Attention Needed!</p>
-                  <p className="text-red-600 text-sm">
-                      {urgentCount} order{urgentCount > 1 ? "s have" : " has"} been waiting for more than 10 minutes.
-                  </p>
-                </div>
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-pulse flex items-center gap-3">
+            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
             </div>
+            <div>
+              <p className="text-red-800 font-bold">Attention Needed!</p>
+              <p className="text-red-600 text-sm">
+                {urgentCount} order{urgentCount > 1 ? "s have" : " has"} been waiting for more than 10 minutes.
+              </p>
+            </div>
+          </div>
         )}
-        
+
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-800">Ready for Pickup</h1>
           <div className="relative w-full sm:max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -214,8 +226,8 @@ export default function ReadyOrdersView() {
                   const waitingTime = getElapsedTime(order.readyAt);
 
                   return (
-                    <tr 
-                      key={order._id} 
+                    <tr
+                      key={order._id}
                       className={`transition-colors ${waitingStatus.bg}`}
                     >
                       {/* Order Info */}
@@ -224,7 +236,7 @@ export default function ReadyOrdersView() {
                           <span className="font-bold text-gray-900">#{order.orderNumber}</span>
                           <span className="text-sm text-gray-500 mt-1">{order.customerName}</span>
                           <span className={`inline-flex items-center gap-1 mt-2 text-xs font-bold px-2 py-0.5 rounded-full w-fit uppercase ${waitingStatus.badge}`}>
-                             {waitingStatus.label}
+                            {waitingStatus.label}
                           </span>
                         </div>
                       </td>
@@ -241,10 +253,10 @@ export default function ReadyOrdersView() {
 
                       {/* Wait Time */}
                       <td className="p-4 align-top">
-                         <div className={`flex items-center gap-1.5 font-medium text-sm ${waitingStatus.iconColor}`}>
-                            <Clock className="w-4 h-4" />
-                            <span>{waitingTime} min</span>
-                         </div>
+                        <div className={`flex items-center gap-1.5 font-medium text-sm ${waitingStatus.iconColor}`}>
+                          <Clock className="w-4 h-4" />
+                          <span>{waitingTime} min</span>
+                        </div>
                       </td>
 
                       {/* Items */}

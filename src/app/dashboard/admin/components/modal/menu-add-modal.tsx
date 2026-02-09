@@ -4,6 +4,17 @@
 import { useState, useRef } from "react";
 import { X, ImageIcon, Save, Upload, Loader2, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Toast from "@/components/ui/toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Category {
   _id: string;
@@ -28,11 +39,11 @@ interface MenuFormData {
   isActive: boolean;
 }
 
-export default function MenuAddModal({ 
-  isOpen, 
-  onClose, 
+export default function MenuAddModal({
+  isOpen,
+  onClose,
   onSuccess,
-  categories 
+  categories
 }: MenuAddModalProps) {
   const [formData, setFormData] = useState<MenuFormData>({
     name: "",
@@ -47,6 +58,7 @@ export default function MenuAddModal({
   const [imagePreview, setImagePreview] = useState<string>("");
   const [uploadLoading, setUploadLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,12 +66,12 @@ export default function MenuAddModal({
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
+      setToast({ message: "Please select an image file", type: "error" });
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("Image size should be less than 5MB");
+      setToast({ message: "Image size should be less than 5MB", type: "error" });
       return;
     }
 
@@ -79,12 +91,13 @@ export default function MenuAddModal({
       if (result.success) {
         setFormData({ ...formData, image: result.data.url });
         setImagePreview(result.data.url);
+        setToast({ message: "Image uploaded successfully", type: "success" });
       } else {
-        alert(result.error || "Failed to upload image");
+        setToast({ message: result.error || "Failed to upload image", type: "error" });
       }
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Error uploading image");
+      setToast({ message: "Error uploading image", type: "error" });
     } finally {
       setUploadLoading(false);
       if (fileInputRef.current) {
@@ -102,17 +115,17 @@ export default function MenuAddModal({
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      alert("Menu name is required");
+      setToast({ message: "Menu name is required", type: "error" });
       return;
     }
 
     if (!formData.categoryId) {
-      alert("Please select a category");
+      setToast({ message: "Please select a category", type: "error" });
       return;
     }
 
     if (formData.price <= 0) {
-      alert("Price must be greater than 0");
+      setToast({ message: "Price must be greater than 0", type: "error" });
       return;
     }
 
@@ -128,15 +141,17 @@ export default function MenuAddModal({
       const result = await response.json();
 
       if (result.success) {
-        alert("Menu created successfully");
-        onSuccess();
-        handleClose();
+        setToast({ message: "Menu created successfully", type: "success" });
+        setTimeout(() => {
+          onSuccess();
+          handleClose();
+        }, 1000);
       } else {
-        alert(result.error || "Failed to create menu");
+        setToast({ message: result.error || "Failed to create menu", type: "error" });
       }
     } catch (error) {
       console.error("Error creating menu:", error);
-      alert("Error creating menu");
+      setToast({ message: "Error creating menu", type: "error" });
     } finally {
       setSaveLoading(false);
     }
@@ -160,96 +175,100 @@ export default function MenuAddModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-fluid-4">
-      <div className="bg-white rounded-2xl border border-gray-100 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl border border-gray-200 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl animate-in slide-in-from-bottom-4 duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-fluid-6 border-b border-gray-100">
-          <div className="flex items-center gap-fluid-3">
-            <div className="p-fluid-2 bg-purple-50 rounded-lg">
-              <Package className="w-fluid-6 h-fluid-6 text-purple-600" />
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+              <Package className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-gray-900 text-fluid-xl font-bold">
+              <h2 className="text-gray-900 text-lg font-bold">
                 Add New Menu
               </h2>
-              <p className="text-gray-500 text-fluid-sm mt-fluid-1">
+              <p className="text-gray-500 text-sm mt-0.5">
                 Create a new menu item
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition-all"
             disabled={saveLoading}
           >
-            <X className="w-fluid-6 h-fluid-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-fluid-6 space-y-fluid-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-fluid-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column */}
-            <div className="space-y-fluid-4">
+            <div className="space-y-5">
               {/* Menu Name */}
-              <div className="space-y-fluid-2">
-                <label className="block text-gray-700 font-medium text-fluid-sm">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-black uppercase tracking-wider">
                   Menu Name <span className="text-red-500">*</span>
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   placeholder="e.g., Nasi Goreng Special"
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-fluid-base"
+                  className="h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-400"
                   required
                 />
               </div>
 
               {/* Description */}
-              <div className="space-y-fluid-2">
-                <label className="block text-gray-700 font-medium text-fluid-sm">Description</label>
-                <textarea
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-black uppercase tracking-wider">
+                  Description
+                </Label>
+                <Textarea
                   placeholder="Describe your menu item..."
                   rows={4}
                   value={formData.description}
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-fluid-base resize-none"
+                  className="bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl resize-none transition-all font-medium text-black placeholder:text-gray-400"
                 />
               </div>
 
               {/* Category */}
-              <div className="space-y-fluid-2">
-                <label className="block text-gray-700 font-medium text-fluid-sm">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-black uppercase tracking-wider">
                   Category <span className="text-red-500">*</span>
-                </label>
-                <select
+                </Label>
+                <Select
                   value={formData.categoryId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, categoryId: e.target.value })
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, categoryId: value })
                   }
-                  className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-fluid-base cursor-pointer"
-                  required
                 >
-                  <option value="">Select a category</option>
-                  {categories.map((category) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl font-medium text-black">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white rounded-xl shadow-xl">
+                    {categories.map((category) => (
+                      <SelectItem key={category._id} value={category._id} className="cursor-pointer">
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Price */}
-              <div className="space-y-fluid-2">
-                <label className="block text-gray-700 font-medium text-fluid-sm">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-black uppercase tracking-wider">
                   Price (IDR) <span className="text-red-500">*</span>
-                </label>
-                <input
+                </Label>
+                <Input
                   type="number"
                   min="0"
                   step="1000"
@@ -261,17 +280,17 @@ export default function MenuAddModal({
                       price: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-fluid-base"
+                  className="h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-400"
                   required
                 />
               </div>
 
               {/* Preparation Time */}
-              <div className="space-y-fluid-2">
-                <label className="block text-gray-700 font-medium text-fluid-sm">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-black uppercase tracking-wider">
                   Preparation Time (minutes)
-                </label>
-                <input
+                </Label>
+                <Input
                   type="number"
                   min="0"
                   placeholder="15"
@@ -282,21 +301,21 @@ export default function MenuAddModal({
                       preparationTime: parseInt(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-fluid-base"
+                  className="h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-400"
                 />
               </div>
             </div>
 
             {/* Right Column - Image Upload */}
-            <div className="space-y-fluid-4">
+            <div className="space-y-5">
               {/* Image Upload */}
-              <div className="space-y-fluid-2">
-                <label className="block text-gray-700 font-medium text-fluid-sm">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-black uppercase tracking-wider">
                   Menu Image
-                </label>
-                <div className="border-2 border-dashed border-gray-200 rounded-lg p-fluid-4">
+                </Label>
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-4">
                   {imagePreview ? (
-                    <div className="space-y-fluid-3">
+                    <div className="space-y-3">
                       <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
                         <img
                           src={imagePreview}
@@ -308,46 +327,46 @@ export default function MenuAddModal({
                           onClick={handleRemoveImage}
                           className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                         >
-                          <X className="w-fluid-4 h-fluid-4" />
+                          <X className="w-4 h-4" />
                         </button>
                       </div>
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploadLoading}
-                        className="flex items-center justify-center gap-fluid-2 w-full px-fluid-4 py-fluid-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-fluid-sm"
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                       >
-                        <Upload className="w-fluid-4 h-fluid-4" />
+                        <Upload className="w-4 h-4" />
                         Change Image
                       </button>
                     </div>
                   ) : (
-                    <div className="text-center py-fluid-8">
-                      <div className="w-fluid-16 h-fluid-16 mx-auto mb-fluid-3 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <ImageIcon className="w-fluid-8 h-fluid-8 text-gray-400" />
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <ImageIcon className="w-8 h-8 text-gray-400" />
                       </div>
-                      <p className="text-gray-600 text-fluid-sm mb-fluid-3">
+                      <p className="text-gray-600 text-sm mb-3">
                         Upload menu image
                       </p>
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploadLoading}
-                        className="flex items-center justify-center gap-fluid-2 px-fluid-4 py-fluid-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-fluid-sm mx-auto"
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm mx-auto font-medium"
                       >
                         {uploadLoading ? (
                           <>
-                            <Loader2 className="w-fluid-4 h-fluid-4 animate-spin" />
+                            <Loader2 className="w-4 h-4 animate-spin" />
                             Uploading...
                           </>
                         ) : (
                           <>
-                            <Upload className="w-fluid-4 h-fluid-4" />
+                            <Upload className="w-4 h-4" />
                             Upload Image
                           </>
                         )}
                       </button>
-                      <p className="text-gray-500 text-fluid-xs mt-fluid-2">
+                      <p className="text-gray-500 text-xs mt-2">
                         Max 5MB (JPG, PNG, WebP)
                       </p>
                     </div>
@@ -363,12 +382,12 @@ export default function MenuAddModal({
               </div>
 
               {/* Availability Status */}
-              <div className="flex items-center justify-between p-fluid-3 bg-gray-50 rounded-lg">
-                <div className="space-y-fluid-0.5">
-                  <label className="text-gray-700 font-medium text-fluid-sm">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold text-black">
                     Available
-                  </label>
-                  <p className="text-gray-500 text-fluid-xs">
+                  </Label>
+                  <p className="text-gray-500 text-xs">
                     Customers can order this item
                   </p>
                 </div>
@@ -386,7 +405,7 @@ export default function MenuAddModal({
                     htmlFor="isAvailable"
                     className={cn(
                       "block w-12 h-6 rounded-full cursor-pointer transition-colors",
-                      formData.isAvailable ? "bg-purple-600" : "bg-gray-300"
+                      formData.isAvailable ? "bg-black" : "bg-gray-300"
                     )}
                   >
                     <span
@@ -400,12 +419,12 @@ export default function MenuAddModal({
               </div>
 
               {/* Active Status */}
-              <div className="flex items-center justify-between p-fluid-3 bg-gray-50 rounded-lg">
-                <div className="space-y-fluid-0.5">
-                  <label className="text-gray-700 font-medium text-fluid-sm">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold text-black">
                     Active
-                  </label>
-                  <p className="text-gray-500 text-fluid-xs">
+                  </Label>
+                  <p className="text-gray-500 text-xs">
                     Show this item in the menu
                   </p>
                 </div>
@@ -423,7 +442,7 @@ export default function MenuAddModal({
                     htmlFor="isActive"
                     className={cn(
                       "block w-12 h-6 rounded-full cursor-pointer transition-colors",
-                      formData.isActive ? "bg-purple-600" : "bg-gray-300"
+                      formData.isActive ? "bg-black" : "bg-gray-300"
                     )}
                   >
                     <span
@@ -439,33 +458,29 @@ export default function MenuAddModal({
           </div>
 
           {/* Footer Buttons */}
-          <div className="border-t border-gray-100 pt-fluid-6 flex gap-fluid-4">
+          <div className="border-t border-gray-200 pt-6 flex gap-4">
             <button
               type="button"
               onClick={handleClose}
               disabled={saveLoading}
-              className={cn(
-                "flex-1 px-fluid-6 py-fluid-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-fluid-base"
-              )}
+              className="flex-1 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
             >
               Cancel
             </button>
-            
+
             <button
               type="submit"
               disabled={saveLoading || uploadLoading}
-              className={cn(
-                "flex-1 px-fluid-6 py-fluid-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-fluid-2 text-fluid-base"
-              )}
+              className="flex-1 px-6 py-3 bg-black hover:bg-gray-900 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {saveLoading ? (
                 <>
-                  <Loader2 className="w-fluid-5 h-fluid-5 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   <span>Creating...</span>
                 </>
               ) : (
                 <>
-                  <Save className="w-fluid-5 h-fluid-5" />
+                  <Save className="w-5 h-5" />
                   <span>Create Menu</span>
                 </>
               )}
@@ -473,6 +488,13 @@ export default function MenuAddModal({
           </div>
         </form>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

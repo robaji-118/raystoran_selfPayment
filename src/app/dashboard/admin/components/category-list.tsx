@@ -16,6 +16,18 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fluidSize } from "@/lib/utils";
+import Toast from "@/components/ui/toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 interface Category {
   _id: string;
@@ -39,7 +51,7 @@ export default function CategoryList() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [showFilter, setShowFilter] = useState(false);
+
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,6 +66,9 @@ export default function CategoryList() {
   // Delete states
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Toast state
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -143,7 +158,7 @@ export default function CategoryList() {
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      alert("Category name is required");
+      setToast({ message: "Category name is required", type: "error" });
       return;
     }
 
@@ -164,19 +179,22 @@ export default function CategoryList() {
       const result = await response.json();
 
       if (result.success) {
-        alert(
-          editingId
+        setToast({
+          message: editingId
             ? "Category updated successfully"
-            : "Category created successfully"
-        );
-        fetchCategories();
-        handleCloseModal();
+            : "Category created successfully",
+          type: "success"
+        });
+        setTimeout(() => {
+          fetchCategories();
+          handleCloseModal();
+        }, 1000);
       } else {
-        alert(result.error || "Failed to save category");
+        setToast({ message: result.error || "Failed to save category", type: "error" });
       }
     } catch (error) {
       console.error("Error saving category:", error);
-      alert("Error saving category");
+      setToast({ message: "Error saving category", type: "error" });
     } finally {
       setSaveLoading(false);
     }
@@ -194,17 +212,19 @@ export default function CategoryList() {
       const result = await response.json();
 
       if (result.success) {
-        alert("Category deleted successfully");
-        fetchCategories();
+        setToast({ message: "Category deleted successfully", type: "success" });
+        setTimeout(() => {
+          fetchCategories();
+          setDeleteId(null);
+        }, 1000);
       } else {
-        alert(result.error || "Failed to delete category");
+        setToast({ message: result.error || "Failed to delete category", type: "error" });
       }
     } catch (error) {
       console.error("Error deleting category:", error);
-      alert("Error deleting category");
+      setToast({ message: "Error deleting category", type: "error" });
     } finally {
       setDeleteLoading(false);
-      setDeleteId(null);
     }
   };
 
@@ -217,7 +237,6 @@ export default function CategoryList() {
   const clearFilter = () => {
     setSearchTerm("");
     setSelectedStatus("all");
-    setShowFilter(false);
   };
 
   if (loading) {
@@ -235,16 +254,16 @@ export default function CategoryList() {
     return (
       <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-        <div className="flex items-center text-red-600 mb-fluid-4 justify-center">
-          <AlertCircle className="w-fluid-5 h-fluid-5 mr-fluid-2" />
-          <span className="text-fluid-base">{error}</span>
-        </div>
-        <button
-          onClick={() => fetchCategories()}
-          className="px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-base"
-        >
-          Retry
-        </button>
+          <div className="flex items-center text-red-600 mb-fluid-4 justify-center">
+            <AlertCircle className="w-fluid-5 h-fluid-5 mr-fluid-2" />
+            <span className="text-fluid-base">{error}</span>
+          </div>
+          <button
+            onClick={() => fetchCategories()}
+            className="px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-base"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -254,14 +273,14 @@ export default function CategoryList() {
     <div>
       <div
         className="bg-white border-gray-100 mb-fluid-6"
-        style={{ 
+        style={{
           borderRadius: fluidSize(16),
           borderWidth: fluidSize(2),
         }}
       >
         {/* Header */}
         <div className="p-fluid-6 border-b border-gray-100">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-fluid-6">
             <div>
               <h6 className="text-gray-900 text-fluid-lg">List Categories</h6>
               <div className="text-gray-500 text-fluid-sm mt-fluid-1">
@@ -270,28 +289,10 @@ export default function CategoryList() {
               </div>
             </div>
             <div className="flex items-center gap-fluid-3">
-              {/* Filter Button */}
-              <button
-                onClick={() => setShowFilter(!showFilter)}
-                className={cn(
-                  "flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-fluid-sm border border-gray-200",
-                  selectedStatus !== "all" &&
-                    "bg-purple-50 text-purple-700 border-purple-200"
-                )}
-              >
-                <Filter className="w-fluid-4 h-fluid-4" />
-                <span>Filter</span>
-                {selectedStatus !== "all" && (
-                  <span className="ml-fluid-1 px-fluid-2 py-fluid-0.5 bg-purple-100 text-purple-700 rounded-full text-fluid-xs">
-                    Filtered
-                  </span>
-                )}
-              </button>
-
               {/* Add Category Button */}
               <button
                 onClick={() => handleOpenModal()}
-                className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-sm"
+                className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-sm"
               >
                 <Plus className="w-fluid-4 h-fluid-4" />
                 <span>Add Category</span>
@@ -299,53 +300,45 @@ export default function CategoryList() {
             </div>
           </div>
 
-          {/* Filter Dropdown */}
-          {showFilter && (
-            <div className="mt-fluid-4 p-fluid-4 bg-gray-50 rounded-lg border border-gray-100">
-              <div className="flex items-center justify-between mb-fluid-3">
-                <p className="text-gray-700 font-medium text-fluid-sm">
-                  Filter Options
-                </p>
+          {/* Filter Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-fluid-4">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-fluid-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-fluid-4 h-fluid-4 z-10" />
+              <Input
+                type="text"
+                placeholder="Search category name or description..."
+                className="w-full pl-fluid-10 pr-fluid-3 h-auto py-fluid-2.5 bg-white border-gray-200 text-fluid-sm text-gray-700 focus-visible:ring-black placeholder:text-gray-400"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
                 <button
-                  onClick={clearFilter}
-                  className="flex items-center gap-fluid-1 text-gray-500 hover:text-gray-700 text-fluid-xs"
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-fluid-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
                 >
                   <X className="w-fluid-3 h-fluid-3" />
-                  Clear
                 </button>
-              </div>
-
-              {/* Search Input */}
-              <div className="mb-fluid-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-fluid-4 h-fluid-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search category name or description..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-fluid-10 pr-fluid-4 py-fluid-2.5 bg-white border border-gray-200 rounded-lg text-fluid-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  />
-                </div>
-              </div>
-
-              {/* Status Filter */}
-              <div className="space-y-fluid-2">
-                <label className="block text-gray-700 font-medium text-fluid-sm">
-                  Status
-                </label>
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="w-full px-fluid-3 py-fluid-2.5 bg-white border border-gray-200 rounded-lg text-fluid-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                >
-                  <option value="all">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
+              )}
             </div>
-          )}
+
+            {/* Status Filter */}
+            <div className="relative">
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger className="w-full h-auto py-fluid-2.5 bg-white border-gray-200 text-fluid-sm text-gray-700 focus:ring-black">
+                  <div className="flex items-center gap-fluid-2">
+                    <Filter className="w-fluid-4 h-fluid-4 text-gray-400" />
+                    <SelectValue placeholder="All Status" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         {/* Table */}
@@ -374,7 +367,7 @@ export default function CategoryList() {
                   )}
                   <button
                     onClick={() => handleOpenModal()}
-                    className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-sm"
+                    className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-sm"
                   >
                     <Plus className="w-fluid-4 h-fluid-4" />
                     Add Category
@@ -469,97 +462,97 @@ export default function CategoryList() {
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-fluid-4">
-          <div className="bg-white rounded-2xl border border-gray-100 max-w-md w-full shadow-xl">
-            <div className="p-fluid-6 border-b border-gray-100">
-              <h3 className="text-gray-900 text-fluid-lg font-bold">
-                {editingId ? "Edit Category" : "Add New Category"}
-              </h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl border border-gray-200 max-w-md w-full shadow-xl animate-in slide-in-from-bottom-4 duration-300">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                  <Package className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-gray-900 text-lg font-bold">
+                    {editingId ? "Edit Category" : "Add New Category"}
+                  </h3>
+                  <p className="text-gray-500 text-sm mt-0.5">
+                    {editingId ? "Update category information" : "Create a new category"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleCloseModal}
+                className="text-gray-400 hover:text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition-all"
+                disabled={saveLoading}
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit}>
-              <div className="p-fluid-6 space-y-fluid-4">
-                {/* Category Name */}
-                <div className="space-y-fluid-2">
-                  <label className="block text-gray-700 font-medium text-fluid-sm">
-                    Category Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Appetizers, Main Course, Desserts"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="w-full px-fluid-3 py-fluid-2.5 bg-white border border-gray-200 rounded-lg text-fluid-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    required
-                  />
-                </div>
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              {/* Category Name */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-black uppercase tracking-wider">
+                  Category Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  placeholder="e.g., Appetizers, Main Course, Desserts"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-400"
+                  required
+                />
+              </div>
 
-                {/* Description */}
-                <div className="space-y-fluid-2">
-                  <label className="block text-gray-700 font-medium text-fluid-sm">
-                    Description
-                  </label>
-                  <textarea
-                    placeholder="Brief description about this category..."
-                    rows={4}
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    className="w-full px-fluid-3 py-fluid-2.5 bg-white border border-gray-200 rounded-lg text-fluid-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
-                  />
-                </div>
+              {/* Description */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-black uppercase tracking-wider">
+                  Description
+                </Label>
+                <Textarea
+                  placeholder="Brief description about this category..."
+                  rows={4}
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className="bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl resize-none transition-all font-medium text-black placeholder:text-gray-400"
+                />
+              </div>
 
-                {/* Active Status */}
-                <div className="flex items-center justify-between p-fluid-4 bg-gray-50 rounded-lg">
-                  <div className="space-y-fluid-1">
-                    <label className="block text-gray-700 font-medium text-fluid-sm">
-                      Active Status
-                    </label>
-                    <p className="text-gray-500 text-fluid-xs">
-                      Inactive categories won&lsquo;t be visible in menu selection
-                    </p>
-                  </div>
-                  <div className="relative inline-block w-fluid-10 mr-2 align-middle select-none">
-                    <input
-                      type="checkbox"
-                      id="isActive"
-                      checked={formData.isActive}
-                      onChange={(e) =>
-                        setFormData({ ...formData, isActive: e.target.checked })
-                      }
-                      className="sr-only"
-                    />
-                    <label
-                      htmlFor="isActive"
-                      className={cn(
-                        "block overflow-hidden h-fluid-6 rounded-full cursor-pointer transition-colors",
-                        formData.isActive
-                          ? "bg-purple-600"
-                          : "bg-gray-300"
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "block h-fluid-6 w-fluid-6 rounded-full bg-white shadow transform transition-transform",
-                          formData.isActive
-                            ? "translate-x-fluid-4"
-                            : "translate-x-0"
-                        )}
-                      />
-                    </label>
-                  </div>
+              {/* Active Status */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-bold text-black">
+                    Active Status
+                  </Label>
+                  <p className="text-gray-500 text-xs">
+                    Inactive categories won't be visible in menu selection
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="isActive"
+                    checked={formData.isActive}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, isActive: checked })
+                    }
+                  />
+                  <Label htmlFor="isActive" className="sr-only">
+                    Active Status
+                  </Label>
                 </div>
               </div>
 
-              <div className="p-fluid-6 border-t border-gray-100 flex gap-fluid-3">
+              {/* Footer Buttons */}
+              <div className="border-t border-gray-200 pt-6 flex gap-4 -mx-6 -mb-6 px-6 pb-6 mt-6">
                 <button
                   type="button"
                   onClick={handleCloseModal}
                   disabled={saveLoading}
-                  className="flex-1 px-fluid-6 py-fluid-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors disabled:opacity-50 text-fluid-base"
+                  className="flex-1 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
                 >
                   Cancel
                 </button>
@@ -567,19 +560,17 @@ export default function CategoryList() {
                 <button
                   type="submit"
                   disabled={saveLoading}
-                  className="flex-1 px-fluid-6 py-fluid-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-fluid-2 text-fluid-base"
+                  className="flex-1 px-6 py-3 bg-black hover:bg-gray-900 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {saveLoading ? (
                     <>
-                      <Loader2 className="w-fluid-5 h-fluid-5 animate-spin" />
-                      <span className="text-fluid-sm">Saving...</span>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Saving...</span>
                     </>
                   ) : (
                     <>
-                      <Save className="w-fluid-5 h-fluid-5" />
-                      <span className="text-fluid-sm">
-                        {editingId ? "Update" : "Create"}
-                      </span>
+                      <Save className="w-5 h-5" />
+                      <span>{editingId ? "Update" : "Create"}</span>
                     </>
                   )}
                 </button>
@@ -591,26 +582,26 @@ export default function CategoryList() {
 
       {/* Delete Confirmation Modal */}
       {deleteId && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-fluid-4">
-          <div className="bg-white rounded-2xl border border-gray-100 max-w-md w-full shadow-xl">
-            <div className="p-fluid-6 border-b border-gray-100">
-              <h3 className="text-gray-900 text-fluid-lg font-bold">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl border border-gray-200 max-w-md w-full shadow-xl animate-in slide-in-from-bottom-4 duration-300">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-gray-900 text-lg font-bold">
                 Delete Category
               </h3>
             </div>
 
-            <div className="p-fluid-6">
-              <p className="text-gray-600 text-fluid-base">
+            <div className="p-6">
+              <p className="text-gray-600">
                 Are you sure you want to delete this category? This action cannot be
                 undone. Categories with existing menus cannot be deleted.
               </p>
             </div>
 
-            <div className="p-fluid-6 border-t border-gray-100 flex gap-fluid-3">
+            <div className="p-6 border-t border-gray-200 flex gap-4">
               <button
                 onClick={() => setDeleteId(null)}
                 disabled={deleteLoading}
-                className="flex-1 px-fluid-6 py-fluid-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors disabled:opacity-50 text-fluid-base"
+                className="flex-1 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
               >
                 Cancel
               </button>
@@ -618,23 +609,31 @@ export default function CategoryList() {
               <button
                 onClick={handleDelete}
                 disabled={deleteLoading}
-                className="flex-1 px-fluid-6 py-fluid-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-fluid-2 text-fluid-base"
+                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {deleteLoading ? (
                   <>
-                    <Loader2 className="w-fluid-5 h-fluid-5 animate-spin" />
-                    <span className="text-fluid-sm">Deleting...</span>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Deleting...</span>
                   </>
                 ) : (
                   <>
-                    <Trash2 className="w-fluid-5 h-fluid-5" />
-                    <span className="text-fluid-sm">Delete</span>
+                    <Trash2 className="w-5 h-5" />
+                    <span>Delete</span>
                   </>
                 )}
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );

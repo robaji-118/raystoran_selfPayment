@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { 
-  CheckCircle, 
-  Download, 
-  ShoppingBag, 
-  UtensilsCrossed, 
+import {
+  CheckCircle,
+  Download,
+  ShoppingBag,
+  UtensilsCrossed,
   User,
   MapPin,
   Wallet,
   Utensils
 } from "lucide-react";
 import { CustomerInfo, TableSelection, CartItem, OrderType } from "../components/dashboard-main";
-import OrderSummary from "../components/order-summary"; 
+import OrderSummary from "../components/order-summary";
 
 interface Step5PaymentProps {
   orderId: string | null;
@@ -47,12 +47,12 @@ export default function Step5Payment({
 }: Step5PaymentProps) {
 
   // Helper Format Currency
-  const formatCurrency = (val: number) => 
+  const formatCurrency = (val: number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(val);
 
   return (
     <div className="relative w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
+
       {/* --- CONTENT UTAMA: ORDER SUMMARY (REVIEW) --- */}
       <div className="max-w-xl mx-auto">
         <div className="mb-6 text-center">
@@ -79,91 +79,129 @@ export default function Step5Payment({
       {/* --- MODAL SUCCESS (Overlay) --- 
           Muncul otomatis ketika orderId tersedia (setelah pembayaran sukses)
       */}
+      {/* --- MODAL SUCCESS (Overlay) --- 
+          Muncul otomatis ketika orderId tersedia (setelah pembayaran sukses)
+      */}
       {orderId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 transform scale-100">
-            
-            {/* Header Modal */}
-            <div className="flex flex-col items-center pt-8 pb-6 px-6 bg-white border-b border-gray-50">
-              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-4 ring-8 ring-green-50/50">
-                <CheckCircle className="w-10 h-10 text-green-600" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 print:bg-white print:p-0 print:static">
+          <style jsx global>{`
+            @media print {
+              /* Sembunyikan semua elemen body secara default */
+              body * {
+                visibility: hidden;
+              }
+              /* Tampilkan hanya container receipt */
+              #printable-receipt, #printable-receipt * {
+                visibility: visible;
+              }
+              /* Posisikan receipt di pojok kiri atas */
+              #printable-receipt {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 20px;
+                border: none;
+                box-shadow: none;
+              }
+              /* Sembunyikan scrollbar */
+              ::-webkit-scrollbar {
+                display: none;
+              }
+            }
+          `}</style>
+
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 transform scale-100 print:shadow-none print:max-w-none print:w-full">
+
+            {/* Printable Area Wrapper */}
+            <div id="printable-receipt">
+              {/* Header Modal */}
+              <div className="flex flex-col items-center pt-8 pb-6 px-6 bg-white border-b border-gray-50">
+                <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-4 ring-8 ring-green-50/50 print:hidden">
+                  <CheckCircle className="w-10 h-10 text-green-600" />
+                </div>
+                <h2 className="text-2xl font-extrabold text-gray-900">Payment Successful!</h2>
+                <p className="text-sm text-gray-500 mt-2 text-center">
+                  Order ID: <span className="font-mono font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">{orderNumber || orderId}</span>
+                </p>
               </div>
-              <h2 className="text-2xl font-extrabold text-gray-900">Payment Successful!</h2>
-              <p className="text-sm text-gray-500 mt-2 text-center">
-                Order ID: <span className="font-mono font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">{orderNumber || orderId}</span>
-              </p>
-            </div>
 
-            {/* Receipt Details (Mini) */}
-            <div className="px-6 py-6 bg-gray-50/50">
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4">
-                
-                {/* Type */}
-                <div className="flex justify-between items-center pb-3 border-b border-dashed border-gray-200">
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                    {orderType === "dine-in" ? <UtensilsCrossed className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
-                    Type
-                  </span>
-                  <span className="text-sm font-bold text-gray-900 capitalize">
-                    {orderType.replace("-", " ")}
-                  </span>
-                </div>
+              {/* Receipt Details (Mini) */}
+              <div className="px-6 py-6 bg-gray-50/50 print:bg-white print:p-0">
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4 print:border-none print:shadow-none print:p-0">
 
-                {/* Customer */}
-                <div className="flex justify-between items-center pb-3 border-b border-dashed border-gray-200">
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                    <User className="w-4 h-4" /> 
-                    Customer
-                  </span>
-                  <span className="text-sm font-bold text-gray-900">{customerInfo.name}</span>
-                </div>
-
-                {/* Table (Conditional) */}
-                {orderType === "dine-in" && selectedTable && (
+                  {/* Type */}
                   <div className="flex justify-between items-center pb-3 border-b border-dashed border-gray-200">
                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      Table
+                      {orderType === "dine-in" ? <UtensilsCrossed className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+                      Type
                     </span>
-                    <span className="text-sm font-bold text-gray-900">No. {selectedTable.tableNumber}</span>
+                    <span className="text-sm font-bold text-gray-900 capitalize">
+                      {orderType.replace("-", " ")}
+                    </span>
                   </div>
-                )}
 
-                {/* Daftar Menu yang Dipesan */}
-                {cart.length > 0 && (
-                  <div className="pb-3 border-b border-dashed border-gray-200">
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2">
-                      <Utensils className="w-4 h-4" />
-                      Menu Dipesan
+                  {/* Customer */}
+                  <div className="flex justify-between items-center pb-3 border-b border-dashed border-gray-200">
+                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      Customer
                     </span>
-                    <div className="space-y-1.5 max-h-32 overflow-y-auto">
-                      {cart.map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-start text-sm">
-                          <span className="text-gray-900 font-medium">
-                            {item.quantity}x {item.menuItemName}
-                          </span>
-                          <span className="text-gray-600 whitespace-nowrap ml-2">
-                            {formatCurrency(item.price * item.quantity)}
-                          </span>
-                        </div>
-                      ))}
+                    <span className="text-sm font-bold text-gray-900">{customerInfo.name}</span>
+                  </div>
+
+                  {/* Table (Conditional) */}
+                  {orderType === "dine-in" && selectedTable && (
+                    <div className="flex justify-between items-center pb-3 border-b border-dashed border-gray-200">
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        Table
+                      </span>
+                      <span className="text-sm font-bold text-gray-900">No. {selectedTable.tableNumber}</span>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Total */}
-                <div className="flex justify-between items-center pt-1">
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                    <Wallet className="w-4 h-4" />
-                    Amount Paid
-                  </span>
-                  <span className="text-lg font-black text-green-600">{formatCurrency(totalAmount)}</span>
+                  {/* Daftar Menu yang Dipesan */}
+                  {cart.length > 0 && (
+                    <div className="pb-3 border-b border-dashed border-gray-200">
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-2">
+                        <Utensils className="w-4 h-4" />
+                        Menu Dipesan
+                      </span>
+                      <div className="space-y-1.5 ">
+                        {cart.map((item, idx) => (
+                          <div key={idx} className="flex justify-between items-start text-sm">
+                            <span className="text-gray-900 font-medium">
+                              {item.quantity}x {item.menuItemName}
+                            </span>
+                            <span className="text-gray-600 whitespace-nowrap ml-2">
+                              {formatCurrency(item.price * item.quantity)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Total */}
+                  <div className="flex justify-between items-center pt-1 border-t-2 border-gray-900 mt-2">
+                    <span className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                      TOTAL PAID
+                    </span>
+                    <span className="text-lg font-black text-gray-900">{formatCurrency(totalAmount)}</span>
+                  </div>
+
+                  <div className="mt-4 text-center text-xs text-gray-400 font-medium hidden print:block">
+                    <p>Thank you for your order!</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Footer Buttons */}
-            <div className="p-6 bg-white border-t border-gray-100 space-y-3">
+            <div className="p-6 bg-white border-t border-gray-100 space-y-3 print:hidden">
               <button
                 onClick={() => window.print()}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all text-sm font-bold shadow-sm"
@@ -171,7 +209,7 @@ export default function Step5Payment({
                 <Download className="w-4 h-4" />
                 Download Receipt
               </button>
-              
+
               <button
                 onClick={() => window.location.href = '/dashboard/customer'}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-black hover:bg-gray-800 text-white rounded-xl transition-all text-sm font-bold shadow-md hover:shadow-lg transform active:scale-95"

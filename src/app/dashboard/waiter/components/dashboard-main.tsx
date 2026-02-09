@@ -154,6 +154,19 @@ export default function DashboardMain() {
     }
   };
 
+
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-neutral-500 text-fluid-base">Loading waiter dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       {/* Stats Cards - Styling identical to Kitchen */}
@@ -239,7 +252,6 @@ export default function DashboardMain() {
 
         {/* Total Active Card */}
         <div
-          onClick={() => router.push("/dashboard/waiter?view=tables")}
           className="bg-white rounded-2xl p-fluid-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow group"
         >
           <div className="flex items-start justify-between mb-fluid-4">
@@ -269,8 +281,12 @@ export default function DashboardMain() {
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <AlertCircle className="w-5 h-5 text-gray-600" />
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping" />
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+                  {stats.readyOrders > 0 && (
+                    <>
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping" />
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+                    </>
+                  )}
                 </div>
                 <h3 className="font-bold text-gray-900 text-fluid-lg">
                   Ready to Serve
@@ -343,15 +359,15 @@ export default function DashboardMain() {
 
                   {orders.filter((o) => o.orderStatus === "ready").length >
                     4 && (
-                    <button
-                      onClick={() =>
-                        router.push("/dashboard/waiter?view=deliveries-ready")
-                      }
-                      className="w-full py-3 text-center text-xs text-gray-500 font-medium hover:text-gray-800 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
-                    >
-                      View All Ready Orders
-                    </button>
-                  )}
+                      <button
+                        onClick={() =>
+                          router.push("/dashboard/waiter?view=deliveries-ready")
+                        }
+                        className="w-full py-3 text-center text-xs text-gray-500 font-medium hover:text-gray-800 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+                      >
+                        View All Ready Orders
+                      </button>
+                    )}
                 </div>
               )}
             </div>

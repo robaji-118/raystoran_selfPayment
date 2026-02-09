@@ -67,12 +67,12 @@ const getElapsedTime = (startTime: string, endTime: string): number => {
 const CompletedOrderCard = ({ order }: { order: Order }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const deliveryTime = order.deliveringAt && order.completedAt 
-    ? getElapsedTime(order.deliveringAt, order.completedAt) 
+  const deliveryTime = order.deliveringAt && order.completedAt
+    ? getElapsedTime(order.deliveringAt, order.completedAt)
     : 0;
-    
-  const totalTime = order.completedAt 
-    ? getElapsedTime(order.createdAt, order.completedAt) 
+
+  const totalTime = order.completedAt
+    ? getElapsedTime(order.createdAt, order.completedAt)
     : 0;
 
   return (
@@ -100,10 +100,10 @@ const CompletedOrderCard = ({ order }: { order: Order }) => {
         </div>
 
         <div className="flex items-center gap-3">
-           {/* Indikator Buka/Tutup */}
-           <div className={`p-2 rounded-full transition-all duration-200 ${isOpen ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500'}`}>
-             {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-           </div>
+          {/* Indikator Buka/Tutup */}
+          <div className={`p-2 rounded-full transition-all duration-200 ${isOpen ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500'}`}>
+            {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          </div>
         </div>
       </div>
 
@@ -111,7 +111,7 @@ const CompletedOrderCard = ({ order }: { order: Order }) => {
       {/* Meja, Customer, Waktu, dan Menu ada di sini */}
       {isOpen && (
         <div className="border-t border-gray-100 bg-gray-50/50 p-5 animate-in slide-in-from-top-2 duration-200">
-          
+
           {/* Info Grid: Customer & Waktu */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div className="space-y-3">
@@ -176,7 +176,7 @@ const CompletedOrderCard = ({ order }: { order: Order }) => {
                   </p>
                 </div>
               ))}
-              
+
               {/* Total Row */}
               <div className="p-3 bg-gray-50 flex justify-between items-center rounded-b-lg">
                 <span className="text-sm font-semibold text-gray-600">Total Amount</span>
@@ -200,7 +200,7 @@ export default function CompletedDeliveriesView({
   const [searchTerm, setSearchTerm] = useState("");
   // UBAH: Hanya Today dan Week, hapus 'all'
   const [dateFilter, setDateFilter] = useState<"today" | "week">("today");
-  
+
   // PAGINATION STATE
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -249,10 +249,22 @@ export default function CompletedDeliveriesView({
   };
 
   const isThisWeek = (date: string): boolean => {
-    const today = new Date();
     const orderDate = new Date(date);
-    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    return orderDate >= weekAgo && orderDate <= today;
+    const today = new Date();
+
+    // Calculate start of current week (Monday)
+    const day = today.getDay();
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(today);
+    monday.setDate(diff);
+    monday.setHours(0, 0, 0, 0);
+
+    // Calculate end of current week (Sunday)
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+
+    return orderDate >= monday && orderDate <= sunday;
   };
 
   const filteredOrders = orders
@@ -294,11 +306,11 @@ export default function CompletedDeliveriesView({
     avgDeliveryTime:
       filteredOrders.length > 0
         ? Math.round(
-            filteredOrders.reduce((sum, o) => {
-                if(!o.completedAt || !o.deliveringAt) return sum;
-                return sum + getElapsedTime(o.deliveringAt, o.completedAt)
-            }, 0) / filteredOrders.length
-          )
+          filteredOrders.reduce((sum, o) => {
+            if (!o.completedAt || !o.deliveringAt) return sum;
+            return sum + getElapsedTime(o.deliveringAt, o.completedAt)
+          }, 0) / filteredOrders.length
+        )
         : 0,
     totalItems: filteredOrders.reduce(
       (sum, o) =>
@@ -306,6 +318,17 @@ export default function CompletedDeliveriesView({
       0
     ),
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-neutral-500 text-fluid-base">Loading history...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 min-h-screen bg-gray-50/50">
@@ -362,22 +385,20 @@ export default function CompletedDeliveriesView({
         <div className="flex gap-2 p-1 bg-white border border-gray-200 rounded-xl">
           <button
             onClick={() => setDateFilter("today")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-              dateFilter === "today"
-                ? "bg-black text-white shadow-sm"
-                : "text-gray-600 hover:bg-gray-50"
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${dateFilter === "today"
+              ? "bg-black text-white shadow-sm"
+              : "text-gray-600 hover:bg-gray-50"
+              }`}
           >
             <Calendar className="w-4 h-4" />
             Today
           </button>
           <button
             onClick={() => setDateFilter("week")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              dateFilter === "week"
-                ? "bg-black text-white shadow-sm"
-                : "text-gray-600 hover:bg-gray-50"
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${dateFilter === "week"
+              ? "bg-black text-white shadow-sm"
+              : "text-gray-600 hover:bg-gray-50"
+              }`}
           >
             This Week
           </button>
@@ -387,9 +408,11 @@ export default function CompletedDeliveriesView({
 
       {/* Orders List */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4" />
-          <span className="text-gray-500 font-medium">Loading history...</span>
+        <div className="flex items-center justify-center min-h-[70vh] w-full">
+          <div className="text-center">
+            <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+            <p className="text-neutral-500 text-fluid-base">Loading history...</p>
+          </div>
         </div>
       ) : filteredOrders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm text-center">
@@ -423,7 +446,7 @@ export default function CompletedDeliveriesView({
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              
+
               <span className="text-sm font-medium text-gray-700 bg-white px-4 py-2 rounded-lg border border-gray-200">
                 Page {currentPage} of {totalPages}
               </span>

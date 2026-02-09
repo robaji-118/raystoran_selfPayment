@@ -157,7 +157,7 @@ export const sendCancellationEmail = async (
 
             <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin: 24px 0; border-radius: 4px;">
               <p style="margin: 0 0 4px; color: #991b1b; font-size: 12px; font-weight: 700; text-transform: uppercase;">Alasan Pembatalan:</p>
-              <p style="margin: 0; color: #1f2937; font-weight: 500;">"${reason}"</p>
+              <p style="margin: 0; color: #1f2937; font-weight: 500;">Dikarenakan Masalah internal yang di lakukan oleh pegawai kita yang tidak melakukan perubahan pada ordernya sehingga orderan ini di batalkan</p>
             </div>
 
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 12px; margin-top: 24px;">

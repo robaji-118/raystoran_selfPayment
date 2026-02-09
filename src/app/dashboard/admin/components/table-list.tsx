@@ -18,6 +18,7 @@ import TableEditModal from "./modal/table-edit-modal";
 import TableAddModal from "./modal/table-add-modal";
 import { cn } from "@/lib/utils";
 import { fluidSize } from "@/lib/utils";
+import Toast from "@/components/ui/toast";
 
 type TableType = {
   _id: string;
@@ -45,6 +46,7 @@ export default function TableList() {
   // Delete states (for confirmation modal)
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   useEffect(() => {
     fetchTables();
@@ -128,7 +130,7 @@ export default function TableList() {
     if (!tableToDelete) return;
 
     if (tableToDelete.status === "occupied") {
-      alert("Cannot delete occupied table!");
+      setToast({ message: "Cannot delete occupied table!", type: "error" });
       setDeleteId(null);
       return;
     }
@@ -144,9 +146,10 @@ export default function TableList() {
 
       fetchTables();
       setDeleteId(null);
+      setToast({ message: "Table deleted successfully", type: "success" });
     } catch (error) {
       console.error("Error deleting table:", error);
-      alert(error instanceof Error ? error.message : "Failed to delete table");
+      setToast({ message: error instanceof Error ? error.message : "Failed to delete table", type: "error" });
     } finally {
       setDeleteLoading(false);
     }
@@ -212,16 +215,16 @@ export default function TableList() {
     return (
       <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-        <div className="flex items-center text-red-600 mb-fluid-4 justify-center">
-          <AlertCircle className="w-fluid-5 h-fluid-5 mr-fluid-2" />
-          <span className="text-fluid-base">{error}</span>
-        </div>
-        <button
-          onClick={() => fetchTables()}
-          className="px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-base"
-        >
-          Retry
-        </button>
+          <div className="flex items-center text-red-600 mb-fluid-4 justify-center">
+            <AlertCircle className="w-fluid-5 h-fluid-5 mr-fluid-2" />
+            <span className="text-fluid-base">{error}</span>
+          </div>
+          <button
+            onClick={() => fetchTables()}
+            className="px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-base"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -251,7 +254,7 @@ export default function TableList() {
               {/* Add Table Button */}
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-sm"
+                className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-sm"
               >
                 <Plus className="w-fluid-4 h-fluid-4" />
                 <span>Add Table</span>
@@ -271,15 +274,15 @@ export default function TableList() {
                 </p>
                 <p className="text-gray-400 text-fluid-sm mb-fluid-4">
                   {searchTerm ||
-                  selectedStatus !== "all" ||
-                  selectedActive !== "all"
+                    selectedStatus !== "all" ||
+                    selectedActive !== "all"
                     ? "Try changing your filters or search term"
                     : "Add your first table to get started"}
                 </p>
                 <div className="flex gap-fluid-3">
                   <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-sm"
+                    className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-sm"
                   >
                     <Plus className="w-fluid-4 h-fluid-4" />
                     Add Table
@@ -443,6 +446,13 @@ export default function TableList() {
             </div>
           </div>
         </div>
+      )}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );

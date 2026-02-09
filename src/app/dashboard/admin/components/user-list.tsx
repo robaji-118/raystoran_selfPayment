@@ -2,20 +2,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  Loader2, 
-  Pencil, 
-  Trash, 
-  AlertCircle, 
-  Plus, 
+import {
+  Loader2,
+  Pencil,
+  Trash,
+  AlertCircle,
+  Plus,
   Users as UsersIcon,
   Filter,
-  X 
+  X
 } from "lucide-react";
 import UserEditModal from "./modal/user-edit-modal";
 import UserAddModal from "./modal/user-add-modal";
 import { cn } from "@/lib/utils";
-import {fluidSize} from "@/lib/utils";
+import { fluidSize } from "@/lib/utils";
+import Toast from "@/components/ui/toast";
 
 type UserType = {
   _id: string;
@@ -36,6 +37,9 @@ export default function UserList() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [showFilter, setShowFilter] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -48,11 +52,11 @@ export default function UserList() {
   const fetchUsers = async () => {
     try {
       const res = await fetch("/api/users");
-      
+
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      
+
       const data = await res.json();
       const usersData = Array.isArray(data) ? data : [];
       setUsers(usersData);
@@ -69,7 +73,7 @@ export default function UserList() {
     if (selectedRole === "all") {
       setFilteredUsers(users);
     } else {
-      const filtered = users.filter(user => 
+      const filtered = users.filter(user =>
         user.role.toLowerCase() === selectedRole.toLowerCase()
       );
       setFilteredUsers(filtered);
@@ -93,23 +97,33 @@ export default function UserList() {
   };
 
   const deleteUser = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete user "${name}"?`)) {
-      return;
-    }
+    setDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+
+    const user = users.find(u => u._id === deleteId);
+    if (!user) return;
 
     try {
-      const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
-      
+      setDeleteLoading(true);
+      const res = await fetch(`/api/users/${deleteId}`, { method: "DELETE" });
+
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || "Failed to delete user");
       }
 
-      setUsers((prev) => prev.filter((u) => u._id !== id));
-      setFilteredUsers((prev) => prev.filter((u) => u._id !== id));
+      setUsers((prev) => prev.filter((u) => u._id !== deleteId));
+      setFilteredUsers((prev) => prev.filter((u) => u._id !== deleteId));
+      setToast({ message: `User "${user.fullName}" deleted successfully`, type: "success" });
+      setDeleteId(null);
     } catch (error) {
       console.error("Error deleting user:", error);
-      alert("Failed to delete user");
+      setToast({ message: "Failed to delete user", type: "error" });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -138,7 +152,7 @@ export default function UserList() {
   const getRoleOptions = () => {
     const roles = users.map(user => user.role.toLowerCase());
     const uniqueRoles = Array.from(new Set(roles));
-    
+
     const roleOptions = [
       { value: "all", label: "All Roles" },
       { value: "admin", label: "Admin" },
@@ -151,7 +165,7 @@ export default function UserList() {
     ];
 
     // Only show roles that actually exist in the data
-    return roleOptions.filter(option => 
+    return roleOptions.filter(option =>
       option.value === "all" || uniqueRoles.includes(option.value)
     );
   };
@@ -176,16 +190,16 @@ export default function UserList() {
     return (
       <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-        <div className="flex items-center text-red-600 mb-fluid-4 justify-center">
-          <AlertCircle className="w-fluid-5 h-fluid-5 mr-fluid-2" />
-          <span className="text-fluid-base">{error}</span>
-        </div>
-        <button 
-          onClick={() => fetchUsers()}
-          className="px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-base"
-        >
-          Retry
-        </button>
+          <div className="flex items-center text-red-600 mb-fluid-4 justify-center">
+            <AlertCircle className="w-fluid-5 h-fluid-5 mr-fluid-2" />
+            <span className="text-fluid-base">{error}</span>
+          </div>
+          <button
+            onClick={() => fetchUsers()}
+            className="px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-base"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -193,22 +207,22 @@ export default function UserList() {
 
   return (
     <div>
-      <div className="bg-white border-gray-100 mb-fluid-6 " 
-      style={{
-        borderWidth: fluidSize(1),
-        borderRadius: fluidSize(16)
-      }}>
-        {/* Header */}
-        <div className="p-fluid-6 border-b border-gray-100" 
+      <div className="bg-white border-gray-100 mb-fluid-6 "
         style={{
-          borderBottom: fluidSize(1),
+          borderWidth: fluidSize(1),
+          borderRadius: fluidSize(16)
         }}>
+        {/* Header */}
+        <div className="p-fluid-6 border-b border-gray-100"
+          style={{
+            borderBottom: fluidSize(1),
+          }}>
           <div className="flex items-center justify-between">
             <div>
               <h6 className="text-gray-900 text-fluid-lg">List User</h6>
               <div className="text-gray-500 text-fluid-sm mt-fluid-1">
-                {selectedRole === "all" 
-                  ? `Total ${users.length} users` 
+                {selectedRole === "all"
+                  ? `Total ${users.length} users`
                   : `${filteredUsers.length} ${selectedRole}${filteredUsers.length !== 1 ? 's' : ''}`
                 }
               </div>
@@ -219,13 +233,13 @@ export default function UserList() {
                 onClick={() => setShowFilter(!showFilter)}
                 className={cn(
                   "flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-fluid-sm border border-gray-200",
-                  selectedRole !== "all" && "bg-purple-50 text-purple-700 border-purple-200"
+                  selectedRole !== "all" && "bg-gray-900 text-white border-gray-900"
                 )}
               >
                 <Filter className="w-fluid-4 h-fluid-4" />
                 <span>Filter</span>
                 {selectedRole !== "all" && (
-                  <span className="ml-fluid-1 px-fluid-2 py-fluid-0.5 bg-purple-100 text-purple-700 rounded-full text-fluid-xs">
+                  <span className="ml-fluid-1 px-fluid-2 py-fluid-0.5 bg-white text-black rounded-full text-fluid-xs">
                     {selectedRole}
                   </span>
                 )}
@@ -234,7 +248,7 @@ export default function UserList() {
               {/* Add User Button */}
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-sm"
+                className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-sm"
               >
                 <Plus className="w-fluid-4 h-fluid-4" />
                 <span>Add User</span>
@@ -255,7 +269,7 @@ export default function UserList() {
                   Clear
                 </button>
               </div>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-fluid-2">
                 {getRoleOptions().map((role) => (
                   <button
@@ -267,7 +281,7 @@ export default function UserList() {
                     className={cn(
                       "px-fluid-3 py-fluid-2 rounded-lg text-fluid-sm transition-colors text-left",
                       selectedRole === role.value
-                        ? "bg-purple-100 text-purple-700 border border-purple-200"
+                        ? "bg-gray-900 text-white border border-gray-900"
                         : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
                     )}
                   >
@@ -289,8 +303,8 @@ export default function UserList() {
                   {selectedRole === "all" ? "No users found" : `No ${selectedRole}s found`}
                 </p>
                 <p className="text-gray-400 text-fluid-sm mb-fluid-4">
-                  {selectedRole === "all" 
-                    ? "Add your first user to get started" 
+                  {selectedRole === "all"
+                    ? "Add your first user to get started"
                     : `Try changing the filter or add a new ${selectedRole}`
                   }
                 </p>
@@ -306,7 +320,7 @@ export default function UserList() {
                   )}
                   <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-sm"
+                    className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-sm"
                   >
                     <Plus className="w-fluid-4 h-fluid-4" />
                     Add User
@@ -385,7 +399,7 @@ export default function UserList() {
                             <Pencil className="w-fluid-3 h-fluid-3" />
                             <span>Edit</span>
                           </button>
-                          
+
                           <button
                             onClick={() => deleteUser(user._id, user.fullName)}
                             className="flex items-center gap-fluid-1 px-fluid-3 py-fluid-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-fluid-sm"
@@ -400,7 +414,7 @@ export default function UserList() {
                   ))}
                 </tbody>
               </table>
-               
+
             </>
           )}
         </div>
@@ -423,6 +437,61 @@ export default function UserList() {
         user={editingUser}
         onSuccess={handleEditSuccess}
       />
+
+      {/* Delete Confirmation Modal */}
+      {deleteId && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl border border-gray-200 max-w-md w-full shadow-xl animate-in slide-in-from-bottom-4 duration-300">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-gray-900 text-lg font-bold">
+                Delete User
+              </h3>
+            </div>
+
+            <div className="p-6">
+              <p className="text-gray-600">
+                Are you sure you want to delete user <span className="font-bold">"{users.find(u => u._id === deleteId)?.fullName}"</span>? This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex gap-4">
+              <button
+                onClick={() => setDeleteId(null)}
+                disabled={deleteLoading}
+                className="flex-1 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={confirmDelete}
+                disabled={deleteLoading}
+                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {deleteLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash className="w-5 h-5" />
+                    <span>Delete</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

@@ -53,7 +53,7 @@ export default function WaiterDashboard() {
         setCurrentTitle('Ready Orders');
         break;
       case 'deliveries-active':
-        setCurrentTitle('My Deliveries');
+        setCurrentTitle('Order Deliveries');
         break;
       case 'deliveries-completed':
         setCurrentTitle('Completed Deliveries');

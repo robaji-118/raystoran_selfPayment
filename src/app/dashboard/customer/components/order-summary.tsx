@@ -206,7 +206,7 @@ function SummaryContent({
                 </div>
 
                 {/* Info Column */}
-                <div className="flex-1 bg-gray-50 p-3 rounded-lg border border-transparent hover:border-gray-200 transition-colors relative">
+                <div className="flex-1 p-3 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors relative">
                    <div className="flex justify-between items-start gap-2">
                       <p className="!text-sm font-bold text-gray-900 leading-tight">{item.menuItemName}</p>
                       <p className="!text-sm font-bold text-gray-900 whitespace-nowrap">
@@ -214,7 +214,7 @@ function SummaryContent({
                       </p>
                    </div>
                    <p className="!text-xs text-gray-400 mt-0.5">
-                      @ {formatCurrency(item.price)}
+                      {formatCurrency(item.price)}
                    </p>
                    {item.notes && (
                      <div className="mt-2 text-[10px] bg-white p-1.5 rounded border border-gray-100 text-gray-500 italic inline-block">

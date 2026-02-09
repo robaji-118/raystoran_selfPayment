@@ -15,6 +15,15 @@ module.exports = {
       xs: '350px',
     },
     extend: {
+      keyframes: {
+        'slide-in': {
+          '0%': { transform: 'translateX(100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+      },
+      animation: {
+        'slide-in': 'slide-in 0.3s ease-out',
+      },
       fontSize: {
         'fluid-xs': '0.694vw',    // 10px di 1440px
         'fluid-sm': '0.833vw',    // 12px di 1440px

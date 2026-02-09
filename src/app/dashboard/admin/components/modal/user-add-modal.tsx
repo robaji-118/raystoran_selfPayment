@@ -3,6 +3,16 @@
 import { useState, useEffect } from "react";
 import { X, UserPlus, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import Toast from "@/components/ui/toast";
 
 interface UserAddModalProps {
   isOpen: boolean;
@@ -21,6 +31,7 @@ export default function UserAddModal({ isOpen, onClose, onSuccess }: UserAddModa
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   // Reset form when modal closes
   useEffect(() => {
@@ -41,8 +52,8 @@ export default function UserAddModal({ isOpen, onClose, onSuccess }: UserAddModa
     e.preventDefault();
 
     // Validation
-    if (!form.username.trim() || !form.email.trim() || !form.password.trim() || 
-        !form.fullName.trim() || !form.phone.trim()) {
+    if (!form.username.trim() || !form.email.trim() || !form.password.trim() ||
+      !form.fullName.trim() || !form.phone.trim()) {
       setError("All fields are required");
       return;
     }
@@ -78,9 +89,13 @@ export default function UserAddModal({ isOpen, onClose, onSuccess }: UserAddModa
       }
 
       onSuccess();
-      onClose();
+      setToast({ message: "User created successfully", type: "success" });
+      setTimeout(() => {
+        onClose();
+      }, 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add user");
+      setToast({ message: err instanceof Error ? err.message : "Failed to add user", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -94,8 +109,8 @@ export default function UserAddModal({ isOpen, onClose, onSuccess }: UserAddModa
         {/* Header */}
         <div className="flex items-center justify-between p-fluid-6 border-b border-gray-100">
           <div className="flex items-center gap-fluid-3">
-            <div className="p-fluid-2 bg-purple-50 rounded-lg">
-              <UserPlus className="w-fluid-6 h-fluid-6 text-purple-600" />
+            <div className="p-fluid-2 bg-black rounded-lg">
+              <UserPlus className="w-fluid-6 h-fluid-6 text-white" />
             </div>
             <div>
               <h2 className="text-gray-900 text-fluid-xl font-bold">Add New User</h2>
@@ -128,32 +143,36 @@ export default function UserAddModal({ isOpen, onClose, onSuccess }: UserAddModa
           {/* Username and Full Name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-fluid-4">
             <div className="space-y-fluid-2">
-              <label htmlFor="username" className="block text-gray-700 font-medium text-fluid-sm">
+              <Label htmlFor="username" className="text-xs font-bold text-black uppercase tracking-wider ml-1">
                 Username <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
                 id="username"
                 type="text"
                 placeholder="johndoe"
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
                 disabled={loading}
-                className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-fluid-base"
+                className={cn(
+                  "h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
+                )}
               />
             </div>
 
             <div className="space-y-fluid-2">
-              <label htmlFor="fullName" className="block text-gray-700 font-medium text-fluid-sm">
+              <Label htmlFor="fullName" className="text-xs font-bold text-black uppercase tracking-wider ml-1">
                 Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
                 id="fullName"
                 type="text"
                 placeholder="John Doe"
                 value={form.fullName}
                 onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                 disabled={loading}
-                className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-fluid-base"
+                className={cn(
+                  "h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
+                )}
               />
             </div>
           </div>
@@ -161,49 +180,55 @@ export default function UserAddModal({ isOpen, onClose, onSuccess }: UserAddModa
           {/* Email and Phone */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-fluid-4">
             <div className="space-y-fluid-2">
-              <label htmlFor="email" className="block text-gray-700 font-medium text-fluid-sm">
+              <Label htmlFor="email" className="text-xs font-bold text-black uppercase tracking-wider ml-1">
                 Email Address <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
                 id="email"
                 type="email"
                 placeholder="user@example.com"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 disabled={loading}
-                className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-fluid-base"
+                className={cn(
+                  "h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
+                )}
               />
             </div>
 
             <div className="space-y-fluid-2">
-              <label htmlFor="phone" className="block text-gray-700 font-medium text-fluid-sm">
+              <Label htmlFor="phone" className="text-xs font-bold text-black uppercase tracking-wider ml-1">
                 Phone Number <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
                 id="phone"
                 type="tel"
                 placeholder="08123456789"
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 disabled={loading}
-                className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-fluid-base"
+                className={cn(
+                  "h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
+                )}
               />
             </div>
           </div>
 
           {/* Password */}
           <div className="space-y-fluid-2">
-            <label htmlFor="password" className="block text-gray-700 font-medium text-fluid-sm">
+            <Label htmlFor="password" className="text-xs font-bold text-black uppercase tracking-wider ml-1">
               Password <span className="text-red-500">*</span>
-            </label>
-            <input
+            </Label>
+            <Input
               id="password"
               type="password"
               placeholder="Minimum 6 characters"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               disabled={loading}
-              className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-fluid-base"
+              className={cn(
+                "h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
+              )}
             />
             <p className="text-gray-500 text-fluid-xs">
               Password must be at least 6 characters long
@@ -212,23 +237,22 @@ export default function UserAddModal({ isOpen, onClose, onSuccess }: UserAddModa
 
           {/* Role */}
           <div className="space-y-fluid-2">
-            <label htmlFor="role" className="block text-gray-700 font-medium text-fluid-sm">
+            <Label htmlFor="role" className="text-xs font-bold text-black uppercase tracking-wider ml-1">
               User Role <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="role"
-              value={form.role}
-              onChange={(e) => setForm({ ...form, role: e.target.value })}
-              disabled={loading}
-              className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-fluid-base"
-            >
-              <option value="customer">Customer - Browse and order menu</option>
-              <option value="waiter">Waiter - Deliver orders</option>
-              <option value="kitchen">Kitchen - Cook orders</option>
-              <option value="cashier">Cashier - Process payments</option>
-              <option value="owner">Owner - Business analytics</option>
-              <option value="admin">Admin - Full system access</option>
-            </select>
+            </Label>
+            <Select value={form.role} onValueChange={(value) => setForm({ ...form, role: value })} disabled={loading}>
+              <SelectTrigger className="h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black">
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="customer">Customer - Browse and order menu</SelectItem>
+                <SelectItem value="waiter">Waiter - Deliver orders</SelectItem>
+                <SelectItem value="kitchen">Kitchen - Cook orders</SelectItem>
+                <SelectItem value="cashier">Cashier - Process payments</SelectItem>
+                <SelectItem value="owner">Owner - Business analytics</SelectItem>
+                <SelectItem value="admin">Admin - Full system access</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Footer Buttons */}
@@ -249,7 +273,7 @@ export default function UserAddModal({ isOpen, onClose, onSuccess }: UserAddModa
               type="submit"
               disabled={loading}
               className={cn(
-                "flex-1 px-fluid-6 py-fluid-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-fluid-2 text-fluid-base",
+                "flex-1 px-fluid-6 py-fluid-3 bg-black hover:bg-gray-900 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-fluid-2 text-fluid-base",
                 loading && "cursor-not-allowed"
               )}
             >
@@ -268,6 +292,14 @@ export default function UserAddModal({ isOpen, onClose, onSuccess }: UserAddModa
           </div>
         </form>
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

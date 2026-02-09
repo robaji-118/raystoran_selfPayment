@@ -52,7 +52,7 @@ export default function MyDeliveriesView({ userId }: MyDeliveriesViewProps) {
   const fetchOrders = async () => {
     try {
       if (orders.length === 0) setLoading(true);
-      
+
       const res = await fetch("/api/orders?status=delivering");
       if (res.ok) {
         const data = await res.json();
@@ -140,11 +140,23 @@ export default function MyDeliveriesView({ userId }: MyDeliveriesViewProps) {
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-neutral-500 text-fluid-base">Loading deliveries...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 min-h-screen bg-gray-50/50">
       {/* Search Header */}
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">My Deliveries</h1>
         <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -190,7 +202,7 @@ export default function MyDeliveriesView({ userId }: MyDeliveriesViewProps) {
               <tbody className="divide-y divide-gray-100">
                 {filteredOrders.map((order) => {
                   const deliveryTime = getElapsedTime(order.deliveringAt);
-                  
+
                   return (
                     <tr key={order._id} className="hover:bg-blue-50/30 transition-colors">
                       {/* Order Info */}
@@ -216,10 +228,10 @@ export default function MyDeliveriesView({ userId }: MyDeliveriesViewProps) {
 
                       {/* Duration */}
                       <td className="p-4 align-top">
-                         <div className="flex items-center gap-1.5 text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded-md w-fit text-sm">
-                            <Clock className="w-4 h-4" />
-                            <span>{deliveryTime} min</span>
-                         </div>
+                        <div className="flex items-center gap-1.5 text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded-md w-fit text-sm">
+                          <Clock className="w-4 h-4" />
+                          <span>{deliveryTime} min</span>
+                        </div>
                       </td>
 
                       {/* Items */}

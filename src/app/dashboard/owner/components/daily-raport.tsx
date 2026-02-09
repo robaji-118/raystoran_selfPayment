@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
-import { 
-  DollarSign, 
-  ShoppingCart, 
-  TrendingUp, 
-  Package, 
-  FileDown, 
+import {
+  DollarSign,
+  ShoppingCart,
+  TrendingUp,
+  Package,
+  FileDown,
   Clock,
   XCircle
 } from 'lucide-react';
@@ -55,13 +55,13 @@ export default function DailyReport() {
       setLoading(true);
       const response = await fetch('/api/orders');
       const data = await response.json();
-      
+
       if (data.success) {
         const filtered = data.data.filter((order: any) => {
           const orderDate = new Date(order.createdAt).toISOString().split('T')[0];
           return orderDate === selectedDate;
         });
-        
+
         setOrders(filtered);
         calculateStats(filtered);
       }
@@ -75,12 +75,12 @@ export default function DailyReport() {
   const calculateStats = (orderList: any[]) => {
     const totalOrders = orderList.length;
     const totalRevenue = orderList.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-    const totalItems = orderList.reduce((sum, order) => 
+    const totalItems = orderList.reduce((sum, order) =>
       sum + (order.items?.reduce((itemSum: number, item: any) => itemSum + item.quantity, 0) || 0), 0
     );
     const completedOrders = orderList.filter((o) => o.orderStatus === 'completed').length;
     const cancelledOrders = orderList.filter((o) => o.orderStatus === 'cancelled').length;
-    
+
     setStats({
       totalOrders,
       totalRevenue,
@@ -101,9 +101,9 @@ export default function DailyReport() {
   };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('id-ID', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return new Date(dateString).toLocaleTimeString('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -115,7 +115,7 @@ export default function DailyReport() {
       completed: 'bg-gray-100 text-gray-800',
       cancelled: 'bg-red-100 text-red-800'
     };
-    
+
     return statusConfig[status] || 'bg-gray-100 text-gray-800';
   };
 
@@ -147,21 +147,23 @@ export default function DailyReport() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-fluid-12">
-        <div className="w-fluid-16 h-fluid-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-fluid-4"></div>
-        <p className="text-gray-500 text-fluid-base">Loading daily report...</p>
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-neutral-500 text-fluid-base">Loading daily report...</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen p-6">
-      
+
       {/* Stats Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-fluid-4 mb-fluid-6">
-        
+
         {/* Card 1: Total Orders */}
-        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
           <div className="flex items-start justify-between mb-fluid-4">
             <div>
               <p className="text-gray-500 mb-fluid-1 text-fluid-base">Total Orders</p>
@@ -183,7 +185,7 @@ export default function DailyReport() {
         </div>
 
         {/* Card 2: Total Revenue */}
-        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
           <div className="flex items-start justify-between mb-fluid-4">
             <div>
               <p className="text-gray-500 mb-fluid-1 text-fluid-base">Total Revenue</p>
@@ -192,7 +194,7 @@ export default function DailyReport() {
               </h4>
             </div>
             <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-               <DollarSign className="w-5 h-5 text-green-600" />
+              <DollarSign className="w-5 h-5 text-green-600" />
             </div>
           </div>
           <div className="flex items-center gap-fluid-2">
@@ -203,7 +205,7 @@ export default function DailyReport() {
         </div>
 
         {/* Card 3: Total Items */}
-        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
+        <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
           <div className="flex items-start justify-between mb-fluid-4">
             <div>
               <p className="text-gray-500 mb-fluid-1 text-fluid-base">Items Sold</p>
@@ -212,7 +214,7 @@ export default function DailyReport() {
               </h4>
             </div>
             <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-               <Package className="w-5 h-5 text-purple-600" />
+              <Package className="w-5 h-5 text-purple-600" />
             </div>
           </div>
           <div className="flex items-center gap-fluid-2">
@@ -222,8 +224,8 @@ export default function DailyReport() {
       </div>
 
       {/* Orders Table Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
-        
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100" style={{ borderRadius: fluidSize(16) }}>
+
         {/* Table Header & Controls */}
         <div className="p-fluid-6 border-b border-gray-100">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -231,7 +233,7 @@ export default function DailyReport() {
               <h4 className="text-gray-900 font-bold text-fluid-lg">Daily Transactions</h4>
               <p className="text-gray-500 text-fluid-sm mt-1">Detailed list of orders for selected date</p>
             </div>
-            
+
             <div className="flex items-center gap-fluid-3">
               {/* Date Picker Styled */}
               <div className="relative">
@@ -245,7 +247,7 @@ export default function DailyReport() {
               </div>
 
               {/* Export Button */}
-              <button 
+              <button
                 onClick={handleExport}
                 className="flex items-center gap-fluid-2 px-fluid-4 py-2 text-gray-700 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 rounded-lg transition-all"
               >
@@ -262,7 +264,7 @@ export default function DailyReport() {
             <div className="p-fluid-12 text-center">
               <div className="flex flex-col items-center">
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                   <ShoppingCart className="w-8 h-8 text-gray-300" />
+                  <ShoppingCart className="w-8 h-8 text-gray-300" />
                 </div>
                 <p className="text-gray-900 font-medium text-lg">No orders found</p>
                 <p className="text-gray-500 text-sm mt-1">There are no transactions recorded for {selectedDate}</p>
@@ -283,8 +285,8 @@ export default function DailyReport() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {orders.map((order) => (
-                  <tr 
-                    key={order._id} 
+                  <tr
+                    key={order._id}
                     className="hover:bg-gray-50 transition-colors group"
                   >
                     <td className="p-fluid-4">
@@ -308,10 +310,10 @@ export default function DailyReport() {
                       <span className={cn(
                         "px-2.5 py-1 rounded-full font-medium text-xs border",
                         order.orderStatus === 'confirmed' ? "bg-blue-50 text-blue-700 border-blue-100" :
-                        order.orderStatus === 'preparing' ? "bg-purple-50 text-purple-700 border-purple-100" :
-                        order.orderStatus === 'ready' ? "bg-orange-50 text-orange-700 border-orange-100" :
-                        order.orderStatus === 'completed' ? "bg-green-50 text-green-700 border-green-100" :
-                        "bg-red-50 text-red-700 border-red-100"
+                          order.orderStatus === 'preparing' ? "bg-purple-50 text-purple-700 border-purple-100" :
+                            order.orderStatus === 'ready' ? "bg-orange-50 text-orange-700 border-orange-100" :
+                              order.orderStatus === 'completed' ? "bg-green-50 text-green-700 border-green-100" :
+                                "bg-red-50 text-red-700 border-red-100"
                       )}>
                         {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
                       </span>

@@ -64,13 +64,13 @@ export default function MenuList() {
 
   const filteredItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase());
+      item.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || item.categoryId?._id?.toString() === selectedCategory;
-    const matchesAvailability = 
-      availabilityFilter === "all" || 
+    const matchesAvailability =
+      availabilityFilter === "all" ||
       (availabilityFilter === "available" && item.isAvailable && item.isActive) ||
       (availabilityFilter === "unavailable" && (!item.isAvailable || !item.isActive));
-    
+
     return matchesSearch && matchesCategory && matchesAvailability;
   });
 
@@ -79,7 +79,7 @@ export default function MenuList() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center">
             <UtensilsCrossed className="w-7 h-7 text-white" />
           </div>
           <div>
@@ -144,14 +144,14 @@ export default function MenuList() {
               placeholder="Search menu items..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
             />
           </div>
 
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
           >
             <option value="all">All Categories</option>
             {categories.map(category => (
@@ -165,32 +165,29 @@ export default function MenuList() {
         <div className="flex gap-2">
           <button
             onClick={() => setAvailabilityFilter("all")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-              availabilityFilter === "all"
-                ? "bg-purple-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
-            }`}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${availabilityFilter === "all"
+              ? "bg-gray-900 text-white"
+              : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+              }`}
           >
             <Filter className="w-4 h-4" />
             All Items
           </button>
           <button
             onClick={() => setAvailabilityFilter("available")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              availabilityFilter === "available"
-                ? "bg-green-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
-            }`}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${availabilityFilter === "available"
+              ? "bg-green-600 text-white"
+              : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+              }`}
           >
             Available Only
           </button>
           <button
             onClick={() => setAvailabilityFilter("unavailable")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              availabilityFilter === "unavailable"
-                ? "bg-red-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
-            }`}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${availabilityFilter === "unavailable"
+              ? "bg-red-600 text-white"
+              : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+              }`}
           >
             Unavailable Only
           </button>
@@ -200,7 +197,7 @@ export default function MenuList() {
       {/* Menu Items Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="text-center py-12 bg-gray-800 rounded-xl border border-gray-700">
@@ -213,11 +210,10 @@ export default function MenuList() {
           {filteredItems.map((item) => (
             <div
               key={item._id}
-              className={`rounded-xl border-2 overflow-hidden transition-all ${
-                item.isAvailable && item.isActive
-                  ? "bg-gray-800 border-gray-700 hover:border-gray-600"
-                  : "bg-gray-800/50 border-red-900/50 opacity-75"
-              }`}
+              className={`rounded-xl border-2 overflow-hidden transition-all ${item.isAvailable && item.isActive
+                ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                : "bg-gray-800/50 border-red-900/50 opacity-75"
+                }`}
             >
               <div className="p-5">
                 {/* Header */}
@@ -238,7 +234,7 @@ export default function MenuList() {
                 {/* Category */}
                 {item.categoryId && (
                   <div className="mb-3">
-                    <span className="inline-block px-3 py-1 bg-purple-900/30 border border-purple-600/30 rounded-full text-xs font-medium text-purple-300">
+                    <span className="inline-block px-3 py-1 bg-gray-900/30 border border-gray-700/30 rounded-full text-xs font-medium text-gray-300">
                       {item.categoryId.name}
                     </span>
                   </div>

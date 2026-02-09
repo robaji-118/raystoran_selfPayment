@@ -19,6 +19,15 @@ import MenuAddModal from "./modal/menu-add-modal";
 import MenuEditModal from "./modal/menu-edit-modal";
 import { cn } from "@/lib/utils";
 import { fluidSize } from "@/lib/utils";
+import Toast from "@/components/ui/toast";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Category {
   _id: string;
@@ -56,6 +65,7 @@ export default function MenuList() {
   // Delete states
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   useEffect(() => {
     fetchMenus();
@@ -159,14 +169,14 @@ export default function MenuList() {
       const result = await response.json();
 
       if (result.success) {
-        alert("Menu deleted successfully");
+        setToast({ message: "Menu deleted successfully", type: "success" });
         fetchMenus();
       } else {
-        alert(result.error || "Failed to delete menu");
+        setToast({ message: result.error || "Failed to delete menu", type: "error" });
       }
     } catch (error) {
       console.error("Error deleting menu:", error);
-      alert("Error deleting menu");
+      setToast({ message: "Error deleting menu", type: "error" });
     } finally {
       setDeleteLoading(false);
       setDeleteId(null);
@@ -212,16 +222,16 @@ export default function MenuList() {
     return (
       <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-        <div className="flex items-center text-red-600 mb-fluid-4 justify-center">
-          <AlertCircle className="w-fluid-5 h-fluid-5 mr-fluid-2" />
-          <span className="text-fluid-base">{error}</span>
-        </div>
-        <button
-          onClick={() => fetchMenus()}
-          className="px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-base"
-        >
-          Retry
-        </button>
+          <div className="flex items-center text-red-600 mb-fluid-4 justify-center">
+            <AlertCircle className="w-fluid-5 h-fluid-5 mr-fluid-2" />
+            <span className="text-fluid-base">{error}</span>
+          </div>
+          <button
+            onClick={() => fetchMenus()}
+            className="px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-base"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -231,7 +241,7 @@ export default function MenuList() {
     <div>
       <div
         className="bg-white border-gray-100 mb-fluid-6"
-        style={{ 
+        style={{
           borderRadius: fluidSize(16),
           borderWidth: fluidSize(2),
         }}
@@ -261,7 +271,7 @@ export default function MenuList() {
               {/* Add Menu Button */}
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-sm"
+                className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-sm"
               >
                 <Plus className="w-fluid-4 h-fluid-4" />
                 <span>Add Menu</span>
@@ -273,18 +283,18 @@ export default function MenuList() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-fluid-4">
             {/* Search Input */}
             <div className="relative">
-              <Search className="absolute left-fluid-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-fluid-4 h-fluid-4" />
-              <input
+              <Search className="absolute left-fluid-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-fluid-4 h-fluid-4 z-10" />
+              <Input
                 type="text"
                 placeholder="Search menu name or description..."
-                className="w-full pl-fluid-10 pr-fluid-3 py-fluid-2.5 bg-white border border-gray-200 rounded-lg text-fluid-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                className="w-full pl-fluid-10 pr-fluid-3 h-auto py-fluid-2.5 bg-white border-gray-200 text-fluid-sm text-gray-700 focus-visible:ring-black placeholder:text-gray-400"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="absolute right-fluid-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-fluid-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
                 >
                   <X className="w-fluid-3 h-fluid-3" />
                 </button>
@@ -293,39 +303,39 @@ export default function MenuList() {
 
             {/* Category Filter */}
             <div className="relative">
-              <div className="absolute left-fluid-3 top-1/2 transform -translate-y-1/2">
-                <Filter className="w-fluid-4 h-fluid-4 text-gray-400" />
-              </div>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full pl-fluid-10 pr-fluid-8 py-fluid-2.5 bg-white border border-gray-200 rounded-lg text-fluid-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 appearance-none"
-              >
-                <option value="all">All Categories</option>
-                {categories.map((category) => (
-                  <option key={category._id} value={category._id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-fluid-3 top-1/2 transform -translate-y-1/2 w-fluid-4 h-fluid-4 text-gray-400 pointer-events-none" />
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full h-auto py-fluid-2.5 bg-white border-gray-200 text-fluid-sm text-gray-700 focus:ring-black">
+                  <div className="flex items-center gap-fluid-2">
+                    <Filter className="w-fluid-4 h-fluid-4 text-gray-400" />
+                    <SelectValue placeholder="All Categories" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category._id} value={category._id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Status Filter */}
             <div className="relative">
-              <div className="absolute left-fluid-3 top-1/2 transform -translate-y-1/2">
-                <Filter className="w-fluid-4 h-fluid-4 text-gray-400" />
-              </div>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full pl-fluid-10 pr-fluid-8 py-fluid-2.5 bg-white border border-gray-200 rounded-lg text-fluid-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 appearance-none"
-              >
-                <option value="all">All Status</option>
-                <option value="available">Available</option>
-                <option value="unavailable">Unavailable</option>
-              </select>
-              <ChevronDown className="absolute right-fluid-3 top-1/2 transform -translate-y-1/2 w-fluid-4 h-fluid-4 text-gray-400 pointer-events-none" />
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger className="w-full h-auto py-fluid-2.5 bg-white border-gray-200 text-fluid-sm text-gray-700 focus:ring-black">
+                  <div className="flex items-center gap-fluid-2">
+                    <Filter className="w-fluid-4 h-fluid-4 text-gray-400" />
+                    <SelectValue placeholder="All Status" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="available">Available</SelectItem>
+                  <SelectItem value="unavailable">Unavailable</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -343,15 +353,15 @@ export default function MenuList() {
                   </button>
                 </div>
               )}
-              
+
               {selectedCategory !== "all" && (
-                <div className="flex items-center gap-fluid-1 px-fluid-3 py-fluid-1.5 bg-purple-50 text-purple-700 rounded-full text-fluid-xs">
+                <div className="flex items-center gap-fluid-1 px-fluid-3 py-fluid-1.5 bg-gray-100 text-gray-700 rounded-full text-fluid-xs">
                   <span>
                     Category: {categories.find(c => c._id === selectedCategory)?.name || "Unknown"}
                   </span>
                   <button
                     onClick={() => setSelectedCategory("all")}
-                    className="ml-fluid-1 text-purple-600 hover:text-purple-800"
+                    className="ml-fluid-1 text-gray-600 hover:text-gray-800"
                   >
                     <X className="w-fluid-3 h-fluid-3" />
                   </button>
@@ -399,7 +409,7 @@ export default function MenuList() {
                   )}
                   <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-fluid-sm"
+                    className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 bg-black hover:bg-gray-900 text-white rounded-lg transition-colors text-fluid-sm"
                   >
                     <Plus className="w-fluid-4 h-fluid-4" />
                     Add Menu
@@ -584,6 +594,13 @@ export default function MenuList() {
             </div>
           </div>
         </div>
+      )}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );

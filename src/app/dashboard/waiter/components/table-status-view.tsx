@@ -1,4 +1,4 @@
- /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/dashboard/waiter/components/tables-status-view.tsx
 "use client";
 
@@ -145,6 +145,17 @@ export default function TablesStatusView() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-neutral-500 text-fluid-base">Loading tables...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -259,41 +270,37 @@ export default function TablesStatusView() {
         <div className="flex gap-2">
           <button
             onClick={() => setFilterStatus("all")}
-            className={`px-4 py-3 rounded-lg font-medium transition-colors ${
-              filterStatus === "all"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
-            }`}
+            className={`px-4 py-3 rounded-lg font-medium transition-colors ${filterStatus === "all"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+              }`}
           >
             All ({stats.total})
           </button>
           <button
             onClick={() => setFilterStatus("available")}
-            className={`px-4 py-3 rounded-lg font-medium transition-colors ${
-              filterStatus === "available"
-                ? "bg-green-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
-            }`}
+            className={`px-4 py-3 rounded-lg font-medium transition-colors ${filterStatus === "available"
+              ? "bg-green-600 text-white"
+              : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+              }`}
           >
             Available ({stats.available})
           </button>
           <button
             onClick={() => setFilterStatus("occupied")}
-            className={`px-4 py-3 rounded-lg font-medium transition-colors ${
-              filterStatus === "occupied"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
-            }`}
+            className={`px-4 py-3 rounded-lg font-medium transition-colors ${filterStatus === "occupied"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+              }`}
           >
             Occupied ({stats.occupied})
           </button>
           <button
             onClick={() => setFilterStatus("reserved")}
-            className={`px-4 py-3 rounded-lg font-medium transition-colors ${
-              filterStatus === "reserved"
-                ? "bg-orange-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
-            }`}
+            className={`px-4 py-3 rounded-lg font-medium transition-colors ${filterStatus === "reserved"
+              ? "bg-orange-600 text-white"
+              : "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+              }`}
           >
             Reserved ({stats.reserved})
           </button>
@@ -319,13 +326,12 @@ export default function TablesStatusView() {
           {filteredTables.map((table) => (
             <div
               key={table._id}
-              className={`rounded-xl border-2 overflow-hidden transition-all hover:scale-105 ${
-                table.status === "available"
-                  ? "bg-green-900/20 border-green-600/50 hover:border-green-500"
-                  : table.status === "occupied"
+              className={`rounded-xl border-2 overflow-hidden transition-all hover:scale-105 ${table.status === "available"
+                ? "bg-green-900/20 border-green-600/50 hover:border-green-500"
+                : table.status === "occupied"
                   ? "bg-blue-900/20 border-blue-600/50 hover:border-blue-500"
                   : "bg-orange-900/20 border-orange-600/50 hover:border-orange-500"
-              }`}
+                }`}
             >
               {/* Header */}
               <div
@@ -348,13 +354,12 @@ export default function TablesStatusView() {
                     </div>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-bold text-white ${
-                      table.status === "available"
-                        ? "bg-green-600"
-                        : table.status === "occupied"
+                    className={`px-3 py-1 rounded-full text-xs font-bold text-white ${table.status === "available"
+                      ? "bg-green-600"
+                      : table.status === "occupied"
                         ? "bg-blue-600"
                         : "bg-orange-600"
-                    }`}
+                      }`}
                   >
                     {table.status.toUpperCase()}
                   </span>
@@ -375,15 +380,14 @@ export default function TablesStatusView() {
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-gray-400">Status</span>
                         <span
-                          className={`text-xs font-bold px-2 py-1 rounded ${
-                            table.currentOrder.orderStatus === "confirmed"
-                              ? "bg-blue-600/20 text-blue-400"
-                              : table.currentOrder.orderStatus === "preparing"
+                          className={`text-xs font-bold px-2 py-1 rounded ${table.currentOrder.orderStatus === "confirmed"
+                            ? "bg-blue-600/20 text-blue-400"
+                            : table.currentOrder.orderStatus === "preparing"
                               ? "bg-orange-600/20 text-orange-400"
                               : table.currentOrder.orderStatus === "ready"
-                              ? "bg-green-600/20 text-green-400"
-                              : "bg-gray-600/20 text-gray-400"
-                          }`}
+                                ? "bg-green-600/20 text-green-400"
+                                : "bg-gray-600/20 text-gray-400"
+                            }`}
                         >
                           {table.currentOrder.orderStatus.toUpperCase()}
                         </span>

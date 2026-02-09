@@ -9,34 +9,34 @@ export async function DELETE(
 ) {
   try {
     await connectDB();
-    
+
     // UNWRAP PARAMS TERLEBIH DAHULU
     const { id } = await params; // ← tambahkan await di sini
-    
+
     console.log('DELETE request for user ID:', id);
-    
+
     if (!id || id === 'undefined') {
       return NextResponse.json(
         { error: 'User ID is required' },
         { status: 400 }
       );
     }
-    
+
     const user = await User.findByIdAndDelete(id);
-    
+
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
-    
+
     return NextResponse.json({
       success: true,
       message: 'User deleted successfully',
       data: user
     });
-    
+
   } catch (error) {
     console.error('Error deleting user:', error);
     return NextResponse.json(
@@ -52,25 +52,25 @@ export async function GET(
 ) {
   try {
     await connectDB();
-    
+
     const { id } = await params; // ← unwrap params
-    
+
     if (!id || id === 'undefined') {
       return NextResponse.json(
         { error: 'User ID is required' },
         { status: 400 }
       );
     }
-    
+
     const user = await User.findById(id);
-    
+
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
-    
+
     return NextResponse.json({
       success: true,
       data: user
@@ -100,6 +100,38 @@ async function updateUser(
   }
 
   const data = await request.json();
+
+  // Remove password from update data if it's empty
+  // This allows updating user without changing password
+  if (!data.password || data.password.trim() === '') {
+    delete data.password;
+  }
+
+  // Check if username or email already exists (excluding current user)
+  if (data.username || data.email) {
+    const existingUser = await User.findOne({
+      _id: { $ne: id },
+      $or: [
+        ...(data.username ? [{ username: data.username }] : []),
+        ...(data.email ? [{ email: data.email }] : [])
+      ]
+    });
+
+    if (existingUser) {
+      if (existingUser.username === data.username) {
+        return NextResponse.json(
+          { message: 'Username already exists' },
+          { status: 400 }
+        );
+      }
+      if (existingUser.email === data.email) {
+        return NextResponse.json(
+          { message: 'Email already exists' },
+          { status: 400 }
+        );
+      }
+    }
+  }
 
   const user = await User.findByIdAndUpdate(
     id,

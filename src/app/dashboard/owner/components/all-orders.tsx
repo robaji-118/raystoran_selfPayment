@@ -220,9 +220,11 @@ export default function AllOrders() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-fluid-12">
-        <div className="w-fluid-16 h-fluid-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-fluid-4"></div>
-        <p className="text-gray-500 text-fluid-base">Loading orders...</p>
+      <div className="flex items-center justify-center min-h-[70vh] w-full">
+        <div className="text-center">
+          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
+          <p className="text-neutral-500 text-fluid-base">Loading orders...</p>
+        </div>
       </div>
     );
   }
@@ -297,47 +299,52 @@ export default function AllOrders() {
       {/* Orders Table Container */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
-          {currentItems.length === 0 ? (
-            <div className="text-center py-fluid-12">
-              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-8 h-8 text-gray-300" />
-              </div>
-              <p className="text-gray-900 font-medium text-fluid-base">
-                No orders found
-              </p>
-              <p className="text-gray-500 text-fluid-sm mt-1">
-                Try adjusting your search or filters
-              </p>
-            </div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Order Info
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Location
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Payment
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Total
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Action
-                  </th>
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50/50 border-b border-gray-100">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Order Info
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Customer
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Location
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Items
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Payment
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Total
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {currentItems.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="p-12 text-center">
+                    <div className="flex flex-col items-center">
+                      <FileText className="w-16 h-16 text-gray-300 mb-4" />
+                      <p className="text-gray-500 mb-2 text-lg font-medium">
+                        No orders found
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        Try adjusting your search or filters
+                      </p>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {currentItems.map((order) => (
+              ) : (
+                currentItems.map((order) => (
                   <tr
                     key={order._id}
                     className="hover:bg-gray-50/80 transition-colors group"
@@ -345,12 +352,11 @@ export default function AllOrders() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-gray-900">
-                          #{order.orderNumber}
+                          {order.orderNumber}
                         </span>
                         <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
                           <Clock className="w-3 h-3" />
-                          {formatDate(order.createdAt)},{" "}
-                          {formatTime(order.createdAt)}
+                          {formatDate(order.createdAt)}, {formatTime(order.createdAt)}
                         </div>
                       </div>
                     </td>
@@ -360,6 +366,11 @@ export default function AllOrders() {
                           {order.customerName}
                         </span>
                       </div>
+                      {order.customerPhone && (
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {order.customerPhone}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
@@ -368,26 +379,32 @@ export default function AllOrders() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={cn(
-                          "px-2.5 py-1 inline-flex text-xs font-semibold rounded-full border",
-                          getStatusBadge(order.orderStatus),
-                        )}
-                      >
-                        {order.orderStatus.charAt(0).toUpperCase() +
-                          order.orderStatus.slice(1)}
-                      </span>
+                      <span className="text-sm text-gray-600">{order.items?.length || 0} items</span>
                     </td>
                     <td className="px-6 py-4">
                       <span
                         className={cn(
                           "px-2.5 py-1 inline-flex text-xs font-semibold rounded-full border",
-                          getPaymentStatusBadge(order.paymentStatus),
+                          getStatusBadge(order.orderStatus)
                         )}
                       >
-                        {order.paymentStatus.charAt(0).toUpperCase() +
-                          order.paymentStatus.slice(1)}
+                        {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
                       </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1">
+                        <span
+                          className={cn(
+                            "px-2.5 py-1 inline-flex text-xs font-semibold rounded-full border w-fit",
+                            getPaymentStatusBadge(order.paymentStatus)
+                          )}
+                        >
+                          {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
+                        </span>
+                        <span className="text-xs text-gray-500 capitalize ml-1">
+                          {order.paymentMethod}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-sm font-bold text-gray-900">
@@ -404,10 +421,10 @@ export default function AllOrders() {
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
 
         {/* --- Modern Pagination Footer --- */}

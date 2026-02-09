@@ -3,6 +3,16 @@
 import { useState, useEffect } from "react";
 import { X, Loader2, AlertCircle, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import Toast from "@/components/ui/toast";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -25,10 +35,11 @@ export default function UserEditModal({ isOpen, onClose, user, onSuccess }: User
     fullName: "",
     phone: "",
     role: "",
-    password: "" 
+    password: ""
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -45,7 +56,7 @@ export default function UserEditModal({ isOpen, onClose, user, onSuccess }: User
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) return;
 
     // Validation
@@ -87,9 +98,13 @@ export default function UserEditModal({ isOpen, onClose, user, onSuccess }: User
       }
 
       onSuccess();
-      onClose();
+      setToast({ message: "User updated successfully", type: "success" });
+      setTimeout(() => {
+        onClose();
+      }, 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update user");
+      setToast({ message: err instanceof Error ? err.message : "Failed to update user", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -126,91 +141,101 @@ export default function UserEditModal({ isOpen, onClose, user, onSuccess }: User
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-fluid-4">
             <div className="space-y-fluid-2">
-              <label className="block text-gray-700 font-medium text-fluid-sm">
+              <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
                 Username *
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
                 disabled={loading}
-                className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-fluid-base"
+                className={cn(
+                  "h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
+                )}
               />
             </div>
 
             <div className="space-y-fluid-2">
-              <label className="block text-gray-700 font-medium text-fluid-sm">
+              <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
                 Full Name *
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 value={form.fullName}
                 onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                 disabled={loading}
-                className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-fluid-base"
+                className={cn(
+                  "h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
+                )}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-fluid-4">
             <div className="space-y-fluid-2">
-              <label className="block text-gray-700 font-medium text-fluid-sm">
+              <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
                 Email Address *
-              </label>
-              <input
+              </Label>
+              <Input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 disabled={loading}
-                className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-fluid-base"
+                className={cn(
+                  "h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
+                )}
               />
             </div>
 
             <div className="space-y-fluid-2">
-              <label className="block text-gray-700 font-medium text-fluid-sm">
+              <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
                 Phone Number *
-              </label>
-              <input
+              </Label>
+              <Input
                 type="tel"
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 disabled={loading}
-                className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-fluid-base"
+                className={cn(
+                  "h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
+                )}
               />
             </div>
           </div>
 
           <div className="space-y-fluid-2">
-            <label className="block text-gray-700 font-medium text-fluid-sm">
+            <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
               Password (leave empty to keep current)
-            </label>
-            <input
+            </Label>
+            <Input
               type="password"
               placeholder="Enter new password to change"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               disabled={loading}
-              className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-fluid-base"
+              className={cn(
+                "h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black placeholder:text-gray-300"
+              )}
             />
           </div>
 
           <div className="space-y-fluid-2">
-            <label className="block text-gray-700 font-medium text-fluid-sm">
+            <Label className="text-xs font-bold text-black uppercase tracking-wider ml-1">
               User Role *
-            </label>
-            <select
-              value={form.role}
-              onChange={(e) => setForm({ ...form, role: e.target.value })}
-              disabled={loading}
-              className="w-full px-fluid-4 py-fluid-3 bg-white border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-fluid-base"
-            >
-              <option value="customer">Customer</option>
-              <option value="waiter">Waiter</option>
-              <option value="kitchen">Kitchen</option>
-              <option value="cashier">Cashier</option>
-              <option value="owner">Owner</option>
-              <option value="admin">Admin</option>
-            </select>
+            </Label>
+            <Select value={form.role} onValueChange={(value) => setForm({ ...form, role: value })} disabled={loading}>
+              <SelectTrigger className="h-12 bg-white border border-gray-300 focus:border-black focus:ring-1 focus:ring-black rounded-xl transition-all font-medium text-black">
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="customer">Customer</SelectItem>
+                <SelectItem value="waiter">Waiter</SelectItem>
+                <SelectItem value="kitchen">Kitchen</SelectItem>
+                <SelectItem value="cashier">Cashier</SelectItem>
+                <SelectItem value="owner">Owner</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="border-t border-gray-100 pt-fluid-6 flex gap-fluid-4">
@@ -225,12 +250,12 @@ export default function UserEditModal({ isOpen, onClose, user, onSuccess }: User
             >
               Cancel
             </button>
-            
+
             <button
               type="submit"
               disabled={loading}
               className={cn(
-                "flex-1 px-fluid-6 py-fluid-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-fluid-2 text-fluid-base",
+                "flex-1 px-fluid-6 py-fluid-3 bg-black hover:bg-gray-900 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-fluid-2 text-fluid-base",
                 loading && "cursor-not-allowed"
               )}
             >
@@ -249,6 +274,14 @@ export default function UserEditModal({ isOpen, onClose, user, onSuccess }: User
           </div>
         </form>
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
