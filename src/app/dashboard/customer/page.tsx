@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import CustomerMain from './main';
 
 export const metadata: Metadata = {
-  title: "Dashboard - Aplikasi Kasir Restoran",
-  description: "Sistem Kasir Sederhana | Tugas Akhir Kelas XII",
+  title: "Customer Dashboard - Aplikasi Payment Self",
+  description: "Aplikasi Payment Self | Tugas Akhir Kelas XII",
 };
 
 const CustomerPage = () => {
@@ -17,7 +17,7 @@ const CustomerPage = () => {
         </div>
       </div>
     }>
-      <CustomerMain/>
+      <CustomerMain />
     </Suspense>
   );
 };

@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import OwnerMain from './main';
 
 export const metadata: Metadata = {
-  title: "Dashboard - Aplikasi Kasir Restoran",
-  description: "Sistem Kasir Sederhana | Tugas Akhir Kelas XII",
+  title: "Owner Dashboard - Aplikasi Payment Self",
+  description: "Aplikasi Payment Self | Tugas Akhir Kelas XII",
 };
 
 const OwnerPage = () => {
@@ -17,7 +17,7 @@ const OwnerPage = () => {
         </div>
       </div>
     }>
-      <OwnerMain/>
+      <OwnerMain />
     </Suspense>
   );
 };

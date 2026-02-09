@@ -311,7 +311,7 @@ export default function Step1CustomerInfo({
                         <SelectTrigger className="h-14 bg-white border border-gray-300 rounded-xl font-medium text-black px-4 cursor-pointer transition-all">
                           <SelectValue placeholder="Choose your spot..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-white rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                        <SelectContent className="bg-white rounded-xl shadow-xl max-h-60">
                           {tables.map((t) => (
                             <SelectItem key={t.tableId} value={t.tableId} className="cursor-pointer py-3">
                               <span className="font-semibold">Table {t.tableNumber}</span>

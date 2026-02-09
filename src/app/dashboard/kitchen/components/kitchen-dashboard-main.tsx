@@ -22,7 +22,6 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { fluidSize } from "@/lib/utils";
 
 interface OrderItem {
   _id: string;
@@ -40,12 +39,12 @@ interface Order {
   customerName: string;
   items: OrderItem[];
   orderStatus:
-    | "confirmed"
-    | "preparing"
-    | "ready"
-    | "delivering"
-    | "completed"
-    | "cancelled";
+  | "confirmed"
+  | "preparing"
+  | "ready"
+  | "delivering"
+  | "completed"
+  | "cancelled";
   totalAmount: number;
   confirmedAt: string;
   cookingStartedAt: string | null;
@@ -166,13 +165,13 @@ export default function KitchenDashboardMain() {
 
   const fetchOrders = async () => {
     try {
-        // Jangan set loading true saat interval agar tidak kedip-kedip
+      // Jangan set loading true saat interval agar tidak kedip-kedip
       if (orders.length === 0) setLoading(true);
-      
+
       const res = await fetch("/api/orders");
       if (res.ok) {
         const data = await res.json();
-        
+
         // Filter hanya orders yang relevant untuk kitchen
         const kitchenOrders = data.data.filter((order: Order) =>
           ["confirmed", "preparing", "ready"].includes(order.orderStatus)
@@ -223,10 +222,10 @@ export default function KitchenDashboardMain() {
           prev.map((order) =>
             order._id === orderId
               ? {
-                  ...order,
-                  orderStatus: "preparing",
-                  cookingStartedAt: new Date().toISOString(), // Visual only
-                }
+                ...order,
+                orderStatus: "preparing",
+                cookingStartedAt: new Date().toISOString(), // Visual only
+              }
               : order
           )
         );
@@ -280,10 +279,10 @@ export default function KitchenDashboardMain() {
           prev.map((order) =>
             order._id === orderId
               ? {
-                  ...order,
-                  orderStatus: "ready",
-                  readyAt: new Date().toISOString(), // Visual only
-                }
+                ...order,
+                orderStatus: "ready",
+                readyAt: new Date().toISOString(), // Visual only
+              }
               : order
           )
         );
@@ -439,12 +438,12 @@ export default function KitchenDashboardMain() {
     <div className="min-h-screen">
       {/* Alert for urgent orders */}
       {urgentOrders > 0 && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-2xl p-4">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
+        <div className="mb-4 lg:mb-fluid-6 bg-red-50 border border-red-200 rounded-xl lg:rounded-[1.389vw] p-3 lg:p-fluid-4">
+          <div className="flex items-center gap-2 lg:gap-fluid-3">
+            <AlertTriangle className="w-4 h-4 lg:w-fluid-5 lg:h-fluid-5 text-red-600" />
             <div>
-              <p className="text-red-800 font-medium">Urgent Orders!</p>
-              <p className="text-red-600 text-sm">
+              <p className="text-red-800 font-medium text-sm lg:!text-fluid-base">Urgent Orders!</p>
+              <p className="text-red-600 text-xs lg:!text-fluid-sm">
                 {urgentOrders} order{urgentOrders > 1 ? "s are" : " is"} taking
                 longer than expected
               </p>
@@ -454,139 +453,135 @@ export default function KitchenDashboardMain() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-fluid-4 mb-fluid-6">
-        <div className="bg-white rounded-2xl p-fluid-6 shadow-sm border border-gray-100">
-          <div className="flex items-start justify-between mb-fluid-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-fluid-4 mb-4 lg:mb-fluid-6">
+        <div className="bg-white rounded-xl lg:rounded-[1.389vw] p-4 lg:p-fluid-6 shadow-sm border border-gray-100">
+          <div className="flex items-start justify-between mb-3 lg:mb-fluid-4">
             <div>
-              <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+              <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-xs lg:!text-fluid-base">
                 New Orders
               </p>
-              <h4 className="font-bold text-gray-900 text-fluid-2xl">
+              <h4 className="font-bold text-gray-900 text-xl lg:!text-fluid-2xl">
                 {stats.newOrders}
               </h4>
             </div>
-            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-blue-600" />
+            <div className="w-8 h-8 lg:w-fluid-10 lg:h-fluid-10 bg-blue-50 rounded-lg lg:rounded-[0.556vw] flex items-center justify-center">
+              <AlertCircle className="w-4 h-4 lg:w-fluid-5 lg:h-fluid-5 text-blue-600" />
             </div>
           </div>
-          <div className="flex items-center gap-fluid-2">
-            <span className="text-gray-400 text-fluid-sm">Ready to cook</span>
+          <div className="flex items-center gap-1 lg:gap-fluid-2">
+            <span className="text-gray-400 text-xs lg:!text-fluid-sm">Ready to cook</span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-fluid-6 shadow-sm border border-gray-100">
-          <div className="flex items-start justify-between mb-fluid-4">
+        <div className="bg-white rounded-xl lg:rounded-[1.389vw] p-4 lg:p-fluid-6 shadow-sm border border-gray-100">
+          <div className="flex items-start justify-between mb-3 lg:mb-fluid-4">
             <div>
-              <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+              <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-xs lg:!text-fluid-base">
                 Cooking
               </p>
-              <h4 className="font-bold text-gray-900 text-fluid-2xl">
+              <h4 className="font-bold text-gray-900 text-xl lg:!text-fluid-2xl">
                 {stats.cooking}
               </h4>
             </div>
-            <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
-              <Flame className="w-5 h-5 text-orange-600" />
+            <div className="w-8 h-8 lg:w-fluid-10 lg:h-fluid-10 bg-orange-50 rounded-lg lg:rounded-[0.556vw] flex items-center justify-center">
+              <Flame className="w-4 h-4 lg:w-fluid-5 lg:h-fluid-5 text-orange-600" />
             </div>
           </div>
-          <div className="flex items-center gap-fluid-2">
-            <span className="text-gray-400 text-fluid-sm">In progress</span>
+          <div className="flex items-center gap-1 lg:gap-fluid-2">
+            <span className="text-gray-400 text-xs lg:!text-fluid-sm">In progress</span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-fluid-6 shadow-sm border border-gray-100">
-          <div className="flex items-start justify-between mb-fluid-4">
-            <div> 
-              <p className="text-gray-500 mb-fluid-1 text-fluid-base">Ready</p>
-              <h4 className="font-bold text-gray-900 text-fluid-2xl">
+        <div className="bg-white rounded-xl lg:rounded-[1.389vw] p-4 lg:p-fluid-6 shadow-sm border border-gray-100">
+          <div className="flex items-start justify-between mb-3 lg:mb-fluid-4">
+            <div>
+              <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-xs lg:!text-fluid-base">Ready</p>
+              <h4 className="font-bold text-gray-900 text-xl lg:!text-fluid-2xl">
                 {stats.ready}
               </h4>
             </div>
-            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+            <div className="w-8 h-8 lg:w-fluid-10 lg:h-fluid-10 bg-green-50 rounded-lg lg:rounded-[0.556vw] flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 lg:w-fluid-5 lg:h-fluid-5 text-green-600" />
             </div>
           </div>
-          <div className="flex items-center gap-fluid-2">
-            <span className="text-gray-400 text-fluid-sm">For pickup</span>
+          <div className="flex items-center gap-1 lg:gap-fluid-2">
+            <span className="text-gray-400 text-xs lg:!text-fluid-sm">For pickup</span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-fluid-6 shadow-sm border border-gray-100">
-          <div className="flex items-start justify-between mb-fluid-4">
+        <div className="bg-white rounded-xl lg:rounded-[1.389vw] p-4 lg:p-fluid-6 shadow-sm border border-gray-100">
+          <div className="flex items-start justify-between mb-3 lg:mb-fluid-4">
             <div>
-              <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+              <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-xs lg:!text-fluid-base">
                 Total Active
               </p>
-              <h4 className="font-bold text-gray-900 text-fluid-2xl">
+              <h4 className="font-bold text-gray-900 text-xl lg:!text-fluid-2xl">
                 {stats.total}
               </h4>
             </div>
-            <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-purple-600" />
+            <div className="w-8 h-8 lg:w-fluid-10 lg:h-fluid-10 bg-gray-50 rounded-lg lg:rounded-[0.556vw] flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 lg:w-fluid-5 lg:h-fluid-5 text-gray-600" />
             </div>
           </div>
-          <div className="flex items-center gap-fluid-2">
-            <span className="text-gray-400 text-fluid-sm">All orders</span>
+          <div className="flex items-center gap-1 lg:gap-fluid-2">
+            <span className="text-gray-400 text-xs lg:!text-fluid-sm">All orders</span>
           </div>
         </div>
       </div>
 
       {/* Kitchen Orders Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+      <div className="bg-white rounded-xl lg:rounded-[1.389vw] shadow-sm border border-gray-100">
         {/* Header dengan Filter dan Search */}
-        <div className="p-fluid-6 border-b border-gray-100">
-          <div className="flex flex-col sm:flex-row gap-4 justify-between">
+        <div className="p-4 lg:p-fluid-6 border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row gap-3 lg:gap-fluid-4 justify-between">
             <div className="flex-1 max-w-md">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-fluid-5 lg:h-fluid-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search by order number, table, or customer..."
+                  placeholder="Search order, table, customer..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5  rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-fluid-sm"
+                  className="w-full pl-9 lg:pl-fluid-10 pr-4 lg:pr-fluid-4 py-2 lg:py-fluid-2.5 rounded-lg lg:rounded-[0.556vw] text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm lg:!text-fluid-sm border border-gray-200"
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-fluid-3 flex-wrap">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 lg:gap-fluid-3 flex-wrap">
+              <div className="flex items-center gap-1 lg:gap-fluid-2 overflow-x-auto">
                 <button
                   onClick={() => setFilter("all")}
-                  className={`px-3 py-2 rounded-lg font-medium transition-colors text-fluid-sm cursor-pointer ${
-                    filter === "all"
-                      ? "bg-black text-white"
-                      : "bg-white border border-gray-300"
-                  }`}
+                  className={`px-2 lg:px-fluid-3 py-1.5 lg:py-fluid-2 rounded-lg lg:rounded-[0.556vw] font-medium transition-colors text-xs lg:!text-fluid-sm cursor-pointer whitespace-nowrap ${filter === "all"
+                    ? "bg-black text-white"
+                    : "bg-white border border-gray-300"
+                    }`}
                 >
                   All ({stats.total})
                 </button>
                 <button
                   onClick={() => setFilter("confirmed")}
-                  className={`px-3 py-2 rounded-lg font-medium transition-colors text-fluid-sm cursor-pointer ${
-                    filter === "confirmed"
-                      ? "bg-blue-600 text-white"
-                      : "bg-white border border-gray-300"
-                  }`}
+                  className={`px-2 lg:px-fluid-3 py-1.5 lg:py-fluid-2 rounded-lg lg:rounded-[0.556vw] font-medium transition-colors text-xs lg:!text-fluid-sm cursor-pointer whitespace-nowrap ${filter === "confirmed"
+                    ? "bg-blue-600 text-white"
+                    : "bg-white border border-gray-300"
+                    }`}
                 >
                   New ({stats.newOrders})
                 </button>
                 <button
                   onClick={() => setFilter("preparing")}
-                  className={`px-3 py-2 rounded-lg font-medium transition-colors text-fluid-sm cursor-pointer ${
-                    filter === "preparing"
-                      ? "bg-orange-600 text-white"
-                      : "bg-white border border-gray-300"
-                  }`}
+                  className={`px-2 lg:px-fluid-3 py-1.5 lg:py-fluid-2 rounded-lg lg:rounded-[0.556vw] font-medium transition-colors text-xs lg:!text-fluid-sm cursor-pointer whitespace-nowrap ${filter === "preparing"
+                    ? "bg-orange-600 text-white"
+                    : "bg-white border border-gray-300"
+                    }`}
                 >
                   Cooking ({stats.cooking})
                 </button>
                 <button
                   onClick={() => setFilter("ready")}
-                  className={`px-3 py-2 rounded-lg font-medium transition-colors text-fluid-sm cursor-pointer ${
-                    filter === "ready"
-                      ? "bg-green-600 text-white"
-                      : "bg-white border border-gray-300"
-                  }`}
+                  className={`px-2 lg:px-fluid-3 py-1.5 lg:py-fluid-2 rounded-lg lg:rounded-[0.556vw] font-medium transition-colors text-xs lg:!text-fluid-sm cursor-pointer whitespace-nowrap ${filter === "ready"
+                    ? "bg-green-600 text-white"
+                    : "bg-white border border-gray-300"
+                    }`}
                 >
                   Ready ({stats.ready})
                 </button>
@@ -594,22 +589,21 @@ export default function KitchenDashboardMain() {
 
               <button
                 onClick={fetchOrders}
-                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200 cursor-pointer"
+                className="flex items-center gap-1 lg:gap-fluid-2 px-2 lg:px-fluid-3 py-1.5 lg:py-fluid-2 text-gray-600 hover:bg-gray-50 rounded-lg lg:rounded-[0.556vw] transition-colors border border-gray-200 cursor-pointer"
               >
-                <RefreshCw className="w-4 h-4" />
-                <span className="text-fluid-sm">Refresh</span>
+                <RefreshCw className="w-3.5 h-3.5 lg:w-fluid-4 lg:h-fluid-4" />
+                <span className="text-xs lg:!text-fluid-sm hidden sm:inline">Refresh</span>
               </button>
 
               <button
                 onClick={() => setSoundEnabled(!soundEnabled)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-fluid-sm cursor-pointer ${
-                  soundEnabled
-                    ? "bg-black text-white border border-gray-200"
-                    : "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200"
-                }`}
+                className={`flex items-center gap-1 lg:gap-fluid-2 px-2 lg:px-fluid-3 py-1.5 lg:py-fluid-2 rounded-lg lg:rounded-[0.556vw] transition-colors text-xs lg:!text-fluid-sm cursor-pointer ${soundEnabled
+                  ? "bg-black text-white border border-gray-200"
+                  : "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200"
+                  }`}
               >
-                <Bell className="w-4 h-4" />
-                <span className="text-fluid-sm">
+                <Bell className="w-3.5 h-3.5 lg:w-fluid-4 lg:h-fluid-4" />
+                <span className="text-xs lg:!text-fluid-sm hidden sm:inline">
                   {soundEnabled ? "Sound On" : "Sound Off"}
                 </span>
               </button>
@@ -620,17 +614,17 @@ export default function KitchenDashboardMain() {
         {/* Table */}
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="flex items-center justify-center p-12">
+            <div className="flex items-center justify-center p-8 lg:p-fluid-12">
               <div className="text-center">
-                <div className="w-8 h-8 border-2 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-500">Loading orders...</p>
+                <div className="w-6 h-6 lg:w-fluid-8 lg:h-fluid-8 border-2 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-3 lg:mb-fluid-4"></div>
+                <p className="text-gray-500 text-sm lg:!text-fluid-base">Loading orders...</p>
               </div>
             </div>
           ) : filteredOrders.length === 0 ? (
-            <div className="p-12 text-center">
-              <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No orders found</p>
-              <p className="text-gray-400 text-sm mt-2">
+            <div className="p-8 lg:p-fluid-12 text-center">
+              <Package className="w-12 h-12 lg:w-fluid-16 lg:h-fluid-16 text-gray-300 mx-auto mb-3 lg:mb-fluid-4" />
+              <p className="text-gray-500 text-base lg:!text-fluid-lg">No orders found</p>
+              <p className="text-gray-400 text-xs lg:!text-fluid-sm mt-2 lg:mt-fluid-2">
                 {filter === "all"
                   ? "No active orders at the moment"
                   : `No ${filter} orders found`}
@@ -640,25 +634,25 @@ export default function KitchenDashboardMain() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-100">
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-xs lg:!text-fluid-sm">
                     Order Details
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-xs lg:text-fluid-sm">
                     Table
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-xs lg:!text-fluid-sm hidden sm:table-cell">
                     Time
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-xs lg:text-fluid-sm">
                     Status
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-xs lg:!text-fluid-sm hidden md:table-cell">
                     Items
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-xs lg:!text-fluid-sm hidden lg:table-cell">
                     Amount
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-xs lg:text-fluid-sm">
                     Actions
                   </th>
                 </tr>
@@ -673,75 +667,74 @@ export default function KitchenDashboardMain() {
                   return (
                     <tr
                       key={order._id}
-                      className={`border-b border-gray-50 transition-colors ${
-                        isUrgent ? "bg-red-50/50 hover:bg-red-50" : ""
-                      }`}
+                      className={`border-b border-gray-50 transition-colors ${isUrgent ? "bg-red-50/50 hover:bg-red-50" : ""
+                        }`}
                     >
-                      <td className="p-fluid-4">
-                        <div className="flex items-center gap-fluid-3">
+                      <td className="p-3 lg:p-fluid-4">
+                        <div className="flex items-center gap-2 lg:gap-fluid-3">
                           <div>
-                            <span className="font-medium text-gray-900 block text-fluid-sm">
+                            <span className="font-medium text-gray-900 block text-xs lg:!text-fluid-sm">
                               #{order.orderNumber}
                             </span>
-                            <span className="text-gray-500 text-fluid-xs">
+                            <span className="text-gray-500 text-[10px] lg:!text-fluid-xs">
                               {order.customerName}
                             </span>
                           </div>
                         </div>
                       </td>
-                      <td className="p-fluid-4">
-                        <span className="text-gray-900 font-medium text-fluid-sm">
-                          Table {order.tableNumber}
+                      <td className="p-3 lg:p-fluid-4">
+                        <span className="text-gray-900 font-medium text-xs lg:!text-fluid-sm">
+                          T{order.tableNumber}
                         </span>
                       </td>
-                      <td className="p-fluid-4">
-                        <span className="text-gray-600 text-fluid-sm">
+                      <td className="p-3 lg:p-fluid-4 hidden sm:table-cell">
+                        <span className="text-gray-600 text-xs lg:!text-fluid-sm">
                           {formatDate(order.confirmedAt)}
                         </span>
                       </td>
-                      <td className="p-fluid-4">
+                      <td className="p-3 lg:p-fluid-4">
                         <div className="flex flex-col !text-center gap-1 ">
                           {getTimeStatusBadge(order)}
                         </div>
                       </td>
-                      <td className="p-fluid-4">
+                      <td className="p-3 lg:p-fluid-4 hidden md:table-cell">
                         <div className="max-w-xs">
-                          <div className="text-gray-900 text-fluid-sm">
+                          <div className="text-gray-900 text-xs lg:!text-fluid-sm">
                             {order.items.length} item
                             {order.items.length > 1 ? "s" : ""}
                           </div>
-                          <div className="text-gray-500 text-fluid-xs truncate">
+                          <div className="text-gray-500 text-[10px] lg:!text-fluid-xs truncate">
                             {order.items
                               .map((item) => `${item.menuItemName} ×${item.quantity}`)
                               .join(", ")}
                           </div>
                           {order.items.some((item) => item.notes) && (
-                            <div className="text-yellow-600 text-fluid-xs mt-1">
+                            <div className="text-yellow-600 text-[10px] lg:!text-fluid-xs mt-1">
                               📝 Special notes
                             </div>
                           )}
                         </div>
                       </td>
-                      <td className="p-fluid-4">
-                        <span className="font-medium text-gray-900 text-fluid-sm">
+                      <td className="p-3 lg:p-fluid-4 hidden lg:table-cell">
+                        <span className="font-medium text-gray-900 text-xs lg:!text-fluid-sm">
                           {formatCurrency(order.totalAmount)}
                         </span>
                       </td>
-                      <td className="p-fluid-4">
-                        <div className="flex items-center gap-2">
+                      <td className="p-3 lg:p-fluid-4">
+                        <div className="flex items-center gap-1 lg:gap-fluid-2">
                           {order.orderStatus === "confirmed" && (
                             <button
                               onClick={() => handleStartCooking(order._id)}
                               disabled={processingOrder === order._id}
-                              className="flex items-center gap-2 px-3 py-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium text-fluid-sm"
+                              className="flex items-center gap-1 lg:gap-fluid-2 px-2 lg:px-fluid-3 py-1.5 lg:py-fluid-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg lg:rounded-[0.556vw] transition-colors font-medium text-xs lg:!text-fluid-sm"
                             >
                               {processingOrder === order._id ? (
                                 <>
-                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /></>
+                                  <div className="w-3 h-3 lg:w-fluid-4 lg:h-fluid-4 border-2 border-white border-t-transparent rounded-full animate-spin" /></>
                               ) : (
                                 <>
-                                  <Flame className="w-4 h-4" />
-                                  Start
+                                  <Flame className="w-3 h-3 lg:w-fluid-4 lg:h-fluid-4" />
+                                  <span className="hidden sm:inline">Start</span>
                                 </>
                               )}
                             </button>
@@ -751,24 +744,24 @@ export default function KitchenDashboardMain() {
                             <button
                               onClick={() => handleMarkReady(order._id)}
                               disabled={processingOrder === order._id}
-                              className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium text-fluid-sm"
+                              className="flex items-center gap-1 lg:gap-fluid-2 px-2 lg:px-fluid-3 py-1.5 lg:py-fluid-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg lg:rounded-[0.556vw] transition-colors font-medium text-xs lg:!text-fluid-sm"
                             >
                               {processingOrder === order._id ? (
                                 <>
-                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  <div className="w-3 h-3 lg:w-fluid-4 lg:h-fluid-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                 </>
                               ) : (
                                 <>
-                                  <CheckCircle className="w-4 h-4" />
-                                  Ready
+                                  <CheckCircle className="w-3 h-3 lg:w-fluid-4 lg:h-fluid-4" />
+                                  <span className="hidden sm:inline">Ready</span>
                                 </>
                               )}
                             </button>
                           )}
 
                           {order.orderStatus === "ready" && (
-                            <div className="p-2 bg-green-100 text-green-800 rounded-full text-fluid-xs font-medium">
-                              Awaiting Pickup
+                            <div className="p-1.5 lg:p-fluid-2 bg-green-100 text-green-800 rounded-full text-[10px] lg:!text-fluid-xs font-medium">
+                              Pickup
                             </div>
                           )}
                         </div>

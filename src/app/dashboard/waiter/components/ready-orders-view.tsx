@@ -151,59 +151,59 @@ export default function ReadyOrdersView() {
     return (
       <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
-          <p className="text-neutral-500 text-fluid-base">Fetching ready orders...</p>
+          <div className="w-12 h-12 lg:w-fluid-16 lg:h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-3 lg:mb-fluid-4" />
+          <p className="text-neutral-500 text-sm lg:!text-fluid-base">Fetching ready orders...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 min-h-screen">
+    <div className="min-h-screen p-fluid-4">
       {/* Header & Urgent Alert */}
-      <div className="mb-6 flex flex-col gap-4">
+      <div className="mb-4 lg:mb-fluid-6 flex flex-col gap-3 lg:gap-fluid-4">
         {urgentCount > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-pulse flex items-center gap-3">
-            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
+          <div className="bg-red-50 border border-red-200 rounded-xl lg:rounded-[1.389vw] p-3 lg:p-fluid-4 animate-pulse flex items-center gap-2 lg:gap-fluid-3">
+            <div className="w-8 h-8 lg:w-fluid-10 lg:h-fluid-10 bg-red-100 rounded-lg lg:rounded-[0.556vw] flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-4 h-4 lg:w-fluid-5 lg:h-fluid-5 text-red-600" />
             </div>
             <div>
-              <p className="text-red-800 font-bold">Attention Needed!</p>
-              <p className="text-red-600 text-sm">
+              <p className="text-red-800 font-bold text-sm lg:!text-fluid-base">Attention Needed!</p>
+              <p className="text-red-600 text-xs lg:!text-fluid-sm">
                 {urgentCount} order{urgentCount > 1 ? "s have" : " has"} been waiting for more than 10 minutes.
               </p>
             </div>
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 lg:gap-fluid-4">
           <div className="relative w-full sm:max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-fluid-5 lg:h-fluid-5 text-gray-400" />
             <input
               type="text"
               placeholder="Search order #, table, or name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+              className="w-full pl-9 lg:pl-fluid-10 pr-4 lg:pr-fluid-4 py-2 lg:py-fluid-2.5 bg-white border border-gray-200 rounded-lg lg:rounded-[0.556vw] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm text-sm lg:!text-fluid-sm"
             />
           </div>
         </div>
       </div>
 
       {/* Table Container */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl lg:rounded-[1.389vw] shadow-sm border border-gray-200 overflow-hidden">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
-            <span className="text-gray-500 font-medium">Fetching ready orders...</span>
+          <div className="flex flex-col items-center justify-center py-16 lg:py-fluid-20">
+            <div className="w-8 h-8 lg:w-fluid-10 lg:h-fluid-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3 lg:mb-fluid-4" />
+            <span className="text-gray-500 font-medium text-sm lg:!text-fluid-base">Fetching ready orders...</span>
           </div>
         ) : filteredOrders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center px-4">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-              <Package className="w-10 h-10 text-gray-300" />
+          <div className="flex flex-col items-center justify-center py-16 lg:py-fluid-20 text-center px-4">
+            <div className="w-16 h-16 lg:w-fluid-20 lg:h-fluid-20 bg-gray-50 rounded-full flex items-center justify-center mb-3 lg:mb-fluid-4">
+              <Package className="w-8 h-8 lg:w-fluid-10 lg:h-fluid-10 text-gray-300" />
             </div>
-            <h3 className="text-gray-900 font-bold text-lg">No ready orders</h3>
-            <p className="text-gray-500 text-sm mt-1 max-w-xs mx-auto">
+            <h3 className="text-gray-900 font-bold text-base lg:!text-fluid-lg">No ready orders</h3>
+            <p className="text-gray-500 text-xs lg:!text-fluid-sm mt-1 lg:mt-fluid-1 max-w-xs mx-auto">
               Great job! All prepared orders have been delivered or there are no new orders from the kitchen.
             </p>
           </div>
@@ -212,12 +212,12 @@ export default function ReadyOrdersView() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Order Info</th>
-                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Table</th>
-                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Wait Time</th>
-                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">Items</th>
-                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Total</th>
-                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Action</th>
+                  <th className="p-3 lg:p-fluid-4 text-[10px] lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider">Order Info</th>
+                  <th className="p-3 lg:p-fluid-4 text-[10px] lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider">Table</th>
+                  <th className="p-3 lg:p-fluid-4 text-[10px] lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider">Wait Time</th>
+                  <th className="p-3 lg:p-fluid-4 text-[10px] lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3 hidden md:table-cell">Items</th>
+                  <th className="p-3 lg:p-fluid-4 text-[10px] lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider text-right hidden sm:table-cell">Total</th>
+                  <th className="p-3 lg:p-fluid-4 text-[10px] lg:!text-fluid-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -231,44 +231,43 @@ export default function ReadyOrdersView() {
                       className={`transition-colors ${waitingStatus.bg}`}
                     >
                       {/* Order Info */}
-                      <td className="p-4 align-top">
+                      <td className="p-3 lg:p-fluid-4 align-top">
                         <div className="flex flex-col">
-                          <span className="font-bold text-gray-900">#{order.orderNumber}</span>
-                          <span className="text-sm text-gray-500 mt-1">{order.customerName}</span>
-                          <span className={`inline-flex items-center gap-1 mt-2 text-xs font-bold px-2 py-0.5 rounded-full w-fit uppercase ${waitingStatus.badge}`}>
+                          <span className="font-bold text-gray-900 text-xs lg:!text-fluid-sm">#{order.orderNumber}</span>
+                          <span className="text-[10px] lg:!text-fluid-xs text-gray-500 mt-1">{order.customerName}</span>
+                          <span className={`inline-flex items-center gap-1 mt-2 text-[10px] lg:!text-fluid-xs font-bold px-2 py-0.5 rounded-full w-fit uppercase ${waitingStatus.badge}`}>
                             {waitingStatus.label}
                           </span>
                         </div>
                       </td>
 
                       {/* Table */}
-                      <td className="p-4 align-top">
+                      <td className="p-3 lg:p-fluid-4 align-top">
                         <div className="flex items-center gap-1.5 text-gray-700 font-medium">
-                          <UtensilsCrossed className="w-4 h-4 text-gray-400" />
-                          <span className="bg-gray-100 px-2 py-1 rounded text-sm">
+                          <span className="bg-gray-100 px-2 py-1 rounded text-xs lg:!text-fluid-sm">
                             {order.tableNumber}
                           </span>
                         </div>
                       </td>
 
                       {/* Wait Time */}
-                      <td className="p-4 align-top">
-                        <div className={`flex items-center gap-1.5 font-medium text-sm ${waitingStatus.iconColor}`}>
-                          <Clock className="w-4 h-4" />
+                      <td className="p-3 lg:p-fluid-4 align-top">
+                        <div className={`flex items-center gap-1.5 font-medium text-xs lg:!text-fluid-sm ${waitingStatus.iconColor}`}>
+                          <Clock className="w-3 h-3 lg:w-fluid-4 lg:h-fluid-4" />
                           <span>{waitingTime} min</span>
                         </div>
                       </td>
 
                       {/* Items */}
-                      <td className="p-4 align-top">
+                      <td className="p-3 lg:p-fluid-4 align-top hidden md:table-cell">
                         <div className="flex flex-col gap-1.5">
                           {order.items.map((item, idx) => (
-                            <div key={idx} className="flex justify-between items-start text-sm">
+                            <div key={idx} className="flex justify-between items-start text-xs lg:!text-fluid-sm">
                               <span className="text-gray-700">
                                 <span className="font-semibold text-gray-900">{item.quantity}x</span> {item.menuItemName}
                               </span>
                               {item.notes && (
-                                <span className="text-xs text-orange-600 italic bg-orange-50 px-1 rounded ml-2 whitespace-nowrap">
+                                <span className="text-[10px] lg:!text-fluid-xs text-orange-600 italic bg-orange-50 px-1 rounded ml-2 whitespace-nowrap">
                                   Note: {item.notes}
                                 </span>
                               )}
@@ -278,28 +277,28 @@ export default function ReadyOrdersView() {
                       </td>
 
                       {/* Total */}
-                      <td className="p-4 align-top text-right">
-                        <span className="font-bold text-gray-900">
+                      <td className="p-3 lg:p-fluid-4 align-top text-right hidden sm:table-cell">
+                        <span className="font-bold text-gray-900 text-xs lg:!text-fluid-sm">
                           {formatCurrency(order.totalAmount)}
                         </span>
                       </td>
 
                       {/* Action */}
-                      <td className="p-4 align-top text-center">
+                      <td className="p-3 lg:p-fluid-4 align-top text-center">
                         <button
                           onClick={() => handleStartDelivery(order._id)}
                           disabled={processingOrder === order._id}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-semibold shadow-sm hover:shadow"
+                          className="inline-flex items-center gap-1 lg:gap-fluid-2 px-2 lg:px-fluid-3 py-1.5 lg:py-fluid-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg lg:rounded-[0.556vw] transition-colors text-xs lg:!text-fluid-sm font-semibold shadow-sm hover:shadow"
                         >
                           {processingOrder === order._id ? (
                             <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              <div className="w-3 h-3 lg:w-fluid-4 lg:h-fluid-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                             </>
                           ) : (
                             <>
-                              <Truck className="w-4 h-4" />
-                              <span>Deliver</span>
-                              <ArrowRight className="w-3 h-3 ml-1 opacity-70" />
+                              <Truck className="w-3 h-3 lg:w-fluid-4 lg:h-fluid-4" />
+                              <span className="hidden sm:inline">Deliver</span>
+                              <ArrowRight className="w-2.5 h-2.5 lg:w-fluid-3 lg:h-fluid-3 ml-0.5 opacity-70" />
                             </>
                           )}
                         </button>
@@ -312,17 +311,6 @@ export default function ReadyOrdersView() {
           </div>
         )}
       </div>
-
-      {/* Summary Footer */}
-      {!loading && filteredOrders.length > 0 && (
-        <div className="mt-4 flex justify-end">
-          <div className="bg-white rounded-lg px-4 py-2 border border-gray-200 shadow-sm text-sm">
-            <span className="text-gray-500">
-              Items Ready: <span className="text-gray-900 font-bold ml-1">{filteredOrders.length}</span>
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

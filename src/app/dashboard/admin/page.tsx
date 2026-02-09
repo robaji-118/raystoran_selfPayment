@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import AdminMain from './main';
 
 export const metadata: Metadata = {
-  title: "Dashboard - Aplikasi Kasir Restoran",
-  description: "Sistem Kasir Sederhana | Tugas Akhir Kelas XII",
+  title: "Admin Dashboard - Aplikasi Payment Self",
+  description: "Aplikasi Payment Self | Tugas Akhir Kelas XII",
 };
 
 const AdminPage = () => {
@@ -17,7 +17,7 @@ const AdminPage = () => {
         </div>
       </div>
     }>
-      <AdminMain/>
+      <AdminMain />
     </Suspense>
   );
 };

@@ -18,15 +18,15 @@ export default function WaiterDashboard() {
   const searchParams = useSearchParams();
   const [user, setUser] = useState<{ id: string; username: string; email: string; role: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentTitle, setCurrentTitle] = useState("Waiter Dashboard");
-  
+
   const currentView = searchParams.get('view') || 'dashboard';
 
   useEffect(() => {
     const checkAuth = async () => {
       const userData = getUser();
-      
+
       if (!userData) {
         router.push('/login');
         return;
@@ -36,7 +36,7 @@ export default function WaiterDashboard() {
         router.push(`/dashboard/${userData.role}`);
         return;
       }
-      
+
       setUser(userData);
       setLoading(false);
     };
@@ -45,7 +45,7 @@ export default function WaiterDashboard() {
   }, [router]);
 
   useEffect(() => {
-    switch(currentView) {
+    switch (currentView) {
       case 'dashboard':
         setCurrentTitle('Waiter Dashboard');
         break;
@@ -71,10 +71,15 @@ export default function WaiterDashboard() {
   const handleNavigate = (path: string, title: string) => {
     setCurrentTitle(title);
     router.push(path);
+    setIsSidebarOpen(false);
   };
 
   const handleMenuClick = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
   };
 
   const renderContent = () => {
@@ -93,42 +98,22 @@ export default function WaiterDashboard() {
         return <WaiterDashboardMain />;
     }
   };
-  
+
   if (!user) return null;
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar untuk desktop */}
-      <div className={`hidden lg:block ${!isSidebarOpen ? 'lg:hidden' : ''}`}>
-        <Sidebar 
-          role="waiter"
-          userName={user.username}
-          userEmail={user.email}
-          onLogout={handleLogout}
-          onNavigate={handleNavigate}
-          currentPath={`/dashboard/waiter${currentView !== 'dashboard' ? `?view=${currentView}` : ''}`}
-        />
-      </div>
-      
-      {/* Sidebar untuk mobile */}
-      {isSidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-72">
-            <Sidebar 
-              role="waiter"
-              userName={user.username}
-              userEmail={user.email}
-              onLogout={handleLogout}
-              onNavigate={(path, title) => {
-                handleNavigate(path, title);
-                setIsSidebarOpen(false);
-              }}
-              currentPath={`/dashboard/waiter${currentView !== 'dashboard' ? `?view=${currentView}` : ''}`}
-            />
-          </div>
-        </div>
-      )}
+      {/* Responsive Sidebar */}
+      <Sidebar
+        role="waiter"
+        userName={user.username}
+        userEmail={user.email}
+        onLogout={handleLogout}
+        onNavigate={handleNavigate}
+        currentPath={`/dashboard/waiter${currentView !== 'dashboard' ? `?view=${currentView}` : ''}`}
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+      />
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -141,7 +126,7 @@ export default function WaiterDashboard() {
           showNotifications={true}
           notificationCount={0}
         />
-        
+
         <main className="flex-1 overflow-auto ">
           {renderContent()}
         </main>

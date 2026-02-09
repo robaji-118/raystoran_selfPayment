@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getUser, logout } from "@/lib/auth-client";
-import Sidebar from "../components/Sidebar"; 
+import Sidebar from "../components/Sidebar";
 import HeaderSidebar from "../components/header-sidebar";
 
 import DashboardMain from "./components/dashboard-main";
@@ -32,14 +32,14 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [pageTitle, setPageTitle] = useState('Dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+
   const currentView = searchParams.get('view') || 'dashboard';
   const currentPath = `/dashboard/admin${currentView !== 'dashboard' ? `?view=${currentView}` : ''}`;
 
   useEffect(() => {
     const checkAuth = async () => {
       const userData = getUser();
-      
+
       if (!userData) {
         router.push('/login');
         return;
@@ -49,12 +49,12 @@ export default function AdminDashboard() {
         router.push(`/dashboard/${userData.role}`);
         return;
       }
-      
+
       const userWithFullName: UserData = {
         ...userData,
         fullName: userData.fullName || userData.username
       };
-      
+
       setUser(userWithFullName);
       setLoading(false);
     };
@@ -92,6 +92,10 @@ export default function AdminDashboard() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
   const renderContent = () => {
     switch (currentView) {
       case 'dashboard':
@@ -121,38 +125,18 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex h-screen bg-neutral-50">
-      {/* Sidebar untuk desktop */}
-      <div className="hidden lg:block">
-        <Sidebar 
-          role="admin"
-          userName={user.fullName || user.username}
-          userEmail={user.email}
-          onLogout={handleLogout}
-          onNavigate={handleNavigate}
-          currentPath={currentPath}
-        />
-      </div>
-      
-      {/* Sidebar untuk mobile */}
-      {isSidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-fluid-72">
-            <Sidebar 
-              role="admin"
-              userName={user.fullName || user.username}
-              userEmail={user.email}
-              onLogout={handleLogout}
-              onNavigate={(path, title) => {
-                handleNavigate(path, title);
-                setIsSidebarOpen(false);
-              }}
-              currentPath={currentPath}
-            />
-          </div>
-        </div>
-      )}
-      
+      {/* Responsive Sidebar */}
+      <Sidebar
+        role="admin"
+        userName={user.fullName || user.username}
+        userEmail={user.email}
+        onLogout={handleLogout}
+        onNavigate={handleNavigate}
+        currentPath={currentPath}
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+      />
+
       <div className="flex-1 flex flex-col overflow-hidden">
         <HeaderSidebar
           pageTitle={pageTitle}
@@ -163,7 +147,7 @@ export default function AdminDashboard() {
           showNotifications={true}
           notificationCount={5}
         />
-        
+
         <main className="flex-1 overflow-auto p-fluid-4 bg-white">
           <div className="">
             {renderContent()}

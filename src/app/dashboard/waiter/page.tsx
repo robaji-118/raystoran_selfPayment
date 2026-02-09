@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import WaiterMain from './main';
 
 export const metadata: Metadata = {
-  title: "Dashboard - Aplikasi Kasir Restoran",
-  description: "Sistem Kasir Sederhana | Tugas Akhir Kelas XII",
+  title: "Waiter Dashboard - Aplikasi Payment Self",
+  description: "Aplikasi Payment Self | Tugas Akhir Kelas XII",
 };
 
 const WaiterPage = () => {
@@ -17,7 +17,7 @@ const WaiterPage = () => {
         </div>
       </div>
     }>
-      <WaiterMain/>
+      <WaiterMain />
     </Suspense>
   );
 };
