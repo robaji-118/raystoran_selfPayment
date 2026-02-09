@@ -15,7 +15,6 @@ import OrderSummary from "../components/order-summary";
 import { useState } from "react";
 
 // --- LIBRARY UNTUK PDF ---
-import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 interface Step5PaymentProps {
@@ -56,66 +55,133 @@ export default function Step5Payment({
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(val);
 
-  // --- FUNGSI DOWNLOAD PDF ---
-  const handleDownloadPDF = async () => {
-    const input = document.getElementById("receipt-print-area");
-    if (!input) return;
-
+  // --- FUNGSI DOWNLOAD PDF (TANPA html2canvas) ---
+  const handleDownloadPDF = () => {
     setIsDownloading(true);
 
     try {
-      // 1. Capture elemen HTML menjadi Canvas (Gambar)
-      // Menggunakan onclone untuk memperbaiki CSS yang tidak didukung html2canvas
-      const canvas = await html2canvas(input, {
-        scale: 2,
-        backgroundColor: "#ffffff",
-        useCORS: true,
-        logging: false,
-        // Workaround: Clone dan normalisasi warna sebelum render
-        onclone: (clonedDoc: Document) => {
-          // Cari semua elemen dengan style yang bermasalah dan reset
-          const allElements = clonedDoc.querySelectorAll('*');
-          allElements.forEach((el) => {
-            const htmlEl = el as HTMLElement;
-            const computedStyle = window.getComputedStyle(htmlEl);
-
-            // Reset color dan background-color jika mengandung fungsi yang tidak didukung
-            const color = computedStyle.color;
-            const bgColor = computedStyle.backgroundColor;
-
-            if (color && (color.includes('lab(') || color.includes('lch(') || color.includes('oklch('))) {
-              htmlEl.style.color = '#000000';
-            }
-            if (bgColor && (bgColor.includes('lab(') || bgColor.includes('lch(') || bgColor.includes('oklch('))) {
-              htmlEl.style.backgroundColor = '#ffffff';
-            }
-          });
-        }
+      // Buat PDF dengan ukuran custom (receipt style - 80mm width)
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: [80, 200] // Lebar 80mm, tinggi akan disesuaikan
       });
 
-      const imgData = canvas.toDataURL("image/png");
+      const pageWidth = 80;
+      const margin = 5;
+      const contentWidth = pageWidth - (margin * 2);
+      let y = 10; // Posisi Y awal
 
-      // 2. Setup PDF (Ukuran A4 Portrait)
-      const pdf = new jsPDF("p", "mm", "a4");
+      // === HEADER ===
+      pdf.setFontSize(14);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("RAYSTORAN", pageWidth / 2, y, { align: "center" });
+      y += 6;
 
-      // Hitung dimensi agar pas di lebar A4
-      const pdfWidth = pdf.internal.pageSize.getWidth();
+      pdf.setFontSize(8);
+      pdf.setFont("helvetica", "normal");
+      pdf.text("Payment Successful", pageWidth / 2, y, { align: "center" });
+      y += 8;
 
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
+      // Garis pemisah
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += 6;
 
-      // Margin PDF (misal 10mm kiri kanan)
-      const margin = 10;
-      const contentWidth = pdfWidth - (margin * 2);
+      // === ORDER INFO ===
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(`Order ID: ${orderNumber || orderId}`, margin, y);
+      y += 5;
 
-      // Skala tinggi berdasarkan rasio lebar
-      const ratio = contentWidth / imgWidth;
-      const contentHeight = imgHeight * ratio;
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Date: ${new Date().toLocaleDateString("id-ID")}`, margin, y);
+      y += 5;
+      pdf.text(`Time: ${new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`, margin, y);
+      y += 6;
 
-      // 3. Masukkan gambar ke PDF
-      pdf.addImage(imgData, "PNG", margin, margin, contentWidth, contentHeight);
+      // Garis pemisah
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += 6;
 
-      // 4. Download File
+      // === CUSTOMER INFO ===
+      pdf.setFontSize(8);
+      pdf.text(`Type: ${orderType === "dine-in" ? "Dine In" : "Take Away"}`, margin, y);
+      y += 4;
+      pdf.text(`Customer: ${customerInfo.name}`, margin, y);
+      y += 4;
+      if (orderType === "dine-in" && selectedTable) {
+        pdf.text(`Table: No. ${selectedTable.tableNumber}`, margin, y);
+        y += 4;
+      }
+      y += 4;
+
+      // Garis pemisah (dashed)
+      pdf.setLineDashPattern([1, 1], 0);
+      pdf.line(margin, y, pageWidth - margin, y);
+      pdf.setLineDashPattern([], 0);
+      y += 6;
+
+      // === ITEMS ===
+      pdf.setFontSize(8);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("ITEMS", margin, y);
+      y += 5;
+
+      pdf.setFont("helvetica", "normal");
+      cart.forEach((item) => {
+        const itemName = item.menuItemName.length > 20
+          ? item.menuItemName.substring(0, 20) + "..."
+          : item.menuItemName;
+        const itemTotal = formatCurrency(item.price * item.quantity);
+
+        pdf.text(`${item.quantity}x ${itemName}`, margin, y);
+        pdf.text(itemTotal, pageWidth - margin, y, { align: "right" });
+        y += 4;
+      });
+      y += 4;
+
+      // Garis pemisah
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += 6;
+
+      // === TOTAL ===
+      pdf.setFontSize(8);
+      pdf.text("Subtotal:", margin, y);
+      pdf.text(formatCurrency(subtotal), pageWidth - margin, y, { align: "right" });
+      y += 4;
+
+      pdf.text("Tax (10%):", margin, y);
+      pdf.text(formatCurrency(tax), pageWidth - margin, y, { align: "right" });
+      y += 4;
+
+      pdf.text("Service (5%):", margin, y);
+      pdf.text(formatCurrency(serviceCharge), pageWidth - margin, y, { align: "right" });
+      y += 6;
+
+      // Garis double untuk total
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += 4;
+
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("TOTAL:", margin, y);
+      pdf.text(formatCurrency(totalAmount), pageWidth - margin, y, { align: "right" });
+      y += 8;
+
+      pdf.setLineWidth(0.2);
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += 8;
+
+      // === FOOTER ===
+      pdf.setFontSize(7);
+      pdf.setFont("helvetica", "normal");
+      pdf.text("Terima kasih atas kunjungan Anda", pageWidth / 2, y, { align: "center" });
+      y += 4;
+      pdf.text("www.raystoran.com", pageWidth / 2, y, { align: "center" });
+
+      // Download PDF
       pdf.save(`Receipt-${orderNumber || orderId}.pdf`);
 
     } catch (error) {
