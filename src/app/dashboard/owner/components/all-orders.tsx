@@ -554,19 +554,20 @@ export default function AllOrders() {
 
       {/* Order Details Modal */}
       {showModal && selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 lg:p-fluid-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 lg:p-fluid-4">
           <div
             className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
             onClick={closeModal}
           />
-          <div className="relative bg-white rounded-2xl lg:rounded-[1.111vw] shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 lg:px-fluid-6 py-4 lg:py-fluid-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <div>
-                <h3 className="text-lg lg:!text-fluid-lg font-bold text-gray-900">
+          <div className="relative bg-white rounded-2xl lg:rounded-[1.111vw] shadow-2xl w-full max-w-[95vw] sm:max-w-2xl lg:max-w-[44.444vw] max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-4 sm:px-6 lg:px-fluid-6 py-3 sm:py-4 lg:py-fluid-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
+              <div className="min-w-0 flex-1 mr-3">
+                <h3 className="text-base sm:text-lg lg:!text-fluid-lg font-bold text-gray-900">
                   Order Details
                 </h3>
-                <p className="text-sm lg:!text-fluid-sm text-gray-500">
-                  Transaction ID:{" "}
+                <p className="text-xs sm:text-sm lg:!text-fluid-sm text-gray-500 truncate">
+                  ID:{" "}
                   <span className="font-mono text-gray-700">
                     {selectedOrder.orderNumber}
                   </span>
@@ -574,65 +575,90 @@ export default function AllOrders() {
               </div>
               <button
                 onClick={closeModal}
-                className="p-2 lg:p-fluid-2 bg-white rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors border border-gray-200"
+                className="p-1.5 sm:p-2 lg:p-fluid-2 bg-white rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors border border-gray-200 shrink-0"
               >
-                <X className="w-5 h-5 lg:w-fluid-5 lg:h-fluid-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5 lg:w-fluid-5 lg:h-fluid-5" />
               </button>
             </div>
-            <div className="p-6 lg:p-fluid-6 overflow-y-auto space-y-6 lg:space-y-fluid-6">
-              {/* Order Info Grid */}
-              <div className="grid grid-cols-2 gap-4 lg:gap-fluid-4">
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-6 lg:p-fluid-6 overflow-y-auto space-y-4 sm:space-y-6 lg:space-y-fluid-6">
+              {/* Status Badges */}
+              <div className="flex flex-wrap items-center gap-2 lg:gap-fluid-2">
+                <span
+                  className={cn(
+                    "px-2.5 lg:px-fluid-2.5 py-1 lg:py-fluid-1 inline-flex text-xs lg:!text-fluid-xs font-semibold rounded-full border",
+                    getStatusBadge(selectedOrder.orderStatus)
+                  )}
+                >
+                  {selectedOrder.orderStatus.charAt(0).toUpperCase() + selectedOrder.orderStatus.slice(1)}
+                </span>
+                <span
+                  className={cn(
+                    "px-2.5 lg:px-fluid-2.5 py-1 lg:py-fluid-1 inline-flex text-xs lg:!text-fluid-xs font-semibold rounded-full border",
+                    getPaymentStatusBadge(selectedOrder.paymentStatus)
+                  )}
+                >
+                  {selectedOrder.paymentStatus.charAt(0).toUpperCase() + selectedOrder.paymentStatus.slice(1)}
+                </span>
+                <span className="text-xs lg:!text-fluid-xs text-gray-500 capitalize">
+                  via {selectedOrder.paymentMethod}
+                </span>
+              </div>
+
+              {/* Order Info Grid - 1 col on mobile, 2 cols on sm+ */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-fluid-3">
                 <div className="p-3 lg:p-fluid-3 bg-gray-50 rounded-xl lg:rounded-[0.833vw] border border-gray-100">
                   <div className="flex items-center gap-2 lg:gap-fluid-2 mb-1 lg:mb-fluid-1">
-                    <User className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-gray-500" />
-                    <span className="text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
+                    <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-fluid-4 lg:h-fluid-4 text-gray-500 shrink-0" />
+                    <span className="text-[10px] sm:text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
                       Customer
                     </span>
                   </div>
-                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-6 lg:ml-fluid-6">
+                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-5.5 sm:ml-6 lg:ml-fluid-6 truncate">
                     {selectedOrder.customerName}
                   </p>
                   {selectedOrder.customerEmail && (
-                    <p className="text-xs lg:!text-fluid-xs text-gray-500 ml-6 lg:ml-fluid-6">
+                    <p className="text-xs lg:!text-fluid-xs text-gray-500 ml-5.5 sm:ml-6 lg:ml-fluid-6 truncate">
                       {selectedOrder.customerEmail}
                     </p>
                   )}
                   {selectedOrder.customerPhone && (
-                    <p className="text-xs lg:!text-fluid-xs text-gray-500 ml-6 lg:ml-fluid-6">
+                    <p className="text-xs lg:!text-fluid-xs text-gray-500 ml-5.5 sm:ml-6 lg:ml-fluid-6">
                       {selectedOrder.customerPhone}
                     </p>
                   )}
                 </div>
                 <div className="p-3 lg:p-fluid-3 bg-gray-50 rounded-xl lg:rounded-[0.833vw] border border-gray-100">
                   <div className="flex items-center gap-2 lg:gap-fluid-2 mb-1 lg:mb-fluid-1">
-                    <MapPin className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-orange-500" />
-                    <span className="text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
+                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-fluid-4 lg:h-fluid-4 text-orange-500 shrink-0" />
+                    <span className="text-[10px] sm:text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
                       Location
                     </span>
                   </div>
-                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-6 lg:ml-fluid-6">
+                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-5.5 sm:ml-6 lg:ml-fluid-6">
                     Table {selectedOrder.tableNumber}
                   </p>
                 </div>
                 <div className="p-3 lg:p-fluid-3 bg-gray-50 rounded-xl lg:rounded-[0.833vw] border border-gray-100">
                   <div className="flex items-center gap-2 lg:gap-fluid-2 mb-1 lg:mb-fluid-1">
-                    <Calendar className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-blue-500" />
-                    <span className="text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
+                    <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-fluid-4 lg:h-fluid-4 text-blue-500 shrink-0" />
+                    <span className="text-[10px] sm:text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
                       Date
                     </span>
                   </div>
-                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-6 lg:ml-fluid-6">
+                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-5.5 sm:ml-6 lg:ml-fluid-6">
                     {formatDate(selectedOrder.createdAt)}
                   </p>
                 </div>
                 <div className="p-3 lg:p-fluid-3 bg-gray-50 rounded-xl lg:rounded-[0.833vw] border border-gray-100">
                   <div className="flex items-center gap-2 lg:gap-fluid-2 mb-1 lg:mb-fluid-1">
-                    <Clock className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-green-500" />
-                    <span className="text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
+                    <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-fluid-4 lg:h-fluid-4 text-green-500 shrink-0" />
+                    <span className="text-[10px] sm:text-xs lg:!text-fluid-xs font-semibold text-gray-500 uppercase">
                       Time
                     </span>
                   </div>
-                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-6 lg:ml-fluid-6">
+                  <p className="font-medium text-gray-900 text-sm lg:!text-fluid-sm ml-5.5 sm:ml-6 lg:ml-fluid-6">
                     {formatTime(selectedOrder.createdAt)}
                   </p>
                 </div>
@@ -640,67 +666,81 @@ export default function AllOrders() {
 
               {/* Order Items List */}
               <div>
-                <h4 className="text-sm lg:!text-fluid-sm font-bold text-gray-900 mb-3 lg:mb-fluid-3 flex items-center gap-2 lg:gap-fluid-2">
-                  <FileText className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 text-gray-500" /> Order Summary
+                <h4 className="text-xs sm:text-sm lg:!text-fluid-sm font-bold text-gray-900 mb-2 sm:mb-3 lg:mb-fluid-3 flex items-center gap-2 lg:gap-fluid-2">
+                  <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-fluid-4 lg:h-fluid-4 text-gray-500" /> Order Summary
                 </h4>
                 <div className="border border-gray-100 rounded-xl lg:rounded-[0.833vw] overflow-hidden">
-                  <table className="w-full text-sm lg:!text-fluid-sm">
-                    <thead className="bg-gray-50 text-gray-500 text-xs lg:!text-fluid-xs uppercase font-medium">
-                      <tr>
-                        <th className="px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-left">Item</th>
-                        <th className="px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-center">Qty</th>
-                        <th className="px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-right">Price</th>
-                        <th className="px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-right">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {selectedOrder.items?.map((item, idx) => (
-                        <tr key={idx}>
-                          <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-gray-900 font-medium">
-                            {item.menuItemName}
-                            {item.notes && (
-                              <p className="text-xs lg:!text-fluid-xs text-gray-500 font-normal italic mt-0.5">
-                                &quot;{item.notes}&quot;
-                              </p>
-                            )}
-                          </td>
-                          <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-center text-gray-600">
-                            x{item.quantity}
-                          </td>
-                          <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-right text-gray-600">
-                            {formatCurrency(item.price)}
-                          </td>
-                          <td className="px-4 lg:px-fluid-4 py-3 lg:py-fluid-3 text-right text-gray-900 font-medium">
-                            {formatCurrency(item.subtotal)}
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs sm:text-sm lg:!text-fluid-sm min-w-[340px]">
+                      <thead className="bg-gray-50 text-gray-500 text-[10px] sm:text-xs lg:!text-fluid-xs uppercase font-medium">
+                        <tr>
+                          <th className="px-3 sm:px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-left">Item</th>
+                          <th className="px-2 sm:px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-center w-12 sm:w-auto">Qty</th>
+                          <th className="px-2 sm:px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-right">Price</th>
+                          <th className="px-3 sm:px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-right">Total</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {selectedOrder.items?.map((item, idx) => (
+                          <tr key={idx}>
+                            <td className="px-3 sm:px-4 lg:px-fluid-4 py-2.5 sm:py-3 lg:py-fluid-3 text-gray-900 font-medium">
+                              <span className="line-clamp-2">{item.menuItemName}</span>
+                              {item.notes && (
+                                <p className="text-[10px] sm:text-xs lg:!text-fluid-xs text-gray-500 font-normal italic mt-0.5 line-clamp-1">
+                                  &quot;{item.notes}&quot;
+                                </p>
+                              )}
+                            </td>
+                            <td className="px-2 sm:px-4 lg:px-fluid-4 py-2.5 sm:py-3 lg:py-fluid-3 text-center text-gray-600">
+                              x{item.quantity}
+                            </td>
+                            <td className="px-2 sm:px-4 lg:px-fluid-4 py-2.5 sm:py-3 lg:py-fluid-3 text-right text-gray-600 whitespace-nowrap">
+                              {formatCurrency(item.price)}
+                            </td>
+                            <td className="px-3 sm:px-4 lg:px-fluid-4 py-2.5 sm:py-3 lg:py-fluid-3 text-right text-gray-900 font-medium whitespace-nowrap">
+                              {formatCurrency(item.subtotal)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
+              {/* Customer Notes */}
+              {selectedOrder.customerNotes && (
+                <div className="bg-amber-50 p-3 sm:p-4 lg:p-fluid-4 rounded-xl lg:rounded-[0.833vw] border border-amber-100">
+                  <p className="text-[10px] sm:text-xs lg:!text-fluid-xs font-semibold text-amber-700 uppercase mb-1 lg:mb-fluid-1">
+                    Customer Notes
+                  </p>
+                  <p className="text-xs sm:text-sm lg:!text-fluid-sm text-amber-900 italic">
+                    &quot;{selectedOrder.customerNotes}&quot;
+                  </p>
+                </div>
+              )}
+
               {/* Total Calculation */}
-              <div className="bg-gray-50 p-4 lg:p-fluid-4 rounded-xl lg:rounded-[0.833vw] space-y-2 lg:space-y-fluid-2 border border-gray-100">
-                <div className="flex justify-between text-sm lg:!text-fluid-sm text-gray-600">
+              <div className="bg-gray-50 p-3 sm:p-4 lg:p-fluid-4 rounded-xl lg:rounded-[0.833vw] space-y-1.5 sm:space-y-2 lg:space-y-fluid-2 border border-gray-100">
+                <div className="flex justify-between text-xs sm:text-sm lg:!text-fluid-sm text-gray-600">
                   <span>Subtotal</span>
-                  <span>{formatCurrency(selectedOrder.subtotal)}</span>
+                  <span className="whitespace-nowrap">{formatCurrency(selectedOrder.subtotal)}</span>
                 </div>
                 {selectedOrder.tax > 0 && (
-                  <div className="flex justify-between text-sm lg:!text-fluid-sm text-gray-600">
+                  <div className="flex justify-between text-xs sm:text-sm lg:!text-fluid-sm text-gray-600">
                     <span>Tax (10%)</span>
-                    <span>{formatCurrency(selectedOrder.tax)}</span>
+                    <span className="whitespace-nowrap">{formatCurrency(selectedOrder.tax)}</span>
                   </div>
                 )}
                 {selectedOrder.serviceCharge > 0 && (
-                  <div className="flex justify-between text-sm lg:!text-fluid-sm text-gray-600">
+                  <div className="flex justify-between text-xs sm:text-sm lg:!text-fluid-sm text-gray-600">
                     <span>Service Charge (5%)</span>
-                    <span>{formatCurrency(selectedOrder.serviceCharge)}</span>
+                    <span className="whitespace-nowrap">{formatCurrency(selectedOrder.serviceCharge)}</span>
                   </div>
                 )}
-                <div className="border-t border-gray-200 my-2 lg:my-fluid-2 pt-2 lg:pt-fluid-2 flex justify-between text-base lg:!text-fluid-base font-bold text-gray-900">
+                <div className="border-t border-gray-200 my-1.5 sm:my-2 lg:my-fluid-2 pt-1.5 sm:pt-2 lg:pt-fluid-2 flex justify-between text-sm sm:text-base lg:!text-fluid-base font-bold text-gray-900">
                   <span>Total Amount</span>
-                  <span className="text-gray-900">
+                  <span className="text-gray-900 whitespace-nowrap">
                     {formatCurrency(selectedOrder.totalAmount)}
                   </span>
                 </div>
