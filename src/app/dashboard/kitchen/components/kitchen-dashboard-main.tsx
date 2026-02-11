@@ -21,6 +21,13 @@ import {
   FileDown,
   SlidersHorizontal,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 interface OrderItem {
@@ -62,6 +69,7 @@ export default function KitchenDashboardMain() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [processingOrder, setProcessingOrder] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const previousOrderCountRef = useRef(0);
 
   // Helper function untuk display status
@@ -667,7 +675,8 @@ export default function KitchenDashboardMain() {
                   return (
                     <tr
                       key={order._id}
-                      className={`border-b border-gray-50 transition-colors ${isUrgent ? "bg-red-50/50 hover:bg-red-50" : ""
+                      onClick={() => setSelectedOrder(order)}
+                      className={`border-b border-gray-50 transition-colors cursor-pointer ${isUrgent ? "bg-red-50/50 hover:bg-red-100" : "hover:bg-gray-50"
                         }`}
                     >
                       <td className="p-3 lg:p-fluid-4">
@@ -724,7 +733,10 @@ export default function KitchenDashboardMain() {
                         <div className="flex items-center gap-1 lg:gap-fluid-2">
                           {order.orderStatus === "confirmed" && (
                             <button
-                              onClick={() => handleStartCooking(order._id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartCooking(order._id);
+                              }}
                               disabled={processingOrder === order._id}
                               className="flex items-center gap-1 lg:gap-fluid-2 px-2 lg:px-fluid-3 py-1.5 lg:py-fluid-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg lg:rounded-[0.556vw] transition-colors font-medium text-xs lg:!text-fluid-sm"
                             >
@@ -742,7 +754,10 @@ export default function KitchenDashboardMain() {
 
                           {order.orderStatus === "preparing" && (
                             <button
-                              onClick={() => handleMarkReady(order._id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkReady(order._id);
+                              }}
                               disabled={processingOrder === order._id}
                               className="flex items-center gap-1 lg:gap-fluid-2 px-2 lg:px-fluid-3 py-1.5 lg:py-fluid-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg lg:rounded-[0.556vw] transition-colors font-medium text-xs lg:!text-fluid-sm"
                             >
@@ -774,6 +789,100 @@ export default function KitchenDashboardMain() {
           )}
         </div>
       </div>
+
+      {/* Order Details Modal */}
+      <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
+        <DialogContent className="max-w-md lg:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <span>Order #{selectedOrder?.orderNumber}</span>
+              {selectedOrder && (
+                <span className={`text-xs px-2 py-1 rounded-full ${selectedOrder.orderStatus === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                    selectedOrder.orderStatus === 'preparing' ? 'bg-orange-100 text-orange-800' :
+                      selectedOrder.orderStatus === 'ready' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                  }`}>
+                  {getStatusDisplay(selectedOrder.orderStatus)}
+                </span>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedOrder?.customerName} • Table {selectedOrder?.tableNumber} • {selectedOrder && formatDate(selectedOrder.confirmedAt)}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-4 space-y-4">
+            <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+              <h4 className="font-semibold text-sm text-gray-700 uppercase tracking-wider mb-3">Order Items</h4>
+              <div className="space-y-4">
+                {selectedOrder?.items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-start border-b border-gray-100 last:border-0 pb-3 last:pb-0">
+                    <div className="flex-1">
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 flex items-center justify-center bg-black text-white rounded text-xs font-bold shrink-0">
+                          {item.quantity}x
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{item.menuItemName}</p>
+                          {item.notes && (
+                            <div className="flex items-start gap-1 mt-1 text-yellow-700 bg-yellow-50 p-2 rounded text-xs">
+                              <span className="font-bold">Note:</span> {item.notes}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-2">
+              <span className="text-gray-500 font-medium">Total Items</span>
+              <span className="font-bold text-lg">{selectedOrder?.items.reduce((acc, item) => acc + item.quantity, 0)} Items</span>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              {selectedOrder?.orderStatus === "confirmed" && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (selectedOrder) {
+                      handleStartCooking(selectedOrder._id);
+                      setSelectedOrder(null);
+                    }
+                  }}
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Flame className="w-4 h-4" /> Start Cooking
+                </button>
+              )}
+
+              {selectedOrder?.orderStatus === "preparing" && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (selectedOrder) {
+                      handleMarkReady(selectedOrder._id);
+                      setSelectedOrder(null);
+                    }
+                  }}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" /> Mark Ready
+                </button>
+              )}
+
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

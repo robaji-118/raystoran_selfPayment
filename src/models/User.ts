@@ -22,7 +22,7 @@ const UserSchema = new Schema<IUser>(
     role: { type: String, required: true },
     phone: { type: String, required: true },
     isActive: { type: Boolean, default: true },
-    createdBy: { type: Schema.Types.ObjectId, ref: "User"   , default: null }
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null }
   },
   { timestamps: true }
 );
