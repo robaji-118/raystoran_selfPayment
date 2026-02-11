@@ -207,40 +207,40 @@ export default function MenuEditModal({
   if (!isOpen || !menu) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-fluid-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl border border-gray-200 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl animate-in slide-in-from-bottom-4 duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
-              <Package className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between p-fluid-6 border-b border-gray-200">
+          <div className="flex items-center gap-fluid-3">
+            <div className="w-fluid-10 h-fluid-10 bg-black rounded-xl flex items-center justify-center">
+              <Package className="w-fluid-5 h-fluid-5 text-white" />
             </div>
             <div>
-              <h2 className="text-gray-900 text-lg font-bold">
+              <h2 className="text-gray-900 text-fluid-lg font-bold">
                 Edit Menu
               </h2>
-              <p className="text-gray-500 text-sm mt-0.5">
+              <p className="text-gray-500 text-fluid-sm mt-fluid-0.5">
                 Update menu information
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition-all"
+            className="text-gray-400 hover:text-gray-900 hover:bg-gray-100 p-fluid-2 rounded-lg transition-all"
             disabled={saveLoading}
           >
-            <X className="w-5 h-5" />
+            <X className="w-fluid-5 h-fluid-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="p-fluid-6 space-y-fluid-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-fluid-6">
             {/* Left Column */}
-            <div className="space-y-5">
+            <div className="space-y-fluid-5">
               {/* Menu Name */}
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-black uppercase tracking-wider">
+              <div className="space-y-fluid-2">
+                <Label className="text-fluid-xs font-bold text-black uppercase tracking-wider">
                   Menu Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -256,8 +256,8 @@ export default function MenuEditModal({
               </div>
 
               {/* Description */}
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-black uppercase tracking-wider">
+              <div className="space-y-fluid-2">
+                <Label className="text-fluid-xs font-bold text-black uppercase tracking-wider">
                   Description
                 </Label>
                 <Textarea
@@ -272,8 +272,8 @@ export default function MenuEditModal({
               </div>
 
               {/* Category */}
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-black uppercase tracking-wider">
+              <div className="space-y-fluid-2">
+                <Label className="text-fluid-xs font-bold text-black uppercase tracking-wider">
                   Category <span className="text-red-500">*</span>
                 </Label>
                 <Select
@@ -296,8 +296,8 @@ export default function MenuEditModal({
               </div>
 
               {/* Price */}
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-black uppercase tracking-wider">
+              <div className="space-y-fluid-2">
+                <Label className="text-fluid-xs font-bold text-black uppercase tracking-wider">
                   Price (IDR) <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -318,8 +318,8 @@ export default function MenuEditModal({
               </div>
 
               {/* Preparation Time */}
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-black uppercase tracking-wider">
+              <div className="space-y-fluid-2">
+                <Label className="text-fluid-xs font-bold text-black uppercase tracking-wider">
                   Preparation Time (minutes)
                 </Label>
                 <Input
@@ -339,15 +339,15 @@ export default function MenuEditModal({
             </div>
 
             {/* Right Column - Image Upload */}
-            <div className="space-y-5">
+            <div className="space-y-fluid-5">
               {/* Image Upload */}
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-black uppercase tracking-wider">
+              <div className="space-y-fluid-2">
+                <Label className="text-fluid-xs font-bold text-black uppercase tracking-wider">
                   Menu Image
                 </Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-4">
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-fluid-4">
                   {imagePreview ? (
-                    <div className="space-y-3">
+                    <div className="space-y-fluid-3">
                       <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
                         <img
                           src={imagePreview}
@@ -357,48 +357,48 @@ export default function MenuEditModal({
                         <button
                           type="button"
                           onClick={handleRemoveImage}
-                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                          className="absolute top-fluid-2 right-fluid-2 p-fluid-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-fluid-4 h-fluid-4" />
                         </button>
                       </div>
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploadLoading}
-                        className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                        className="flex items-center justify-center gap-fluid-2 w-full px-fluid-4 py-fluid-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-fluid-sm font-medium"
                       >
-                        <Upload className="w-4 h-4" />
+                        <Upload className="w-fluid-4 h-fluid-4" />
                         Change Image
                       </button>
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <ImageIcon className="w-8 h-8 text-gray-400" />
+                    <div className="text-center py-fluid-8">
+                      <div className="w-fluid-16 h-fluid-16 mx-auto mb-fluid-3 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <ImageIcon className="w-fluid-8 h-fluid-8 text-gray-400" />
                       </div>
-                      <p className="text-gray-600 text-sm mb-3">
+                      <p className="text-gray-600 text-fluid-sm mb-fluid-3">
                         Upload menu image
                       </p>
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploadLoading}
-                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm mx-auto font-medium"
+                        className="flex items-center justify-center gap-fluid-2 px-fluid-4 py-fluid-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-fluid-sm mx-auto font-medium"
                       >
                         {uploadLoading ? (
                           <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <Loader2 className="w-fluid-4 h-fluid-4 animate-spin" />
                             Uploading...
                           </>
                         ) : (
                           <>
-                            <Upload className="w-4 h-4" />
+                            <Upload className="w-fluid-4 h-fluid-4" />
                             Upload Image
                           </>
                         )}
                       </button>
-                      <p className="text-gray-500 text-xs mt-2">
+                      <p className="text-gray-500 text-fluid-xs mt-fluid-2">
                         Max 5MB (JPG, PNG, WebP)
                       </p>
                     </div>
@@ -414,12 +414,12 @@ export default function MenuEditModal({
               </div>
 
               {/* Availability Status */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-bold text-black">
+              <div className="flex items-center justify-between p-fluid-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="space-y-fluid-0.5">
+                  <Label className="text-fluid-sm font-bold text-black">
                     Available
                   </Label>
-                  <p className="text-gray-500 text-xs">
+                  <p className="text-gray-500 text-fluid-xs">
                     Customers can order this item
                   </p>
                 </div>
@@ -451,12 +451,12 @@ export default function MenuEditModal({
               </div>
 
               {/* Active Status */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-bold text-black">
+              <div className="flex items-center justify-between p-fluid-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="space-y-fluid-0.5">
+                  <Label className="text-fluid-sm font-bold text-black">
                     Active
                   </Label>
-                  <p className="text-gray-500 text-xs">
+                  <p className="text-gray-500 text-fluid-xs">
                     Show this item in the menu
                   </p>
                 </div>
@@ -490,12 +490,12 @@ export default function MenuEditModal({
           </div>
 
           {/* Footer Buttons */}
-          <div className="border-t border-gray-200 pt-6 flex gap-4">
+          <div className="border-t border-gray-200 pt-fluid-6 flex gap-fluid-4">
             <button
               type="button"
               onClick={handleClose}
               disabled={saveLoading}
-              className="flex-1 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
+              className="flex-1 px-fluid-6 py-fluid-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
             >
               Cancel
             </button>
@@ -503,16 +503,16 @@ export default function MenuEditModal({
             <button
               type="submit"
               disabled={saveLoading || uploadLoading}
-              className="flex-1 px-6 py-3 bg-black hover:bg-gray-900 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-fluid-6 py-fluid-3 bg-black hover:bg-gray-900 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-fluid-2"
             >
               {saveLoading ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-fluid-5 h-fluid-5 animate-spin" />
                   <span>Saving...</span>
                 </>
               ) : (
                 <>
-                  <Save className="w-5 h-5" />
+                  <Save className="w-fluid-5 h-fluid-5" />
                   <span>Update Menu</span>
                 </>
               )}

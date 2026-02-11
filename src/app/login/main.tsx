@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import BackgroundLeft from "@/assets/images/restoran1.jpg";
 // Pastikan path ini sesuai dengan file auth-client kamu
-import { saveUser } from "@/lib/auth-client";
+import { saveUser, getUser } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -67,6 +67,15 @@ export default function LoginPage() {
     return () => window.removeEventListener("load", fixAutofillStyles);
   }, []);
 
+  // --- Redirect if already logged in ---
+  useEffect(() => {
+    const user = getUser();
+    if (user) {
+      const role = user.role || "admin";
+      router.replace(`/dashboard/${role}`);
+    }
+  }, [router]);
+
   // Di dalam component LoginPage
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,7 +109,7 @@ export default function LoginPage() {
       });
 
       const role = result.user.role || "admin";
-      router.push(`/dashboard/${role}`);
+      router.replace(`/dashboard/${role}`);
     } catch (err) {
       // --- PERUBAHAN DISINI ---
 

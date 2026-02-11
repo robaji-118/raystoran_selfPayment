@@ -22,7 +22,6 @@ import {
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
 import { cn } from "@/lib/utils";
-import { fluidSize } from "@/lib/utils";
 
 // Register ChartJS components
 ChartJS.register(
@@ -45,12 +44,12 @@ interface Order {
   tableNumber: string;
   totalAmount: number;
   orderStatus:
-    | "confirmed"
-    | "preparing"
-    | "ready"
-    | "delivering"
-    | "completed"
-    | "cancelled";
+  | "confirmed"
+  | "preparing"
+  | "ready"
+  | "delivering"
+  | "completed"
+  | "cancelled";
   paymentMethod: "cash" | "qris" | "debit" | "credit" | "e-wallet";
   createdAt: string;
   updatedAt: string;
@@ -320,12 +319,25 @@ export default function DashboardMain() {
     ],
   };
 
+  // Helper: compute fluid pixel value for Chart.js (needs numbers, not CSS strings)
+  const fluidPx = (px: number) => {
+    const vw = typeof window !== "undefined" ? window.innerWidth : 1440;
+    return Math.round((px / 1440) * vw);
+  };
+
   const chartOptions = {
     responsive: true,
-    maintainAspectRatio: false, // ✅ Tambahkan ini
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         display: false,
+      },
+      tooltip: {
+        titleFont: { size: fluidPx(12) },
+        bodyFont: { size: fluidPx(12) },
+        padding: fluidPx(8),
+        cornerRadius: fluidPx(6),
+        boxPadding: fluidPx(4),
       },
     },
     scales: {
@@ -342,11 +354,27 @@ export default function DashboardMain() {
         grid: {
           display: false,
         },
+        ticks: {
+          font: { size: fluidPx(11) },
+          padding: fluidPx(4),
+        },
+        border: {
+          display: false,
+        },
       },
     },
     elements: {
       line: {
         tension: 0.4,
+        borderWidth: fluidPx(2),
+      },
+      point: {
+        radius: fluidPx(3),
+        hoverRadius: fluidPx(5),
+        borderWidth: fluidPx(2),
+      },
+      bar: {
+        borderRadius: fluidPx(4),
       },
     },
   };
@@ -386,24 +414,24 @@ export default function DashboardMain() {
   const getStatusColor = (status: string) => {
     const statusLower = status.toLowerCase();
     const colors: Record<string, string> = {
-      confirmed: "bg-blue-100 text-blue-800 text-fluid-sm",
-      preparing: "bg-orange-100 text-orange-800 text-fluid-sm",
-      ready: "bg-green-100 text-green-800 text-fluid-sm",
-      delivering: "bg-indigo-100 text-indigo-800 text-fluid-sm",
-      completed: "bg-gray-100 text-gray-800 text-fluid-sm",
-      cancelled: "bg-red-100 text-red-800 text-fluid-sm",
+      confirmed: "bg-blue-100 text-blue-800 text-sm lg:text-fluid-sm",
+      preparing: "bg-orange-100 text-orange-800 text-sm lg:text-fluid-sm",
+      ready: "bg-green-100 text-green-800 text-sm lg:text-fluid-sm",
+      delivering: "bg-indigo-100 text-indigo-800 text-sm lg:text-fluid-sm",
+      completed: "bg-gray-100 text-gray-800 text-sm lg:text-fluid-sm",
+      cancelled: "bg-red-100 text-red-800 text-sm lg:text-fluid-sm",
     };
     return colors[statusLower] || "bg-gray-100 text-gray-800";
   };
 
   const getPaymentMethodColor = (method: string) => {
     const methodLower = method.toLowerCase();
-    if (methodLower === "cash") return "bg-blue-100 text-blue-700 text-fluid-sm";
-    if (methodLower === "qris") return "bg-green-100 text-green-700 text-fluid-sm";
-    if (methodLower === "debit" || methodLower === "credit") 
-      return "bg-purple-100 text-purple-700 text-fluid-sm";
-    if (methodLower === "e-wallet") return "bg-orange-100 text-orange-700 text-fluid-sm";
-    return "bg-gray-100 text-gray-700 text-fluid-sm";
+    if (methodLower === "cash") return "bg-blue-100 text-blue-700 text-sm lg:text-fluid-sm";
+    if (methodLower === "qris") return "bg-green-100 text-green-700 text-sm lg:text-fluid-sm";
+    if (methodLower === "debit" || methodLower === "credit")
+      return "bg-purple-100 text-purple-700 text-sm lg:text-fluid-sm";
+    if (methodLower === "e-wallet") return "bg-orange-100 text-orange-700 text-sm lg:text-fluid-sm";
+    return "bg-gray-100 text-gray-700 text-sm lg:text-fluid-sm";
   };
 
   const formatPaymentMethod = (method: string) => {
@@ -442,8 +470,8 @@ export default function DashboardMain() {
     return (
       <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-          <div className="w-fluid-16 h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-fluid-4" />
-          <p className="text-neutral-500 text-fluid-base">Loading dashboard...</p>
+          <div className="w-12 h-12 lg:w-fluid-16 lg:h-fluid-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-3 lg:mb-fluid-4" />
+          <p className="text-neutral-500 text-base lg:text-fluid-base">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -453,16 +481,16 @@ export default function DashboardMain() {
     return (
       <div className="flex items-center justify-center min-h-[70vh] w-full">
         <div className="text-center">
-          <div className="w-fluid-16 h-fluid-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-fluid-4">
-            <ShoppingCart className="w-fluid-8 h-fluid-8 text-red-600" />
+          <div className="w-16 h-16 lg:w-fluid-16 lg:h-fluid-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 lg:mb-fluid-4">
+            <ShoppingCart className="w-8 h-8 lg:w-fluid-8 lg:h-fluid-8 text-red-600" />
           </div>
-          <p className="text-red-600 font-medium mb-fluid-2 text-fluid-base">
+          <p className="text-red-600 font-medium mb-2 lg:mb-fluid-2 text-base lg:text-fluid-base">
             Error Loading Dashboard
           </p>
-          <p className="text-neutral-500 mb-fluid-4 text-fluid-base">{error}</p>
+          <p className="text-neutral-500 mb-4 lg:mb-fluid-4 text-base lg:text-fluid-base">{error}</p>
           <button
             onClick={fetchDashboardData}
-            className="px-fluid-4 py-fluid-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-fluid-base"
+            className="px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-base lg:text-fluid-base"
           >
             Retry
           </button>
@@ -475,43 +503,42 @@ export default function DashboardMain() {
     <div className="min-h-screen">
       <div className="">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-fluid-4 mb-fluid-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-fluid-4 mb-4 lg:mb-fluid-4">
           {/* Total Income */}
-          <div className="bg-white p-fluid-6 shadow-sm border border-gray-100" style={{borderRadius: fluidSize(16)}}>
-            <div className="flex items-start justify-between mb-fluid-4">
+          <div className="bg-white p-6 lg:p-fluid-6 shadow-sm border border-gray-100 rounded-xl lg:rounded-[1.111vw]">
+            <div className="flex items-start justify-between mb-4 lg:mb-fluid-4">
               <div>
-                <p className="text-gray-500 mb-fluid-1 text-fluid-base">Total Income</p>
-                <h4 className="font-bold text-gray-900 text-fluid-2xl">
+                <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:text-fluid-base">Total Income</p>
+                <h4 className="font-bold text-gray-900 text-2xl lg:text-fluid-2xl">
                   {formatCurrency(stats.totalRevenue)}
                 </h4>
               </div>
             </div>
-            <div className="flex items-center gap-fluid-2">
-              <div className="flex items-center text-green-600 text-fluid-sm">
-                <TrendingUp className="w-fluid-4 h-fluid-4 mr-fluid-1" />
+            <div className="flex items-center gap-2 lg:gap-fluid-2">
+              <div className="flex items-center text-green-600 text-sm lg:text-fluid-sm">
+                <TrendingUp className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4 mr-1 lg:mr-fluid-1" />
                 <span className="font-medium">
                   {stats.totalOrders > 0 ? "+" : ""}
                   {stats.completedOrders} orders
                 </span>
               </div>
-              <span className="text-gray-400 text-fluid-sm">completed</span>
+              <span className="text-gray-400 text-sm lg:text-fluid-sm">completed</span>
             </div>
           </div>
 
           {/* Total Income per Week */}
-          <div className="bg-white rounded-2xl p-fluid-6 shadow-sm border border-gray-100"  style={{borderRadius: fluidSize(16)}}>
-            <div className="flex flex-col items-start gap-fluid-6 justify-between">
+          <div className="bg-white rounded-xl lg:rounded-[1.111vw] p-6 lg:p-fluid-6 shadow-sm border border-gray-100">
+            <div className="flex flex-col items-start gap-6 lg:gap-fluid-6 justify-between">
               <div className="flex-1 w-full">
-                <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+                <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:text-fluid-base">
                   Total Income per Week
                 </p>
-                <h4 className="font-bold text-gray-900 mb-fluid-2 text-fluid-2xl">
+                <h4 className="font-bold text-gray-900 mb-2 lg:mb-fluid-2 text-2xl lg:text-fluid-2xl">
                   {formatCurrency(stats.averageMonthlyRevenue)}
                 </h4>
-                <span className="text-gray-400 text-fluid-sm">Last 7 days</span>
+                <span className="text-gray-400 text-sm lg:text-fluid-sm">Last 7 days</span>
               </div>
-              {/* ✅ KEMBALI KE VERSI AWAL dengan h-fluid-32 */}
-              <div className="w-full h-fluid-32">
+              <div className="w-full h-32 lg:h-fluid-32">
                 <Line
                   data={revenueChartData}
                   options={chartOptions}
@@ -521,18 +548,17 @@ export default function DashboardMain() {
           </div>
 
           {/* Total Orders per Week */}
-          <div className="flex flex-col justify-between gap-fluid-6 bg-white rounded-2xl p-fluid-6 shadow-sm border border-gray-100"  style={{borderRadius: fluidSize(16)}}>
+          <div className="flex flex-col justify-between gap-6 lg:gap-fluid-6 bg-white rounded-xl lg:rounded-[1.111vw] p-6 lg:p-fluid-6 shadow-sm border border-gray-100">
             <div className="flex-1">
-              <p className="text-gray-500 mb-fluid-1 text-fluid-base">
+              <p className="text-gray-500 mb-1 lg:mb-fluid-1 text-base lg:text-fluid-base">
                 Total Orders per Week
               </p>
-              <h4 className="font-bold text-gray-900 mb-fluid-2 text-fluid-2xl">
+              <h4 className="font-bold text-gray-900 mb-2 lg:mb-fluid-2 text-2xl lg:text-fluid-2xl">
                 {stats.averageMonthlySales}
               </h4>
-              <span className="text-gray-400 text-fluid-sm">Last 7 days</span>
+              <span className="text-gray-400 text-sm lg:text-fluid-sm">Last 7 days</span>
             </div>
-            {/* ✅ KEMBALI KE VERSI AWAL dengan h-fluid-28 */}
-            <div className="w-full h-fluid-28">
+            <div className="w-full h-28 lg:h-fluid-28">
               <Bar
                 data={salesChartData}
                 options={chartOptions}
@@ -542,15 +568,15 @@ export default function DashboardMain() {
         </div>
 
         {/* Recent Orders Table */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100"  style={{borderRadius: fluidSize(16)}}>
+        <div className="bg-white rounded-xl lg:rounded-[1.111vw] shadow-sm border border-gray-100">
           {/* Header */}
-          <div className="p-fluid-6 border-b border-gray-100">
+          <div className="p-4 lg:p-fluid-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
-              <h4 className="text-gray-900 text-fluid-lg">Recent Transactions</h4>
-              <div className="flex items-center gap-fluid-3">
-                <button className="flex items-center gap-fluid-2 px-fluid-4 py-fluid-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-                  <FileDown className="w-fluid-4 h-fluid-4" />
-                  <span className="text-fluid-sm">Export</span>
+              <h4 className="text-gray-900 text-lg lg:text-fluid-lg">Recent Transactions</h4>
+              <div className="flex items-center gap-3 lg:gap-fluid-3">
+                <button className="flex items-center gap-2 lg:gap-fluid-2 px-4 lg:px-fluid-4 py-2 lg:py-fluid-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+                  <FileDown className="w-4 h-4 lg:w-fluid-4 lg:h-fluid-4" />
+                  <span className="text-sm lg:text-fluid-sm">Export</span>
                 </button>
               </div>
             </div>
@@ -561,22 +587,22 @@ export default function DashboardMain() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-100">
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:text-fluid-sm">
                     Order
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:text-fluid-sm">
                     Customer
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:text-fluid-sm">
                     Date
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:text-fluid-sm">
                     Amount
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:text-fluid-sm">
                     Status
                   </th>
-                  <th className="text-left p-fluid-4 text-gray-600 font-medium text-fluid-sm">
+                  <th className="text-left p-3 lg:p-fluid-4 text-gray-600 font-medium text-sm lg:text-fluid-sm">
                     Payment
                   </th>
                 </tr>
@@ -584,13 +610,13 @@ export default function DashboardMain() {
               <tbody>
                 {recentOrders.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-fluid-12 text-center">
+                    <td colSpan={6} className="p-12 lg:p-fluid-12 text-center">
                       <div className="flex flex-col items-center">
-                        <ShoppingCart className="w-fluid-16 h-fluid-16 text-gray-300 mb-fluid-4" />
-                        <p className="text-gray-500 mb-fluid-2 text-fluid-lg">
+                        <ShoppingCart className="w-16 h-16 lg:w-fluid-16 lg:h-fluid-16 text-gray-300 mb-4 lg:mb-fluid-4" />
+                        <p className="text-gray-500 mb-2 lg:mb-fluid-2 text-lg lg:text-fluid-lg">
                           No transactions yet
                         </p>
-                        <p className="text-gray-400 text-fluid-sm">
+                        <p className="text-gray-400 text-sm lg:text-fluid-sm">
                           Orders will appear here once created
                         </p>
                       </div>
@@ -604,37 +630,37 @@ export default function DashboardMain() {
                         key={order._id}
                         className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
                       >
-                        <td className="p-fluid-4">
-                          <div className="flex items-center gap-fluid-3">
+                        <td className="p-3 lg:p-fluid-4">
+                          <div className="flex items-center gap-3 lg:gap-fluid-3">
                             <div>
-                              <span className="font-medium text-gray-900 block text-fluid-sm">
+                              <span className="font-medium text-gray-900 block text-sm lg:text-fluid-sm">
                                 {productName}
                               </span>
-                              <span className="text-gray-500 text-fluid-xs">
+                              <span className="text-gray-500 text-xs lg:text-fluid-xs">
                                 Table {order.tableNumber}
                               </span>
                             </div>
                           </div>
                         </td>
-                        <td className="p-fluid-4">
-                          <span className="text-gray-900 font-medium text-fluid-sm">
+                        <td className="p-3 lg:p-fluid-4">
+                          <span className="text-gray-900 font-medium text-sm lg:text-fluid-sm">
                             {order.customerName || "Guest"}
                           </span>
                         </td>
-                        <td className="p-fluid-4">
-                          <span className="text-gray-600 text-fluid-sm">
+                        <td className="p-3 lg:p-fluid-4">
+                          <span className="text-gray-600 text-sm lg:text-fluid-sm">
                             {formatDate(order.createdAt)}
                           </span>
                         </td>
-                        <td className="p-fluid-4">
-                          <span className="font-medium text-gray-900 text-fluid-sm">
+                        <td className="p-3 lg:p-fluid-4">
+                          <span className="font-medium text-gray-900 text-sm lg:text-fluid-sm">
                             {formatCurrency(order.totalAmount)}
                           </span>
                         </td>
-                        <td className="p-fluid-4">
+                        <td className="p-3 lg:p-fluid-4">
                           <span
                             className={cn(
-                              "px-fluid-3 py-fluid-1 rounded-full font-medium text-fluid-xs",
+                              "px-3 lg:px-fluid-3 py-1 lg:py-fluid-1 rounded-full font-medium text-xs lg:text-fluid-xs",
                               getStatusColor(order.orderStatus)
                             )}
                           >
@@ -642,10 +668,10 @@ export default function DashboardMain() {
                               order.orderStatus.slice(1)}
                           </span>
                         </td>
-                        <td className="p-fluid-4">
+                        <td className="p-3 lg:p-fluid-4">
                           <span
                             className={cn(
-                              "inline-flex px-fluid-3 py-fluid-1 rounded-full font-medium text-fluid-xs",
+                              "inline-flex px-3 lg:px-fluid-3 py-1 lg:py-fluid-1 rounded-full font-medium text-xs lg:text-fluid-xs",
                               getPaymentMethodColor(order.paymentMethod)
                             )}
                           >

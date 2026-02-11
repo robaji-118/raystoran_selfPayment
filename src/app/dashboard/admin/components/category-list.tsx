@@ -462,36 +462,36 @@ export default function CategoryList() {
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-fluid-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl border border-gray-200 max-w-md w-full shadow-xl animate-in slide-in-from-bottom-4 duration-300">
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
-                  <Package className="w-5 h-5 text-white" />
+            <div className="flex items-center justify-between p-fluid-6 border-b border-gray-200">
+              <div className="flex items-center gap-fluid-3">
+                <div className="w-fluid-10 h-fluid-10 bg-black rounded-xl flex items-center justify-center">
+                  <Package className="w-fluid-5 h-fluid-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-gray-900 text-lg font-bold">
+                  <h3 className="text-gray-900 text-fluid-lg font-bold">
                     {editingId ? "Edit Category" : "Add New Category"}
                   </h3>
-                  <p className="text-gray-500 text-sm mt-0.5">
+                  <p className="text-gray-500 text-fluid-sm mt-fluid-0.5">
                     {editingId ? "Update category information" : "Create a new category"}
                   </p>
                 </div>
               </div>
               <button
                 onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition-all"
+                className="text-gray-400 hover:text-gray-900 hover:bg-gray-100 p-fluid-2 rounded-lg transition-all"
                 disabled={saveLoading}
               >
-                <X className="w-5 h-5" />
+                <X className="w-fluid-5 h-fluid-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="p-fluid-6 space-y-fluid-5">
               {/* Category Name */}
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-black uppercase tracking-wider">
+              <div className="space-y-fluid-2">
+                <Label className="text-fluid-xs font-bold text-black uppercase tracking-wider">
                   Category Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -507,8 +507,8 @@ export default function CategoryList() {
               </div>
 
               {/* Description */}
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-black uppercase tracking-wider">
+              <div className="space-y-fluid-2">
+                <Label className="text-fluid-xs font-bold text-black uppercase tracking-wider">
                   Description
                 </Label>
                 <Textarea
@@ -523,12 +523,12 @@ export default function CategoryList() {
               </div>
 
               {/* Active Status */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-bold text-black">
+              <div className="flex items-center justify-between p-fluid-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="space-y-fluid-0.5">
+                  <Label className="text-fluid-sm font-bold text-black">
                     Active Status
                   </Label>
-                  <p className="text-gray-500 text-xs">
+                  <p className="text-gray-500 text-fluid-xs">
                     Inactive categories won't be visible in menu selection
                   </p>
                 </div>
@@ -547,12 +547,12 @@ export default function CategoryList() {
               </div>
 
               {/* Footer Buttons */}
-              <div className="border-t border-gray-200 pt-6 flex gap-4 -mx-6 -mb-6 px-6 pb-6 mt-6">
+              <div className="border-t border-gray-200 pt-fluid-6 flex gap-fluid-4 -mx-fluid-6 -mb-fluid-6 px-fluid-6 pb-fluid-6 mt-fluid-6">
                 <button
                   type="button"
                   onClick={handleCloseModal}
                   disabled={saveLoading}
-                  className="flex-1 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
+                  className="flex-1 px-fluid-6 py-fluid-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
                 >
                   Cancel
                 </button>
@@ -560,16 +560,16 @@ export default function CategoryList() {
                 <button
                   type="submit"
                   disabled={saveLoading}
-                  className="flex-1 px-6 py-3 bg-black hover:bg-gray-900 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 px-fluid-6 py-fluid-3 bg-black hover:bg-gray-900 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-fluid-2"
                 >
                   {saveLoading ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-fluid-5 h-fluid-5 animate-spin" />
                       <span>Saving...</span>
                     </>
                   ) : (
                     <>
-                      <Save className="w-5 h-5" />
+                      <Save className="w-fluid-5 h-fluid-5" />
                       <span>{editingId ? "Update" : "Create"}</span>
                     </>
                   )}
@@ -582,26 +582,26 @@ export default function CategoryList() {
 
       {/* Delete Confirmation Modal */}
       {deleteId && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-fluid-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl border border-gray-200 max-w-md w-full shadow-xl animate-in slide-in-from-bottom-4 duration-300">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-gray-900 text-lg font-bold">
+            <div className="p-fluid-6 border-b border-gray-200">
+              <h3 className="text-gray-900 text-fluid-lg font-bold">
                 Delete Category
               </h3>
             </div>
 
-            <div className="p-6">
+            <div className="p-fluid-6">
               <p className="text-gray-600">
                 Are you sure you want to delete this category? This action cannot be
                 undone. Categories with existing menus cannot be deleted.
               </p>
             </div>
 
-            <div className="p-6 border-t border-gray-200 flex gap-4">
+            <div className="p-fluid-6 border-t border-gray-200 flex gap-fluid-4">
               <button
                 onClick={() => setDeleteId(null)}
                 disabled={deleteLoading}
-                className="flex-1 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
+                className="flex-1 px-fluid-6 py-fluid-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
               >
                 Cancel
               </button>
@@ -609,16 +609,16 @@ export default function CategoryList() {
               <button
                 onClick={handleDelete}
                 disabled={deleteLoading}
-                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-fluid-6 py-fluid-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-fluid-2"
               >
                 {deleteLoading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-fluid-5 h-fluid-5 animate-spin" />
                     <span>Deleting...</span>
                   </>
                 ) : (
                   <>
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-fluid-5 h-fluid-5" />
                     <span>Delete</span>
                   </>
                 )}

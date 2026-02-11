@@ -25,7 +25,7 @@ export default function KitchenDashboard() {
       const userData = getUser();
 
       if (!userData) {
-        router.push('/login');
+        router.replace('/login');
         return;
       }
 
@@ -53,7 +53,7 @@ export default function KitchenDashboard() {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.replace('/login');
   };
 
   const handleNavigate = (path: string, title: string) => {

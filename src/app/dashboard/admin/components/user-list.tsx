@@ -400,14 +400,16 @@ export default function UserList() {
                             <span>Edit</span>
                           </button>
 
-                          <button
-                            onClick={() => deleteUser(user._id, user.fullName)}
-                            className="flex items-center gap-fluid-1 px-fluid-3 py-fluid-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-fluid-sm"
-                            title="Delete"
-                          >
-                            <Trash className="w-fluid-3 h-fluid-3" />
-                            <span>Delete</span>
-                          </button>
+                          {user.role.toLowerCase() !== 'admin' && (
+                            <button
+                              onClick={() => deleteUser(user._id, user.fullName)}
+                              className="flex items-center gap-fluid-1 px-fluid-3 py-fluid-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-fluid-sm"
+                              title="Delete"
+                            >
+                              <Trash className="w-fluid-3 h-fluid-3" />
+                              <span>Delete</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

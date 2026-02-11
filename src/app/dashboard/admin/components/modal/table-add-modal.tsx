@@ -90,37 +90,37 @@ export default function TableAddModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-fluid-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl border border-gray-200 max-w-md w-full shadow-xl animate-in slide-in-from-bottom-4 duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
-              <Table2 className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between p-fluid-6 border-b border-gray-200">
+          <div className="flex items-center gap-fluid-3">
+            <div className="w-fluid-10 h-fluid-10 bg-black rounded-xl flex items-center justify-center">
+              <Table2 className="w-fluid-5 h-fluid-5 text-white" />
             </div>
             <div>
-              <h3 className="text-gray-900 text-lg font-bold">
+              <h3 className="text-gray-900 text-fluid-lg font-bold">
                 Add New Table
               </h3>
-              <p className="text-gray-500 text-sm mt-0.5">
+              <p className="text-gray-500 text-fluid-sm mt-fluid-0.5">
                 Create a new table
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition-all"
+            className="text-gray-400 hover:text-gray-900 hover:bg-gray-100 p-fluid-2 rounded-lg transition-all"
             disabled={loading}
           >
-            <X className="w-5 h-5" />
+            <X className="w-fluid-5 h-fluid-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-fluid-6 space-y-fluid-5">
           {/* Table Number */}
-          <div className="space-y-2">
-            <Label className="text-xs font-bold text-black uppercase tracking-wider">
+          <div className="space-y-fluid-2">
+            <Label className="text-fluid-xs font-bold text-black uppercase tracking-wider">
               Table Number <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -137,8 +137,8 @@ export default function TableAddModal({
           </div>
 
           {/* Capacity */}
-          <div className="space-y-2">
-            <Label className="text-xs font-bold text-black uppercase tracking-wider">
+          <div className="space-y-fluid-2">
+            <Label className="text-fluid-xs font-bold text-black uppercase tracking-wider">
               Capacity <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
@@ -154,22 +154,22 @@ export default function TableAddModal({
                 required
                 disabled={loading}
               />
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">
+              <div className="absolute right-fluid-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-fluid-sm font-medium">
                 people
               </div>
             </div>
-            <p className="text-gray-500 text-xs">
+            <p className="text-gray-500 text-fluid-xs">
               Number of people this table can accommodate (1-20)
             </p>
           </div>
 
           {/* Footer Buttons */}
-          <div className="border-t border-gray-200 pt-6 flex gap-4 -mx-6 -mb-6 px-6 pb-6 mt-6">
+          <div className="border-t border-gray-200 pt-fluid-6 flex gap-fluid-4 -mx-fluid-6 -mb-fluid-6 px-fluid-6 pb-fluid-6 mt-fluid-6">
             <button
               type="button"
               onClick={handleClose}
               disabled={loading}
-              className="flex-1 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
+              className="flex-1 px-fluid-6 py-fluid-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl transition-all border border-gray-300 hover:border-gray-400"
             >
               Cancel
             </button>
@@ -177,16 +177,16 @@ export default function TableAddModal({
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-6 py-3 bg-black hover:bg-gray-900 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-fluid-6 py-fluid-3 bg-black hover:bg-gray-900 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-fluid-2"
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-fluid-5 h-fluid-5 animate-spin" />
                   <span>Adding...</span>
                 </>
               ) : (
                 <>
-                  <Save className="w-5 h-5" />
+                  <Save className="w-fluid-5 h-fluid-5" />
                   <span>Add Table</span>
                 </>
               )}

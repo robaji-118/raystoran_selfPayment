@@ -28,7 +28,7 @@ export default function WaiterDashboard() {
       const userData = getUser();
 
       if (!userData) {
-        router.push('/login');
+        router.replace('/login');
         return;
       }
 
@@ -65,7 +65,7 @@ export default function WaiterDashboard() {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.replace('/login');
   };
 
   const handleNavigate = (path: string, title: string) => {
